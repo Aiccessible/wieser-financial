@@ -9,7 +9,7 @@ export default function Institution() {
   const { id } = useParams();
 
   const [accountMap, setAccountMap] = useState({});
-
+  console.log('hi')
   const updateAccounts = (accounts) => {
     const accountMap = accounts.reduce((acc, cur, idx) => {
       acc[cur.account_id] = cur;
