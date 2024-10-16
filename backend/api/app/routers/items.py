@@ -64,7 +64,7 @@ def post_refresh(item_id: str) -> Dict[str, Any]:
             },
         },
         "MessageBody": "{}",  # needs to be an empty JSON body
-        "MessageDeduplicationId": "BALANCE_DEFAULT_UPDATE",
+        "MessageDeduplicationId": user_id + "BALANCE_DEFAULT_UPDATE" + item_id,
         "MessageGroupId": item_id,
     }
 
@@ -115,7 +115,7 @@ def post_refresh(item_id: str) -> Dict[str, Any]:
             },
         },
         "MessageBody": "{}",  # needs to be an empty JSON body
-        "MessageDeduplicationId": "HOLDINGS_DEFAULT_UPDATE",
+        "MessageDeduplicationId": user_id + "HOLDINGS_DEFAULT_UPDATE" + item_id,
         "MessageGroupId": item_id,
     }
 
