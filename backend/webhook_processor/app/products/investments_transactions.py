@@ -17,6 +17,7 @@ from plaid.model.account_base import AccountBase
 from plaid.model.security import Security
 
 from app import constants, exceptions, utils, datastore
+from app.products import AbstractProduct
 
 __all__ = ["InvestmentsTransactions"]
 
@@ -24,7 +25,7 @@ logger = Logger(child=True)
 metrics = Metrics()
 
 
-class InvestmentsTransactions:
+class InvestmentsTransactions(AbstractProduct):
     def build_message(
         self,
         user_id: str,

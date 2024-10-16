@@ -14,6 +14,7 @@ from plaid.model.holding import Holding
 from plaid.model.security import Security
 
 from app import constants, exceptions, utils, datastore
+from app.products import AbstractProduct
 
 __all__ = ["InvestmentsHoldings"]
 
@@ -21,7 +22,7 @@ logger = Logger(child=True)
 metrics = Metrics()
 
 
-class InvestmentsHoldings:
+class InvestmentsHoldings(AbstractProduct):
     def build_message(
         self,
         user_id: str,
