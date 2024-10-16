@@ -62,7 +62,7 @@ def create_link_token() -> Dict[str, str]:
         language="en",
         webhook=WEBHOOK_URL,
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        additional_consented_products=[Products("investments"), Products("credit_details"), Products("income")],
+        additional_consented_products=[Products("investments")],
     )
 
     client = utils.get_plaid_client()
