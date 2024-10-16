@@ -84,6 +84,56 @@ def post_refresh(item_id: str) -> Dict[str, Any]:
 
     return response
 
+@router.post("/<item_id>/refresh/holdings")
+@tracer.capture_method(capture_response=False)
+def post_refresh(item_id: str) -> Dict[str, Any]:
+    user_id: str = utils.authorize_request(router)
+
+    logger.append_keys(item_id=item_id, user_id=user_id)
+    tracer.put_annotation(key="ItemId", value=item_id)
+    tracer.put_annotation(key="UserId", value=user_id)
+
+    params = {
+        "QueueUrl": WEBHOOK_QUEUE_URL,
+        "DelaySeconds": 0,
+        "MessageAttributes": {
+            "WebhookType": {
+                "DataType": "String",
+                "StringValue": "HOLDINGS",
+            },
+            "WebhookCode": {
+                "DataType": "String",
+                "StringValue": "DEFAULT_UPDATE",
+            },
+            "ItemId": {
+                "DataType": "String",
+                "StringValue": item_id,
+            },
+            "UserId": {
+                "DataType": "String",
+                "StringValue": user_id,
+            },
+        },
+        "MessageBody": "{}",  # needs to be an empty JSON body
+        "MessageDeduplicationId": "HOLDINGS_DEFAULT_UPDATE",
+        "MessageGroupId": item_id,
+    }
+
+    metrics.add_metric(name="SendCount", unit=MetricUnit.Count, value=1)
+    logger.debug(f"Sending message to SQS: {params}")
+
+    try:
+        sqs.send_message(**params)
+        logger.debug("Sent message to SQS")
+        metrics.add_metric(name="SendSuccess", unit=MetricUnit.Count, value=1)
+    except botocore.exceptions.ClientError:
+        logger.exception("Failed to send message to SQS")
+        metrics.add_metric(name="SendFailed", unit=MetricUnit.Count, value=1)
+        raise
+
+    response = Response(status_code=202, content_type=content_types.APPLICATION_JSON, body="")
+
+    return response
 
 @router.delete("/<item_id>")
 @tracer.capture_method(capture_response=False)
