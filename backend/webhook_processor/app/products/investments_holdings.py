@@ -101,7 +101,7 @@ class InvestmentsHoldings(AbstractProduct):
         return message
 
     def get_holdings(self, user_id: str, item_id: str, account_ids: List[str] = None):
-        logger.debug("Begin investments holdings get")
+        logger.info("Begin investments holdings get")
 
         try:
             item = datastore.get_item(user_id, item_id)
@@ -135,7 +135,7 @@ class InvestmentsHoldings(AbstractProduct):
             raise
 
         messages: List[Dict[str, Any]] = []
-
+        logger.info("Invstment holdings get response", response)
         accounts: List[AccountBase] = response.accounts
         if accounts:
             messages += [
