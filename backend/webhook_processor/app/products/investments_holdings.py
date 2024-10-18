@@ -135,7 +135,7 @@ class InvestmentsHoldings(AbstractProduct):
             raise
 
         messages: List[Dict[str, Any]] = []
-        logger.info("Invstment holdings get response", response)
+        logger.info(f"Invstment holdings get response {response}")
         accounts: List[AccountBase] = response.accounts
         if accounts:
             messages += [
