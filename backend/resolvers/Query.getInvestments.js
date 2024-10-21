@@ -22,6 +22,7 @@ export function request(ctx) {
         ':sk': 'SECURITY#',
       }),
     },
+    index: 'GSI1',
     scanIndexForward: false,
     limit,
     nextToken,
