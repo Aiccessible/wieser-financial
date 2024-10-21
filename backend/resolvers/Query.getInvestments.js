@@ -14,15 +14,14 @@ export function request(ctx) {
     query: {
       expression: '#pk = :pk AND begins_with(#sk, :sk)',
       expressionNames: {
-        '#pk': 'gsi1pk',
-        '#sk': 'gsi1sk',
+        '#pk': 'pk',
+        '#sk': 'sk',
       },
       expressionValues: util.dynamodb.toMapValues({
         ':pk': `USER#${username}#ITEM#${id}`,
         ':sk': 'SECURITY#',
       }),
     },
-    index: 'GSI1',
     scanIndexForward: false,
     limit,
     nextToken,
