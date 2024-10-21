@@ -1,50 +1,98 @@
 schema {
-  query: Query
+    query: Query
 }
 
 type Query {
-  getItems(limit: Int, cursor: String): PaginatedItems!
-  getAccounts(id: ID!): [Account!]!
-  getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
+    getItems(limit: Int, cursor: String): PaginatedItems!
+    getAccounts(id: ID!): [Account!]!
+    getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
+    getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
 }
 
 type Item {
-  item_id: ID!
-  institution_id: ID!
-  institution_name: String!
+    item_id: ID!
+    institution_id: ID!
+    institution_name: String!
 }
 
 type PaginatedItems {
-  cursor: String
-  items: [Item!]!
+    cursor: String
+    items: [Item!]!
 }
 
 type Account {
-  account_id: ID!
-  type: String
-  name: String
-  subtype: String
-  balances: Balances
-  mask: String
+    account_id: ID!
+    type: String
+    name: String
+    subtype: String
+    balances: Balances
+    mask: String
 }
 
 type Balances {
-  current: String
-  iso_currency_code: String
+    current: String
+    iso_currency_code: String
 }
 
 type Transaction {
-  transaction_id: ID!
-  account_id: ID
-  amount: String
-  name: String
-  iso_currency_code: String
-  date: String
-  payment_channel: String
-  transaction_type: String
+    transaction_id: ID!
+    account_id: ID
+    amount: String
+    name: String
+    iso_currency_code: String
+    date: String
+    payment_channel: String
+    transaction_type: String
 }
 
 type PaginatedTransactions {
-  cursor: String
-  transactions: [Transaction!]!
+    cursor: String
+    transactions: [Transaction!]!
+}
+
+type Security {
+    close_price: Float
+    account_id: ID
+    close_price_as_of: String
+    cost_basis: Float
+    cusip: String
+    institution_id: String
+    institution_security_id: String
+    is_cash_equivalent: Boolean
+    isin: String
+    iso_currency_code: String
+    name: String
+    proxy_security_id: String
+    security_id: String
+    sedol: String
+    ticker_symbol: String
+    type: String
+    unofficial_currency_code: String
+    update_datetime: String
+    market_identifier_code: String
+    sector: String
+    industry: String
+    option_contract: String
+    plaid_type: String
+}
+
+type Holding {
+    account_id: ID
+    cost_basis: Float
+    institution_price: Float
+    institution_price_as_of: String
+    institution_price_datetime: String
+    institution_value: Float
+    iso_currency_code: String
+    quantity: Float
+    security_id: String
+    unofficial_currency_code: String
+    plaid_type: String
+}
+
+union Investment = Holding | Security
+
+type PaginatedInvestments {
+    cursor: String
+    transactions: [Investment!]!
 }

@@ -12,6 +12,16 @@ WEBHOOK_SCHEMA = {
     "required": ["webhook_type", "webhook_code", "item_id"],
 }
 
+WEBHOOK_TRANSFER_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "webhook_type": {"type": "string"},
+        "webhook_code": {"type": "string"},
+    },
+    "required": ["webhook_type", "webhook_code"],
+}
+
 METADATA_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema",
     "type": "object",

@@ -104,3 +104,77 @@ def get_item(user_id: str, item_id: str) -> Dict[str, Any]:
     }
 
     return item
+
+
+def get_transfer(user_id: str, item_id: str) -> Dict[str, Any]:
+    """
+    Get the item from DynamoDB
+    """
+
+    params = {
+        "Key": {
+            "pk": f"TRANSFER",
+            "sk": f"TRANSFER#{item_id}",
+        },
+        "ConsistentRead": True,
+    }
+    logger.debug(params)
+
+    try:
+        response = encrypted_table.get_item(**params)
+        metrics.add_metric(name="GetItemSuccess", unit=MetricUnit.Count, value=1)
+    except botocore.exceptions.ClientError as error:
+        if error.response["Error"]["Code"] == "ResourceNotFoundException":
+            raise exceptions.ItemNotFoundException(f"Item {item_id} not found in DynamoDB")
+
+        logger.exception("Failed to get item from DynamoDB")
+        metrics.add_metric(name="GetItemFailed", unit=MetricUnit.Count, value=1)
+        raise
+
+    item = response.get("Item", {})
+    if not item:
+        raise exceptions.ItemNotFoundException(f"Item {item_id} not found in DynamoDB")
+
+    item = {
+        k: v
+        for k, v in item.items()
+        if k in [constants.TOKEN_ATTRIBUTE_NAME, constants.CURSOR_ATTRIBUTE_NAME]
+    }
+
+    return item
+
+
+def get_transfer_last_read() -> Dict[str, Any]:
+    """
+    Get the item from DynamoDB
+    """
+
+    params = {
+        "Key": {
+            "pk": f"TRANSFER_LAST_READ",
+            "sk": "v0",
+        },
+        "ConsistentRead": True,
+    }
+    logger.debug(params)
+
+    try:
+        response = encrypted_table.get_item(**params)
+        metrics.add_metric(name="GetItemSuccess", unit=MetricUnit.Count, value=1)
+    except botocore.exceptions.ClientError as error:
+        if error.response["Error"]["Code"] == "ResourceNotFoundException":
+            raise exceptions.ItemNotFoundException(f"Cursor not found in DynamoDB")
+
+        logger.exception("Failed to get item from DynamoDB")
+        metrics.add_metric(name="GetItemFailed", unit=MetricUnit.Count, value=1)
+        raise
+    item = response.get("Item", {})
+    if not item:
+        raise exceptions.ItemNotFoundException(f"Cursor")
+    item = {
+        k: v
+        for k, v in item.items()
+        if k in [constants.TOKEN_ATTRIBUTE_NAME, constants.CURSOR_ATTRIBUTE_NAME, constants.CURSOR_TRANSFER_ATTRIBUTE_NAME]
+    }
+
+    return item

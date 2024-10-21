@@ -42,3 +42,4 @@ TOKEN_ATTRIBUTE_NAME = "access_token"
 
 # DynamoDB attribute name for the cursor value
 CURSOR_ATTRIBUTE_NAME = "cursor"
+CURSOR_TRANSFER_ATTRIBUTE_NAME = "transfer_cursor"

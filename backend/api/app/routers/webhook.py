@@ -6,6 +6,7 @@ import hmac
 import os
 import time
 from typing import Dict, Any
+import uuid
 
 from aws_lambda_powertools import Logger, Tracer, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
@@ -181,8 +182,8 @@ def post_webhook() -> Response:
             },
         },
         "MessageBody": body,
-        "MessageDeduplicationId": "{}_{}".format(
-            json_body["webhook_type"], json_body["webhook_code"]
+        "MessageDeduplicationId": "{}_{}_{}".format(
+            json_body["webhook_type"], json_body["webhook_code"], item_id
         ),
         "MessageGroupId": item_id,
     }
@@ -202,3 +203,71 @@ def post_webhook() -> Response:
     response = Response(status_code=200, content_type=content_types.APPLICATION_JSON, body="")
 
     return response
+
+
+@router.post("/transfer")
+@tracer.capture_method(capture_response=False)
+def post_webhook() -> Response:
+    body = router.current_event.body
+    if not body:
+        raise BadRequestError("No body found in request")
+
+    json_body: Dict[str, Any] = router.current_event.json_body
+    plaid_verification = router.current_event.get_header_value("Plaid-Verification")
+
+    if not plaid_verification:
+        metrics.add_metric(name="HeaderMissing", unit=MetricUnit.Count, value=1)
+        raise BadRequestError("Missing Plaid-Verification Header")
+
+    if not verify(body, plaid_verification):
+        metrics.add_metric(name="VerificationFailed", unit=MetricUnit.Count, value=1)
+        raise BadRequestError("Failed to verify request from Plaid")
+
+    try:
+        validate(event=json_body, schema=schemas.WEBHOOK_SCHEMA)
+    except SchemaValidationError:
+        logger.exception(f"Failed to validate webhook payload: {json_body}")
+        metrics.add_metric(name="ValidationFailed", unit=MetricUnit.Count, value=1)
+        raise BadRequestError("Failed to validate request from Plaid")
+
+    generated_uuid = uuid.uuid4()
+
+    # Convert the UUID to a string
+    uuid_as_string = str(generated_uuid)
+
+    params = {
+        "QueueUrl": WEBHOOK_QUEUE_URL,
+        "DelaySeconds": 0,
+        "MessageAttributes": {
+            "WebhookType": {
+                "DataType": "String",
+                "StringValue": json_body["webhook_type"],
+            },
+            "WebhookCode": {
+                "DataType": "String",
+                "StringValue": json_body["webhook_code"],
+            },
+        },
+        "MessageBody": body,
+        "MessageDeduplicationId": "{}_{}_{}".format(
+            json_body["webhook_type"], json_body["webhook_code"], uuid_as_string
+        ),
+        "MessageGroupId": uuid_as_string,
+    }
+
+    metrics.add_metric(name="SendCount", unit=MetricUnit.Count, value=1)
+    logger.debug(f"Sending message to SQS: {params}")
+
+    try:
+        sqs.send_message(**params)
+        logger.debug("Sent message to SQS")
+        metrics.add_metric(name="SendSuccess", unit=MetricUnit.Count, value=1)
+    except botocore.exceptions.ClientError:
+        logger.exception("Failed to send message to SQS")
+        metrics.add_metric(name="SendFailed", unit=MetricUnit.Count, value=1)
+        raise
+
+    response = Response(status_code=200, content_type=content_types.APPLICATION_JSON, body="")
+
+    return response
+

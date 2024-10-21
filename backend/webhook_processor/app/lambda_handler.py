@@ -30,7 +30,7 @@ accounts_balance = products.AccountsBalance()
 liabilities = products.Liabilities()
 investments_transactions = products.InvestmentsTransactions()
 investments_holdings = products.InvestmentsHoldings()
-
+transfer = products.Transfer()
 
 def record_handler(record: Union[DynamoDBRecord, SQSRecord]) -> None:
     # New items added to DynamoDB via API
@@ -52,6 +52,13 @@ def record_handler(record: Union[DynamoDBRecord, SQSRecord]) -> None:
 
     # Incoming Webhooks from SQS
     elif isinstance(record, SQSRecord):
+        
+        webhook_type: str = record.message_attributes["WebhookType"].string_value
+        webhook_code: str = record.message_attributes["WebhookCode"].string_value
+
+        if webhook_type == 'TRANSFER' and webhook_code == 'TRANSFER_EVENTS_UPDATE':
+            transfer.handle_webhook()
+            return
         item_id: str = record.message_attributes["ItemId"].string_value
         logger.append_keys(item_id=item_id)
         tracer.put_annotation(key="ItemId", value=item_id)
@@ -67,8 +74,7 @@ def record_handler(record: Union[DynamoDBRecord, SQSRecord]) -> None:
         logger.append_keys(user_id=user_id)
         tracer.put_annotation(key="UserId", value=user_id)
 
-        webhook_type: str = record.message_attributes["WebhookType"].string_value
-        webhook_code: str = record.message_attributes["WebhookCode"].string_value
+
 
         logger.info(f"Processing webhook type: {webhook_type}, code: {webhook_code}")
 

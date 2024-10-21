@@ -644,7 +644,7 @@ Resources:
                 export function response(ctx) {
                   return ctx.prev.result;
                 }
-            FieldName: getTransactions
+            FieldName: getInvestments
             Kind: PIPELINE
             PipelineConfig:
                 Functions:

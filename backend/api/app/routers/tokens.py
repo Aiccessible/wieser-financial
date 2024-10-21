@@ -30,7 +30,10 @@ from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchan
 from plaid.model.item_public_token_exchange_response import ItemPublicTokenExchangeResponse
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
-
+from plaid.model.transfer_user_in_request import TransferUserInRequest
+from plaid.model.transfer_intent_create_request import TransferIntentCreateRequest, TransferIntentCreateMode
+from plaid.model.transfer_capabilities_get_request import TransferCapabilitiesGetRequest
+import json
 from app import utils, constants, datastore, exceptions
 
 __all__ = ["router"]
@@ -57,12 +60,17 @@ def create_link_token() -> Dict[str, str]:
 
     request = LinkTokenCreateRequest(
         products=[Products("transactions")],
-        client_name="plaidaws",
-        country_codes=[CountryCode("US")],
+        client_name="FinanceGPT",
+        country_codes=[CountryCode("US"), CountryCode("CA")],
         language="en",
         webhook=WEBHOOK_URL,
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        optional_products=[Products("investments")],
+        optional_products=[Products("investments"), Products("transfer")],
+        investments_auth={
+            "masked_number_match_enabled": True,
+            "stated_account_number_enabled": True,
+            "manual_entry_enabled": True
+        }
     )
 
     client = utils.get_plaid_client()
@@ -229,3 +237,130 @@ def exchange_token() -> Response:
     )
 
     return response
+
+
+@router.post("/get_transfer_token")
+@tracer.capture_method(capture_response=False)
+def create_transfer_token() -> Dict[str, str]:
+    user_id: str = utils.authorize_request(router)
+    public_token: Union[None, str] = router.current_event.json_body.get("public_token")
+    if not public_token:
+        raise BadRequestError("Public token not found in request")
+    metadata: Dict[str, str] = router.current_event.json_body.get("metadata", {})
+    if not metadata:
+        raise BadRequestError("Metadata not found in request")
+    
+    from_institution_id = metadata.get("from_institution_id")
+    if not from_institution_id:
+        raise BadRequestError("From Institution ID not found in request")
+    
+    from_account = metadata.get("from_account")
+    if not from_account:
+        raise BadRequestError("From account ID not found in request")
+    
+    to_account = metadata.get("to_account")
+    if not to_account:
+        raise BadRequestError("To account ID not found in request")
+    
+    to_institution_id = metadata.get("to_institution_id")
+    if not to_institution_id:
+        raise BadRequestError("To institution ID not found in request")
+    
+    amount = metadata.get("amount")
+    if not amount:
+        raise BadRequestError("Amount not found in request")
+    
+    legal_name = metadata.get("lega_name")
+    if not legal_name:
+        raise BadRequestError("Legal name not found in request")
+    
+    amount = metadata.get("amount")
+    if not amount:
+        raise BadRequestError("Amount not found in request")
+    
+    description = metadata.get("description")
+    if not description:
+        raise BadRequestError("Description not found in request")
+    
+    currency = metadata.get("currency")
+    if not currency:
+        raise BadRequestError("Currency not found in request")
+    
+    client_name = metadata.get("client_name")
+    if not client_name:
+        raise BadRequestError("Currency not found in request")
+    token_entity = datastore.get_item(user_id=user_id, item_id=public_token)
+    access_token: str = token_entity["access_token"]
+    is_from_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
+    is_to_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
+
+    intent_create_object = {
+        "mode": "PAYMENT",  # Used for transfer going from the end-user to you
+        "user": TransferUserInRequest(legal_name=legal_name),
+        "amount": amount,
+        "description": description,
+        "ach_class": "web",  # Refer to Plaid documentation or contact support for class selection
+        "iso_currency_code": currency,
+        "network": "rtp" if (is_from_rtp_supported) else "same-day-ach",  # Explicitly specifying same-day ACH
+        "access_token": access_token,
+        "account_id": from_account
+    }
+
+    transfer_from_user_to_us = utils.get_transfer_intent_id(TransferIntentCreateRequest(**intent_create_object))
+    link_token = create_link_token_for_transfer_ui(transfer_from_user_to_us.id, client_name)
+
+    dynamodb_client: DynamoDBClient = dynamodb.meta.client
+    items = [        
+        {
+            "Put": {  # get all of the items across all users or a single user
+                "TableName": TABLE_NAME,
+                "Item": {
+                    "pk": "TRANSFER",
+                    "sk": f"TRANSFER#{transfer_from_user_to_us.transfer_id}",
+                    "intent_payment_object": {
+                        "S": json.dumps(intent_create_object)  # Store as a JSON string
+                    },
+                    "plaid_type": "intent",
+                    "status": "new"
+                },
+            }
+        },
+    ]
+    try:
+        dynamodb_client.transact_write_items(TransactItems=items)
+        logger.debug("Added items to DynamoDB")
+        metrics.add_metric(name="AddItemSuccess", unit=MetricUnit.Count, value=1)
+    except botocore.exceptions.ClientError:
+        logger.exception("Failed to add items to DynamoDB")
+        metrics.add_metric(name="AddItemFailed", unit=MetricUnit.Count, value=1)
+        raise
+
+    return {"link_token": link_token}
+
+async def create_link_token_for_transfer_ui(transfer_intent_id, client_name):
+    client = utils.get_plaid_client()
+    user_id: str = utils.authorize_request(router)
+    link_token_create_object = LinkTokenCreateRequest(
+        webhook=WEBHOOK_URL + "/transfer",
+        user=LinkTokenCreateRequestUser(client_user_id=user_id),
+        products=["transfer"],
+        transfer={
+            "intent_id": transfer_intent_id,
+        },
+        client_name=client_name,
+        language= "en",
+        country_codes=["US", "CA"],
+    )
+
+    # Check if account ID is provided and retrieve the access token
+
+    print(link_token_create_object)
+
+    # Make API call to Plaid to create the link token
+    try:
+        response = client.link_token_create(link_token_create_object)
+        print(response.data)
+        return response.data["link_token"]
+    except plaid.ApiException as e:
+        print(f"An error occurred: {e}")
+        return None

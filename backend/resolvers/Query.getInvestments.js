@@ -8,7 +8,7 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   const { username } = ctx.identity;
   const { id, limit = 20, cursor: nextToken } = ctx.arguments;
-
+    // TODO: Add investment only index
   return {
     operation: 'Query',
     query: {
@@ -22,7 +22,6 @@ export function request(ctx) {
         ':sk': 'SECURITY#',
       }),
     },
-    index: 'GSI1',
     scanIndexForward: false,
     limit,
     nextToken,
@@ -41,9 +40,12 @@ export function response(ctx) {
   }
 
   const { items: transactions = [], nextToken: cursor } = result;
-
+  
   return {
-    transactions,
+    transactions: transactions.map((transaction) => ({
+    ...transaction,
+    __typename: transaction.plaid_type
+    })),
     cursor,
   };
 }

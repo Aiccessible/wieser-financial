@@ -7,7 +7,7 @@ from .investments_holdings import InvestmentsHoldings
 from .investments_transactions import InvestmentsTransactions
 from .liabilities import Liabilities
 from .transactions import Transactions
-
+from .transfer import Transfer
 __all__ = [
     "AbstractProduct",
     "AccountsBalance",
@@ -15,4 +15,5 @@ __all__ = [
     "InvestmentsTransactions",
     "Liabilities",
     "Transactions",
+    "Transfer"
 ]
