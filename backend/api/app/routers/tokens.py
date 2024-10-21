@@ -244,8 +244,8 @@ def exchange_token() -> Response:
 def create_transfer_token() -> Dict[str, str]:
     logger.info("Getting transfer token")
     user_id: str = utils.authorize_request(router)
-    public_token: Union[None, str] = router.current_event.json_body.get("public_token")
-    if not public_token:
+    account_id: Union[None, str] = router.current_event.json_body.get("account_id")
+    if not account_id:
         raise BadRequestError("Public token not found in request")
     metadata: Dict[str, str] = router.current_event.json_body.get("metadata", {})
     if not metadata:
@@ -271,7 +271,7 @@ def create_transfer_token() -> Dict[str, str]:
     if not amount:
         raise BadRequestError("Amount not found in request")
     
-    legal_name = metadata.get("lega_name")
+    legal_name = metadata.get("legal_name")
     if not legal_name:
         raise BadRequestError("Legal name not found in request")
     
@@ -292,7 +292,7 @@ def create_transfer_token() -> Dict[str, str]:
         raise BadRequestError("Currency not found in request")
     logger.info("Verified metadata")
 
-    token_entity = datastore.get_item(user_id=user_id, item_id=public_token)
+    token_entity = datastore.get_item(user_id=user_id, item_id=account_id)
     access_token: str = token_entity["access_token"]
     logger.info("Retrieved token")
     is_from_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)

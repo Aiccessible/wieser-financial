@@ -112,7 +112,7 @@ def get_item(user_id: str, item_id: str) -> Dict[str, Any]:
     logger.debug(params)
 
     try:
-        response = dynamodb_client.get_item(**params)
+        response = encrypted_table.get_item(**params)
     except botocore.exceptions.ClientError as error:
         if error.response["Error"]["Code"] == "ResourceNotFoundException":
             raise f"Item {item_id} not found in DynamoDB"
@@ -127,7 +127,7 @@ def get_item(user_id: str, item_id: str) -> Dict[str, Any]:
     item = {
         k: v
         for k, v in item.items()
-        if k in [constants.TOKEN_ATTRIBUTE_NAME, constants.CURSOR_ATTRIBUTE_NAME]
+        if k in [constants.TOKEN_ATTRIBUTE_NAME]
     }
 
     return item
