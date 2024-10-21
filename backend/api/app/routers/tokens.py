@@ -242,6 +242,7 @@ def exchange_token() -> Response:
 @router.post("/get_transfer_token")
 @tracer.capture_method(capture_response=False)
 def create_transfer_token() -> Dict[str, str]:
+    logger.info("Getting transfer token")
     user_id: str = utils.authorize_request(router)
     public_token: Union[None, str] = router.current_event.json_body.get("public_token")
     if not public_token:
@@ -289,8 +290,11 @@ def create_transfer_token() -> Dict[str, str]:
     client_name = metadata.get("client_name")
     if not client_name:
         raise BadRequestError("Currency not found in request")
+    logger.info("Verified metadata")
+
     token_entity = datastore.get_item(user_id=user_id, item_id=public_token)
     access_token: str = token_entity["access_token"]
+    logger.info("Retrieved token")
     is_from_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
     is_to_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
 
@@ -310,6 +314,8 @@ def create_transfer_token() -> Dict[str, str]:
     link_token = create_link_token_for_transfer_ui(transfer_from_user_to_us.id, client_name)
 
     dynamodb_client: DynamoDBClient = dynamodb.meta.client
+    logger.info("Puttin transfer")
+
     items = [        
         {
             "Put": {  # get all of the items across all users or a single user
