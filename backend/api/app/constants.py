@@ -13,5 +13,6 @@ BOTO3_CONFIG = Config(
 )
 
 TOKEN_EXPIRATION = 5 * 60  # 5 minutes
+TOKEN_ATTRIBUTE_NAME = "access_token"
 
 MAX_LIMIT = 100
