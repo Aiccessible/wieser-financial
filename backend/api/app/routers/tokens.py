@@ -33,6 +33,7 @@ from plaid.model.country_code import CountryCode
 from plaid.model.transfer_user_in_request import TransferUserInRequest
 from plaid.model.transfer_intent_create_request import TransferIntentCreateRequest
 from plaid.model.transfer_capabilities_get_request import TransferCapabilitiesGetRequest
+from plaid.model.transfer_intent_create_mode import TransferIntentCreateMode
 import json
 from app import utils, constants, datastore, exceptions
 
@@ -299,7 +300,7 @@ def create_transfer_token() -> Dict[str, str]:
     is_to_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
 
     intent_create_object = {
-        "mode": "PAYMENT",  # Used for transfer going from the end-user to you
+        "mode": TransferIntentCreateMode('PAYMENT'),  # Used for transfer going from the end-user to you
         "user": TransferUserInRequest(legal_name=legal_name),
         "amount": amount,
         "description": description,

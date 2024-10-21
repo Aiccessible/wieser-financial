@@ -134,13 +134,11 @@ def generate_id() -> str:
 
 
 
-async def get_is_rtp_capable(account_id, access_token):
+
+def get_is_rtp_capable(account_id, access_token):
     try:
         # Creating the transfer intent using the Plaid client
-        request = TransferCapabilitiesGetRequest({
-            "account_id": account_id,
-            "access_token": access_token
-        })
+        request = TransferCapabilitiesGetRequest(access_token, account_id)
         response = get_plaid_client().transfer_capabilities_get(request)
         print(response.to_dict())
 
@@ -150,7 +148,7 @@ async def get_is_rtp_capable(account_id, access_token):
         print(f"An error occurred: {e}")
         return None
     
-async def get_transfer_intent_id(transerIntentRequest: TransferIntentCreateRequest):
+def get_transfer_intent_id(transerIntentRequest: TransferIntentCreateRequest):
     try:
         response = get_plaid_client().transfer_intent_create(transerIntentRequest)
         print(response.to_dict())
