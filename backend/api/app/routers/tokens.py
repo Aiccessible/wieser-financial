@@ -31,7 +31,7 @@ from plaid.model.item_public_token_exchange_response import ItemPublicTokenExcha
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
 from plaid.model.transfer_user_in_request import TransferUserInRequest
-from plaid.model.transfer_intent_create_request import TransferIntentCreateRequest, TransferIntentCreateMode
+from plaid.model.transfer_intent_create_request import TransferIntentCreateRequest
 from plaid.model.transfer_capabilities_get_request import TransferCapabilitiesGetRequest
 import json
 from app import utils, constants, datastore, exceptions
