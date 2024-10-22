@@ -24,6 +24,10 @@ Parameters:
     PlaidSecretKey:
         Type: String
         Description: Plaid Secret Key
+    GptSecretKey:
+        Type: String
+        Description: Gpt Secret Key
+
     PlaidEnvironment:
         Type: String
         Description: Plaid Environment
@@ -96,6 +100,29 @@ Resources:
                 - Key: Environment
                   Value: !Ref Environment
 
+    GptCredential:
+        Type: 'AWS::SecretsManager::Secret'
+        UpdateReplacePolicy: Delete
+        DeletionPolicy: Delete
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W77
+                      reason: 'Ignoring KMS key'
+        Properties:
+            Description: 'GPT Key'
+            Name: 'GPT/credentials1'
+            SecretString: !Sub |-
+                {
+                  "gpt_secret_key": "${GptSecretKey}",
+                }
+            Tags:
+                - Key: GITHUB_ORG
+                  Value: !Ref GitHubOrg
+                - Key: GITHUB_REPO
+                  Value: !Ref GitHubRepo
+                - Key: Environment
+                  Value: !Ref Environment
     WebhookDeadLetterQueue:
         Type: 'AWS::SQS::Queue'
         UpdateReplacePolicy: Delete
@@ -527,6 +554,45 @@ Resources:
             ServiceRoleArn: !GetAtt AppSyncRole.Arn
             Type: AMAZON_DYNAMODB
 
+    GetFinancialRecommendationsDataSource:
+        Type: 'AWS::AppSync::DataSource'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            Name: GetFinancialRecommendationDataSource
+            Type: AWS_LAMBDA
+            LambdaConfig:
+                LambdaFunctionArn: !GetAtt GetFinancialRecommendationsLambda.Arn # Reference to your Lambda function
+            ServiceRoleArn: !GetAtt AppSyncLambdaInvokeRole.Arn # Role to allow AppSync to invoke Lambd
+
+    GetFinancialConversationResponseDataSource:
+        Type: 'AWS::AppSync::DataSource'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            Name: GetFinancialConversationResponseDataSource
+            Type: AWS_LAMBDA
+            LambdaConfig:
+                LambdaFunctionArn: !GetAtt GetFinancialConversationResponseLambda.Arn # Reference to your Lambda function
+            ServiceRoleArn: !GetAtt AppSyncLambdaInvokeRole.Arn # Role to allow AppSync to invoke Lambd
+
+    AppSyncLambdaInvokeRole:
+        Type: 'AWS::IAM::Role'
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: appsync.amazonaws.com
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: AppSyncLambdaInvokePolicy
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action: lambda:InvokeFunction
+                            Resource: '*'
+
     GraphQLSchema:
         Type: 'AWS::AppSync::GraphQLSchema'
         Properties:
@@ -562,6 +628,72 @@ Resources:
             CodeS3Location: backend/resolvers/Query.getItems.js
             DataSourceName: !GetAtt DynamoDBDataSource.Name
             Name: GET_ITEMS
+            Runtime:
+                Name: APPSYNC_JS
+                RuntimeVersion: '1.0.0'
+
+    GetFinancialRecommendationResolver:
+        Type: 'AWS::AppSync::Resolver'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            Code: |-
+                export function request(ctx) {
+                  return {};
+                }
+
+                export function response(ctx) {
+                  return ctx.prev.result;
+                }
+            FieldName: getFinancialRecommendations
+            Kind: PIPELINE
+            PipelineConfig:
+                Functions:
+                    - !GetAtt GetFinancialRecommendationsFunctionConfiguration.FunctionId
+            Runtime:
+                Name: APPSYNC_JS
+                RuntimeVersion: '1.0.0'
+            TypeName: Query
+
+    GetFinancialRecommendationsFunctionConfiguration:
+        Type: 'AWS::AppSync::FunctionConfiguration'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            CodeS3Location: backend/resolvers/Query.getFinancialRecommendations.js
+            DataSourceName: !GetAtt GetFinancialRecommendationsResponseDataSource.Name
+            Name: GET_FINANCIAL_RECOMMENDATIONS
+            Runtime:
+                Name: APPSYNC_JS
+                RuntimeVersion: '1.0.0'
+
+    GetFinancialCoversationResponseResolver:
+        Type: 'AWS::AppSync::Resolver'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            Code: |-
+                export function request(ctx) {
+                  return {};
+                }
+
+                export function response(ctx) {
+                  return ctx.prev.result;
+                }
+            FieldName: getFinancialConversationResponse
+            Kind: PIPELINE
+            PipelineConfig:
+                Functions:
+                    - !GetAtt GetFinancialCoversationResponseFunctionConfiguration.FunctionId
+            Runtime:
+                Name: APPSYNC_JS
+                RuntimeVersion: '1.0.0'
+            TypeName: Query
+
+    GetFinancialCoversationResponseFunctionConfiguration:
+        Type: 'AWS::AppSync::FunctionConfiguration'
+        Properties:
+            ApiId: !GetAtt GraphQLApi.ApiId
+            CodeS3Location: backend/resolvers/Query.getFinancialConversationResponse.js
+            DataSourceName: !GetAtt GetFinancialConversationResponseDataSource.Name
+            Name: GET_FINANCIAL_CONVERSATION_RESPONSE
             Runtime:
                 Name: APPSYNC_JS
                 RuntimeVersion: '1.0.0'
@@ -984,6 +1116,49 @@ Resources:
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
 
+    GetFinancialRecommendationsLambda:
+        Type: 'AWS::Serverless::Function'
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W58
+                      reason: 'Ignoring CloudWatch'
+                    - id: W89
+                      reason: 'Ignoring VPC'
+                    - id: W92
+                      reason: 'Ignoring Reserved Concurrency'
+        Properties:
+            CodeUri: lambda/buildLambda
+            Handler: getFinancialRecommendations.getFinancialRecommendations
+            Description: !Sub 'Get Financial Recommendation Lambda'
+            Environment:
+                Variables:
+                    GPT_SECRET_ARN: GptSecretKey
+                    KEY_ARN: !GetAtt EncryptionKey.Arn
+            MemorySize: 256 # megabytes
+            Role: !GetAtt ApiFunctionRole.Arn
+
+    GetFinancialConversationResponseLambda:
+        Type: 'AWS::Serverless::Function'
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W58
+                      reason: 'Ignoring CloudWatch'
+                    - id: W89
+                      reason: 'Ignoring VPC'
+                    - id: W92
+                      reason: 'Ignoring Reserved Concurrency'
+        Properties:
+            CodeUri: lambda/buildLambda
+            Handler: getResponseUsingFinancialContext.getResponseUsingFinancialContext
+            Description: !Sub 'Get Financial response for Lambda'
+            Environment:
+                Variables:
+                    GPT_SECRET_ARN: GptSecretKey
+                    KEY_ARN: !GetAtt EncryptionKey.Arn
+            MemorySize: 256 # megabytes
+            Role: !GetAtt ApiFunctionRole.Arn
     WebhookProcessorFunctionLogGroup:
         Type: 'AWS::Logs::LogGroup'
         UpdateReplacePolicy: Delete
