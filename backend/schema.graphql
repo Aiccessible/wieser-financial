@@ -7,6 +7,8 @@ type Query {
     getAccounts(id: ID!): [Account!]!
     getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
+    getRecommentdations(chat: ChatQuery): Recommendation[]!
+    getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
 }
 
 type Item {
@@ -91,6 +93,41 @@ type Holding {
 }
 
 union Investment = Holding | Security
+
+enum ChatFocus {
+    All
+    Investment
+    Transaction
+    Accounts
+    Tax
+}
+
+input ChatQuery {
+    prompt: String
+    chatFocus: ChatFocus
+}
+
+type ChatResponse {
+    response: String
+}
+
+type Transfer {
+    fromAccountName: string
+    toAccountName: string
+    amount: string
+}
+
+type RecommendationAction {
+    transfers: Transfer[]
+    description: string
+}
+
+type Recommendation {
+    explanation: string
+    action: RecommendationAction
+    title: string
+    priority: number
+}
 
 type PaginatedInvestments {
     cursor: String
