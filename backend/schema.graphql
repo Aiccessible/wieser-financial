@@ -118,7 +118,7 @@ type Transfer {
 }
 
 type RecommendationAction {
-    transfers: Transfer[]
+    transfers: [Transfer]
     description: string
 }
 
