@@ -1467,9 +1467,6 @@ Resources:
                         - npm ci --no-fund --no-audit
                     build:
                       commands:
-                        - cd backend/lambda 
-                        - zip -r lambda-code.zip .
-                        - cd ../../
                         - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
                         - REACT_APP_COGNITO_CLIENT_ID=${REACT_APP_COGNITO_CLIENT_ID}
                         - REACT_APP_COGNITO_DOMAIN=${REACT_APP_COGNITO_DOMAIN}
