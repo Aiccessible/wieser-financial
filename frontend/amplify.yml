@@ -4,7 +4,7 @@ applications:
           phases:
               preBuild:
                   commands:
-                      - npm ci --no-fund --no-audit
+                      - npm ci --legacy-peer-deps --no-fund --no-audit
               build:
                   commands:
                       - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
