@@ -1,0 +1,24 @@
+{
+    "name": "lambda",
+    "version": "1.0.0",
+    "main": "index.js",
+    "directories": {
+        "lib": "lib"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "recodegen": "npx @aws-amplify/cli codegen --max-depth 5",
+        "codegen": "./codegen.sh",
+        "build": "rm -rf buildLambda && tsc"
+    },
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "@types/aws-lambda": "^8.10.145",
+        "aws-lambda": "^1.0.7",
+        "openai": "^4.68.1",
+        "typescript": "^5.6.3",
+        "zod": "^3.23.8"
+    }
+}

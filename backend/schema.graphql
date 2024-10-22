@@ -7,7 +7,7 @@ type Query {
     getAccounts(id: ID!): [Account!]!
     getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
-    getRecommentdations(chat: ChatQuery): [Recommendation]!
+    getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
     getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
 }
 
