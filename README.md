@@ -62,6 +62,7 @@ The architecture consists of a [React](https://reactjs.org/) application hosted 
 1. GitHub: [Create a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with the `repo` scope selected. The access token will be used by AWS Amplify to securely connect to your GitHub account to access the source code. Amplify will then build, deploy and host the application using [Amplify Hosting](https://aws.amazon.com/amplify/hosting/).
 2. GitHub: [Fork the repository to your personal account](https://docs.github.com/en/get-started/quickstart/fork-a-repo#forking-a-repository). This is required so Amplify can access the repository and download the source code.
 3. Plaid: Ensure you have both a `client_id` and `Sandbox Secret` available on the [Keys](https://dashboard.plaid.com/team/keys) page
+   Basic commands
 
 ```
 git clone https://github.com/<GitHubUserName>/aws-plaid-demo-app
