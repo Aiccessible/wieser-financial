@@ -1464,7 +1464,7 @@ Resources:
                     preBuild:
                       commands:
                         - cd frontend
-                        - npm ci --no-fund --no-audit --legacy-peer-deps
+                        - npm ci --legacy-peer-deps --no-fund --no-audit 
                     build:
                       commands:
                         - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
