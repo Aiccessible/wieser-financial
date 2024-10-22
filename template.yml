@@ -659,7 +659,7 @@ Resources:
         Properties:
             ApiId: !GetAtt GraphQLApi.ApiId
             CodeS3Location: backend/resolvers/Query.getFinancialRecommendations.js
-            DataSourceName: !GetAtt GetFinancialRecommendationsResponseDataSource.Name
+            DataSourceName: !GetAtt GetFinancialRecommendationsDataSource.Name
             Name: GET_FINANCIAL_RECOMMENDATIONS
             Runtime:
                 Name: APPSYNC_JS
@@ -1128,8 +1128,8 @@ Resources:
                     - id: W92
                       reason: 'Ignoring Reserved Concurrency'
         Properties:
-            CodeUri: lambda/buildLambda
-            Handler: getFinancialRecommendations.getFinancialRecommendations
+            CodeUri: backend/lambda/lambda-code.zip
+            Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
             Description: !Sub 'Get Financial Recommendation Lambda'
             Environment:
                 Variables:
@@ -1150,8 +1150,8 @@ Resources:
                     - id: W92
                       reason: 'Ignoring Reserved Concurrency'
         Properties:
-            CodeUri: lambda/buildLambda
-            Handler: getResponseUsingFinancialContext.getResponseUsingFinancialContext
+            CodeUri: backend/lambda/lambda-code.zip
+            Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
             Description: !Sub 'Get Financial response for Lambda'
             Environment:
                 Variables:
@@ -1465,6 +1465,9 @@ Resources:
                         - npm ci --no-fund --no-audit
                     build:
                       commands:
+                        - cd backend/lambda 
+                        - zip -r lambda-code.zip .
+                        - cd ../../
                         - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
                         - REACT_APP_COGNITO_CLIENT_ID=${REACT_APP_COGNITO_CLIENT_ID}
                         - REACT_APP_COGNITO_DOMAIN=${REACT_APP_COGNITO_DOMAIN}

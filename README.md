@@ -25,23 +25,23 @@ The architecture consists of a [React](https://reactjs.org/) application hosted 
 
 ## Prerequisites
 
-- [Python 3](https://www.python.org/downloads/), installed
-- [AWS Command Line Interface (AWS CLI)](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) version 2, installed. Please follow these instructions with how to [setup your AWS credentials](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-set-up-credentials.html).
-- [AWS Serverless Application Model (SAM)](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html), installed
-- [Docker Desktop](https://www.docker.com/products/docker-desktop), installed
-- [GitHub](https://github.com) account
-- [Plaid](https://plaid.com/) account
+-   [Python 3](https://www.python.org/downloads/), installed
+-   [AWS Command Line Interface (AWS CLI)](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) version 2, installed. Please follow these instructions with how to [setup your AWS credentials](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started-set-up-credentials.html).
+-   [AWS Serverless Application Model (SAM)](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html), installed
+-   [Docker Desktop](https://www.docker.com/products/docker-desktop), installed
+-   [GitHub](https://github.com) account
+-   [Plaid](https://plaid.com/) account
 
 ## Tools and services
 
-- [AWS Lambda](https://aws.amazon.com/lambda/) - AWS Lambda is a serverless compute service that lets you run code without provisioning or managing servers, creating workload-aware cluster scaling logic, maintaining event integrations, or managing runtimes.
-- [Amazon Cognito](https://aws.amazon.com/cognito/) - Amazon Cognito lets you add user sign-up, sign-in, and access control to your web and mobile apps quickly and easily. Amazon Cognito scales to millions of users and supports sign-in with social identity providers, such as Apple, Facebook, Google, and Amazon, and enterprise identity providers via SAML 2.0 and OpenID Connect.
-- [Amazon API Gateway](https://aws.amazon.com/api-gateway/) - Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
-- [AWS Amplify](https://aws.amazon.com/amplify/) - AWS Amplify is a complete solution that lets frontend web and mobile developers easily build, ship, and host full-stack applications on AWS, with the flexibility to leverage the breadth of AWS services as use cases evolve.
-- [Amazon Simple Queue Service](https://aws.amazon.com/sqs/) - Amazon Simple Queue Service (SQS) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
-- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) - Amazon DynamoDB is a fully managed, serverless, key-value NoSQL database designed to run high-performance applications at any scale.
-- [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) - AWS Secrets Manager helps you manage, retrieve, and rotate database credentials, API keys, and other secrets throughout their lifecycles.
-- [AWS CloudFormation](https://aws.amazon.com/cloudformation/) - AWS CloudFormation lets you model, provision, and manage AWS and third-party resources by treating infrastructure as code.
+-   [AWS Lambda](https://aws.amazon.com/lambda/) - AWS Lambda is a serverless compute service that lets you run code without provisioning or managing servers, creating workload-aware cluster scaling logic, maintaining event integrations, or managing runtimes.
+-   [Amazon Cognito](https://aws.amazon.com/cognito/) - Amazon Cognito lets you add user sign-up, sign-in, and access control to your web and mobile apps quickly and easily. Amazon Cognito scales to millions of users and supports sign-in with social identity providers, such as Apple, Facebook, Google, and Amazon, and enterprise identity providers via SAML 2.0 and OpenID Connect.
+-   [Amazon API Gateway](https://aws.amazon.com/api-gateway/) - Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
+-   [AWS Amplify](https://aws.amazon.com/amplify/) - AWS Amplify is a complete solution that lets frontend web and mobile developers easily build, ship, and host full-stack applications on AWS, with the flexibility to leverage the breadth of AWS services as use cases evolve.
+-   [Amazon Simple Queue Service](https://aws.amazon.com/sqs/) - Amazon Simple Queue Service (SQS) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications.
+-   [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) - Amazon DynamoDB is a fully managed, serverless, key-value NoSQL database designed to run high-performance applications at any scale.
+-   [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) - AWS Secrets Manager helps you manage, retrieve, and rotate database credentials, API keys, and other secrets throughout their lifecycles.
+-   [AWS CloudFormation](https://aws.amazon.com/cloudformation/) - AWS CloudFormation lets you model, provision, and manage AWS and third-party resources by treating infrastructure as code.
 
 ## Usage
 
@@ -67,9 +67,13 @@ The architecture consists of a [React](https://reactjs.org/) application hosted 
 git clone https://github.com/<GitHubUserName>/aws-plaid-demo-app
 cd aws-plaid-demo-app
 sam build --use-container --parallel --cached
+cd lambda
+zip -r lambda-code.zip .
+sam package --s3-bucket sam-s3-bucket-for-lambda --output-template-file packaged.yaml
 sam deploy \
   --guided \
-  --tags "GITHUB_ORG=<GitHubUserName> GITHUB_REPO=aws-plaid-demo-app"
+  --tags "GITHUB_ORG=<GitHubUserName> GITHUB_REPO=aws-plaid-demo-app" \
+  --template-file packaged.yaml
 ```
 
 SAM will then prompt you to provide values for the missing parameters listed above:
@@ -112,9 +116,9 @@ Go through the process to create a new account providing your email address for 
 
 Select "Bank of America" and use these demo credentials:
 
-- Username: `user_good`
-- Password: `pass_good`
-- Code: `1111`
+-   Username: `user_good`
+-   Password: `pass_good`
+-   Code: `1111`
 
 Continue through the Plaid Link process to have "Bank of America" and its accounts linked to the application.
 
