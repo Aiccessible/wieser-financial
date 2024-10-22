@@ -8,5 +8,6 @@ export const getFinancialRecommendations: AppSyncResolverHandler<any, Recommenda
 ) => {
     const response = await getFinancialRecommendationsFromData(event.arguments.prompt || '')
     const recommentations = JSON.parse(response.content || '')
-    return recommentations.map((el: Recommendation) => ({ ...el, __typename: 'Recommendation' }))
+    console.info('Got', recommentations, ' From GPT')
+    return recommentations.recommendations.map((el: Recommendation) => ({ ...el, __typename: 'Recommendation' }))
 }

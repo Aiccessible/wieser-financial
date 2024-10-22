@@ -372,8 +372,8 @@ Resources:
   DependencyLayer:
     Type: AWS::Serverless::LayerVersion
     Metadata:
-      BuildArchitecture: x86_64
       BuildMethod: python3.12
+      BuildArchitecture: x86_64
       SamResourceId: DependencyLayer
     Properties:
       LicenseInfo: MIT-0
@@ -381,7 +381,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda/61e171ccf26f54adc027f62afaa0407d
+      ContentUri: s3://sam-s3-bucket-for-lambda/f154fbe0d8a1a410334342b6dcb44949
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -1378,7 +1378,6 @@ Resources:
   ApiFunction:
     Type: AWS::Serverless::Function
     Metadata:
-      SamResourceId: ApiFunction
       cfn_nag:
         rules_to_suppress:
         - id: W58
@@ -1387,6 +1386,7 @@ Resources:
           reason: Ignoring VPC
         - id: W92
           reason: Ignoring Reserved Concurrency
+      SamResourceId: ApiFunction
     Properties:
       CodeUri: s3://sam-s3-bucket-for-lambda/ea1a0190c6f1b8b2bb02f4ea233f314a
       Description:
@@ -1422,13 +1422,14 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/252982b0b2e1b32948b0f9f546cff9f1
+      CodeUri: s3://sam-s3-bucket-for-lambda/b80af4c0645be6658ee91aba441e0f41
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
       Environment:
         Variables:
-          GPT_SECRET_ARN: GptSecretKey
+          GptSecretKey:
+            Ref: GptSecretKey
           KEY_ARN:
             Fn::GetAtt:
             - EncryptionKey
@@ -1438,6 +1439,7 @@ Resources:
         Fn::GetAtt:
         - ApiFunctionRole
         - Arn
+      Runtime: nodejs18.x
   GetFinancialConversationResponseLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -1451,13 +1453,14 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/252982b0b2e1b32948b0f9f546cff9f1
+      CodeUri: s3://sam-s3-bucket-for-lambda/b80af4c0645be6658ee91aba441e0f41
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
       Environment:
         Variables:
-          GPT_SECRET_ARN: GptSecretKey
+          GptSecretKey:
+            Ref: GptSecretKey
           KEY_ARN:
             Fn::GetAtt:
             - EncryptionKey
@@ -1467,6 +1470,7 @@ Resources:
         Fn::GetAtt:
         - ApiFunctionRole
         - Arn
+      Runtime: nodejs18.x
   WebhookProcessorFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     UpdateReplacePolicy: Delete
@@ -1606,7 +1610,6 @@ Resources:
   WebhookProcessorFunction:
     Type: AWS::Serverless::Function
     Metadata:
-      SamResourceId: WebhookProcessorFunction
       cfn_nag:
         rules_to_suppress:
         - id: W58
@@ -1615,6 +1618,7 @@ Resources:
           reason: Ignoring VPC
         - id: W92
           reason: Ignoring Reserved Concurrency
+      SamResourceId: WebhookProcessorFunction
     Properties:
       CodeUri: s3://sam-s3-bucket-for-lambda/085b1790dc3e0478d2b6077bb7e49982
       Description:
@@ -1772,7 +1776,6 @@ Resources:
   BatchWriterFunction:
     Type: AWS::Serverless::Function
     Metadata:
-      SamResourceId: BatchWriterFunction
       cfn_nag:
         rules_to_suppress:
         - id: W58
@@ -1781,6 +1784,7 @@ Resources:
           reason: Ignoring VPC
         - id: W92
           reason: Ignoring Reserved Concurrency
+      SamResourceId: BatchWriterFunction
     Properties:
       CodeUri: s3://sam-s3-bucket-for-lambda/e92a09e0181e61b480bb59a0e91fb786
       Description:

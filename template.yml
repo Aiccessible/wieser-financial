@@ -1133,10 +1133,11 @@ Resources:
             Description: !Sub 'Get Financial Recommendation Lambda'
             Environment:
                 Variables:
-                    GPT_SECRET_ARN: GptSecretKey
+                    GptSecretKey: !Ref GptSecretKey
                     KEY_ARN: !GetAtt EncryptionKey.Arn
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
+            Runtime: nodejs18.x
 
     GetFinancialConversationResponseLambda:
         Type: 'AWS::Serverless::Function'
@@ -1155,10 +1156,11 @@ Resources:
             Description: !Sub 'Get Financial response for Lambda'
             Environment:
                 Variables:
-                    GPT_SECRET_ARN: GptSecretKey
+                    GptSecretKey: !Ref GptSecretKey
                     KEY_ARN: !GetAtt EncryptionKey.Arn
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
+            Runtime: nodejs18.x
     WebhookProcessorFunctionLogGroup:
         Type: 'AWS::Logs::LogGroup'
         UpdateReplacePolicy: Delete

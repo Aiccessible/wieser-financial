@@ -5,7 +5,7 @@ import { View, Heading, Flex } from '@aws-amplify/ui-react';
 import { getItems as GetItems } from '../graphql/queries';
 import Plaid from '../components/Plaid';
 import Institutions from '../components/Institutions';
-
+import { CustomTextBox } from '../components/common/CustomTextBox';
 const logger = new ConsoleLogger("Protected");
 
 export default function Protected() {
@@ -29,15 +29,18 @@ export default function Protected() {
   }, []);
 
   return (
-    <Flex direction="column">
-      <Plaid getItems={getItems}/>
-      {(items && items.length) ? (
-        <View>
-          <Heading>Institutions</Heading>
-          <Institutions institutions={items}/>
-        </View>
-      ) : (<div/>)
-      }
-    </Flex>
-  );
+      <Flex direction="column">
+          <Plaid getItems={getItems} />
+          {items && items.length ? (
+              <View>
+                  <Heading>
+                      <CustomTextBox>Institutions</CustomTextBox>
+                  </Heading>
+                  <Institutions institutions={items} />
+              </View>
+          ) : (
+              <div />
+          )}
+      </Flex>
+  )
 }

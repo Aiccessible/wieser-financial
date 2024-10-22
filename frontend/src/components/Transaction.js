@@ -1,17 +1,31 @@
 import { TableRow, TableCell } from '@aws-amplify/ui-react';
+import { CustomTextBox } from './common/CustomTextBox'
+import { CustomTableCell } from './common/CustomTableCell'
 import Currency from './Currency';
 
 export default function Transaction({ transaction, account }) {
   return (
-    <TableRow>
-      <TableCell>{ transaction.name }</TableCell>
-      <TableCell>
-        <Currency amount={ transaction.amount } currency={ transaction.iso_currency_code }/>
-      </TableCell>
-      <TableCell>{ transaction.date }</TableCell>
-      <TableCell>{ account ? account.name : transaction.account_id }</TableCell>
-      <TableCell>{ transaction.payment_channel }</TableCell>
-      <TableCell>{ transaction.transaction_type }</TableCell>
-    </TableRow>
+      <TableRow>
+          <CustomTableCell>
+              <CustomTextBox>{transaction.name}</CustomTextBox>
+          </CustomTableCell>
+          <CustomTableCell>
+              <CustomTextBox>
+                  <Currency amount={transaction.amount} currency={transaction.iso_currency_code} />
+              </CustomTextBox>
+          </CustomTableCell>
+          <CustomTableCell>
+              <CustomTextBox>{transaction.date}</CustomTextBox>
+          </CustomTableCell>
+          <CustomTableCell>
+              <CustomTextBox>{account ? account.name : transaction.account_id}</CustomTextBox>
+          </CustomTableCell>
+          <CustomTableCell>
+              <CustomTextBox>{transaction.payment_channel}</CustomTextBox>
+          </CustomTableCell>
+          <CustomTableCell>
+              <CustomTextBox>{transaction.transaction_type}</CustomTextBox>
+          </CustomTableCell>
+      </TableRow>
   )
 }

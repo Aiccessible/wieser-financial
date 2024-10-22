@@ -34,9 +34,12 @@ from plaid.model.transfer_user_in_request import TransferUserInRequest
 from plaid.model.transfer_intent_create_request import TransferIntentCreateRequest
 from plaid.model.transfer_capabilities_get_request import TransferCapabilitiesGetRequest
 from plaid.model.transfer_intent_create_mode import TransferIntentCreateMode
+from plaid.model.transfer_intent_create_network import TransferIntentCreateNetwork
+from plaid.model.ach_class import ACHClass
 import json
 from app import utils, constants, datastore, exceptions
-
+import uuid
+from plaid.model.transfer_metadata import TransferMetadata
 __all__ = ["router"]
 
 TABLE_NAME = os.getenv("TABLE_NAME")
@@ -298,21 +301,26 @@ def create_transfer_token() -> Dict[str, str]:
     logger.info("Retrieved token")
     is_from_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
     is_to_rtp_supported = utils.get_is_rtp_capable(from_account, access_token=access_token)
+    generated_uuid = uuid.uuid4()
 
+    # Convert the UUID to a string
+    uuid_as_string = str(generated_uuid)
     intent_create_object = {
         "mode": TransferIntentCreateMode('PAYMENT'),  # Used for transfer going from the end-user to you
         "user": TransferUserInRequest(legal_name=legal_name),
         "amount": amount,
         "description": description,
-        "ach_class": "web",  # Refer to Plaid documentation or contact support for class selection
+        "ach_class": ACHClass("web"),  # Refer to Plaid documentation or contact support for class selection
         "iso_currency_code": currency,
-        "network": "rtp" if (is_from_rtp_supported) else "same-day-ach",  # Explicitly specifying same-day ACH
-        "access_token": access_token,
-        "account_id": from_account
+        "network": TransferIntentCreateNetwork("rtp" if (is_from_rtp_supported) else "same-day-ach"),  # Explicitly specifying same-day ACH
+        "account_id": from_account,
+        "metadata": TransferMetadata({
+            "financeGptId": uuid_as_string
+        })
     }
 
     transfer_from_user_to_us = utils.get_transfer_intent_id(TransferIntentCreateRequest(**intent_create_object))
-    link_token = create_link_token_for_transfer_ui(transfer_from_user_to_us.id, client_name)
+    link_token = create_link_token_for_transfer_ui(transfer_from_user_to_us.id, client_name, access_token)
 
     dynamodb_client: DynamoDBClient = dynamodb.meta.client
     logger.info("Puttin transfer")
@@ -323,16 +331,14 @@ def create_transfer_token() -> Dict[str, str]:
                 "TableName": TABLE_NAME,
                 "Item": {
                     "pk": "TRANSFER",
-                    "sk": f"TRANSFER#{transfer_from_user_to_us.transfer_id}",
-                    "intent_payment_object": {
-                        "S": json.dumps(intent_create_object)  # Store as a JSON string
-                    },
+                    "sk": f"TRANSFER#{uuid_as_string}",
                     "plaid_type": "intent",
                     "status": "new"
                 },
             }
         },
     ]
+    logger.info("Writing to ddb")
     try:
         dynamodb_client.transact_write_items(TransactItems=items)
         logger.debug("Added items to DynamoDB")
@@ -341,22 +347,23 @@ def create_transfer_token() -> Dict[str, str]:
         logger.exception("Failed to add items to DynamoDB")
         metrics.add_metric(name="AddItemFailed", unit=MetricUnit.Count, value=1)
         raise
-
+    logger.info(f"Returning ${link_token}")
     return {"link_token": link_token}
 
-async def create_link_token_for_transfer_ui(transfer_intent_id, client_name):
+def create_link_token_for_transfer_ui(transfer_intent_id, client_name, access_token):
     client = utils.get_plaid_client()
     user_id: str = utils.authorize_request(router)
     link_token_create_object = LinkTokenCreateRequest(
         webhook=WEBHOOK_URL + "/transfer",
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        products=["transfer"],
+        products=[Products("transfer")],
         transfer={
             "intent_id": transfer_intent_id,
         },
         client_name=client_name,
         language= "en",
-        country_codes=["US", "CA"],
+        country_codes=[CountryCode("US"), CountryCode("CA")],
+        access_token=access_token
     )
 
     # Check if account ID is provided and retrieve the access token
@@ -366,8 +373,8 @@ async def create_link_token_for_transfer_ui(transfer_intent_id, client_name):
     # Make API call to Plaid to create the link token
     try:
         response = client.link_token_create(link_token_create_object)
-        print(response.data)
-        return response.data["link_token"]
+        print(f"{response}")
+        return response["link_token"]
     except plaid.ApiException as e:
         print(f"An error occurred: {e}")
         return None

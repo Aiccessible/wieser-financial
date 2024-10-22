@@ -16,18 +16,6 @@ export default function Layout() {
   }
   return (
     <>
-      <nav>
-        <Button onClick={() => navigate('/')}>Home</Button>
-        {route !== 'authenticated' ? (
-          <Button onClick={() => navigate('/login')}>Login</Button>
-        ) : (
-          <Button onClick={() => logOut()}>Logout</Button>
-        )}
-      </nav>
-      <Heading level={2}>Plaid AWS Quickstart</Heading>
-      <View>
-        {route === 'authenticated' ? `Welcome ${user.signInDetails?.loginId}` : 'Please Login!'}
-      </View>
 
       <Outlet />
     </>

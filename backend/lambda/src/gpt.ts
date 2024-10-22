@@ -70,6 +70,7 @@ export const getFinancialRecommendationsFromData = async (prompt: string) => {
 }
 
 export const completeChatFromPrompt = async (prompt: string, type: ChatFocus | null | undefined) => {
+    console.log('Sending', prompt, ' to gpt')
     const chatOutput = await chat.completions.create({
         messages: [
             {

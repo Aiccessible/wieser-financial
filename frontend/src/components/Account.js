@@ -1,16 +1,27 @@
-import { TableRow, TableCell } from '@aws-amplify/ui-react';
-import Currency from './Currency';
+import {  TableRow, TableCell,  } from '@tremor/react'
+import Currency from './Currency'
 
 export default function Account({ account }) {
-  return (
-    <TableRow>
-      <TableCell>{ account.name }</TableCell>
-      <TableCell>
-        <Currency amount={ account.balances?.current} currency={ account.balances?.iso_currency_code }/>
-      </TableCell>
-      <TableCell>{ account.type }</TableCell>
-      <TableCell>{ account.subtype }</TableCell>
-      <TableCell>****{ account.mask }</TableCell>
-    </TableRow>
-  )
+    return (
+        <TableRow>
+            <TableCell className="items-center justify-center p-2.5 xl:p-5">
+                {' '}
+                <p className="text-black dark:text-white">{account.name}</p>
+            </TableCell>
+            <TableCell className="items-center justify-center p-2.5 xl:p-5">
+                <p className="text-black dark:text-white">
+                    <Currency amount={account.balances?.current} currency={account.balances?.iso_currency_code} />
+                </p>
+            </TableCell>
+            <TableCell className="items-center justify-center p-2.5 xl:p-5">
+                <p className="text-black dark:text-white">{account.type}</p>
+            </TableCell>
+            <TableCell className="items-center justify-center p-2.5 xl:p-5">
+                <p className="text-black dark:text-white">{account.subtype}</p>
+            </TableCell>
+            <TableCell className="items-center justify-center p-2.5 xl:p-5">
+                <p className="text-black dark:text-white">****{account.mask}</p>
+            </TableCell>
+        </TableRow>
+    )
 }
