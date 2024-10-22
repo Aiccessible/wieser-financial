@@ -112,21 +112,21 @@ type ChatResponse {
 }
 
 type Transfer {
-    fromAccountName: string
-    toAccountName: string
-    amount: string
+    fromAccountName: String
+    toAccountName: String
+    amount: String
 }
 
 type RecommendationAction {
     transfers: [Transfer]
-    description: string
+    description: String
 }
 
 type Recommendation {
-    explanation: string
+    explanation: String
     action: RecommendationAction
-    title: string
-    priority: number
+    title: String
+    priority: String
 }
 
 type PaginatedInvestments {
