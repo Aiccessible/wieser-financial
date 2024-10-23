@@ -1083,7 +1083,7 @@ Resources:
                       Action:
                           - 'logs:CreateLogStream'
                           - 'logs:PutLogEvents'
-                      Resource: !GetAtt ApiFunctionLogGroup.Arn
+                      Resource: '*'
                     - Effect: Allow
                       Action:
                           - 'kms:Decrypt'
@@ -1116,6 +1116,57 @@ Resources:
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
 
+    GetFinancialConversationResponseLogGroup:
+        Type: 'AWS::Logs::LogGroup'
+        UpdateReplacePolicy: Delete
+        DeletionPolicy: Delete
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W84
+                      reason: 'Ignoring KMS key'
+        Properties:
+            LogGroupName: !Sub '/aws/lambda/${GetFinancialConversationResponseLambda}'
+            RetentionInDays: 3
+            Tags:
+                - Key: 'aws-cloudformation:stack-name'
+                  Value: !Ref 'AWS::StackName'
+                - Key: 'aws-cloudformation:stack-id'
+                  Value: !Ref 'AWS::StackId'
+                - Key: 'aws-cloudformation:logical-id'
+                  Value: ApiFunctionLogGroup
+                - Key: GITHUB_ORG
+                  Value: !Ref GitHubOrg
+                - Key: GITHUB_REPO
+                  Value: !Ref GitHubRepo
+                - Key: Environment
+                  Value: !Ref Environment
+
+    GetFinancialRecommendationsLogGroup:
+        Type: 'AWS::Logs::LogGroup'
+        UpdateReplacePolicy: Delete
+        DeletionPolicy: Delete
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W84
+                      reason: 'Ignoring KMS key'
+        Properties:
+            LogGroupName: !Sub '/aws/lambda/${GetFinancialRecommendationsLambda}'
+            RetentionInDays: 3
+            Tags:
+                - Key: 'aws-cloudformation:stack-name'
+                  Value: !Ref 'AWS::StackName'
+                - Key: 'aws-cloudformation:stack-id'
+                  Value: !Ref 'AWS::StackId'
+                - Key: 'aws-cloudformation:logical-id'
+                  Value: ApiFunctionLogGroup
+                - Key: GITHUB_ORG
+                  Value: !Ref GitHubOrg
+                - Key: GITHUB_REPO
+                  Value: !Ref GitHubRepo
+                - Key: Environment
+                  Value: !Ref Environment
     GetFinancialRecommendationsLambda:
         Type: 'AWS::Serverless::Function'
         Metadata:

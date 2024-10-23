@@ -3,11 +3,12 @@ import { ChatQuery, Recommendation } from './API'
 import { getFinancialRecommendationsFromData } from './gpt'
 
 export const getFinancialRecommendations: AppSyncResolverHandler<any, Recommendation[]> = async (
-    event: AppSyncResolverEvent<ChatQuery>,
+    event: AppSyncResolverEvent<{ chat: ChatQuery }>,
     context: Context
 ) => {
-    const response = await getFinancialRecommendationsFromData(event.arguments.prompt || '')
+    console.debug('Sending prompt', event.arguments.chat.prompt)
+    const response = await getFinancialRecommendationsFromData(event.arguments.chat.prompt || '')
     const recommentations = JSON.parse(response.content || '')
-    console.info('Got', recommentations, ' From GPT')
+    console.debug('Got', recommentations, ' From GPT')
     return recommentations.recommendations.map((el: Recommendation) => ({ ...el, __typename: 'Recommendation' }))
 }
