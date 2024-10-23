@@ -114,6 +114,16 @@ type ChatResponse {
     response: String
 }
 
+type PremiumChatResponse {
+    response: String
+    svgs: {
+        pieChart: String
+        barChart: String
+        histogram: String
+        timePlot: String
+    }
+}
+
 type Transfer {
     fromAccountName: String
     toAccountName: String
