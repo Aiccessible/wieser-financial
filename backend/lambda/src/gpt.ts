@@ -89,6 +89,87 @@ export const completeChatFromPrompt = async (prompt: string, type: ChatFocus | n
     return chatOutput.choices[0].message!
 }
 
+export enum InformationOptions {
+    'SECURITY',
+    'TRANSACTION',
+    'ACCOUNT',
+}
+export interface GptDateResponse {
+    day: number
+    month: number
+    year: number
+}
+export interface DataRangeResponse {
+    startDay: GptDateResponse
+    endDay: GptDateResponse
+    hasNoTimeConstraint: boolean
+}
+
+export interface InformationOptionsResponse {
+    informationOptions: InformationOptions[]
+}
+
+function getFormattedCurrentDate(): string {
+    const now = new Date() // Get the current date and time
+
+    // Extract year, month, and day
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0') // Months are 0-based, so add 1
+    const day = String(now.getDate()).padStart(2, '0')
+
+    // Return the formatted date as 'YYYY-MM-DD'
+    return `${year}-${month}-${day}`
+}
+
+export const getDateRangeFromModel = async (prompt: string) => {
+    const AcceptableValuesForDateRange = z.object({
+        startDay: z.object({
+            day: z.number(),
+            month: z.number(),
+            year: z.number(),
+        }),
+        endDay: z.object({
+            day: z.number(),
+            month: z.number(),
+            year: z.number(),
+        }),
+        hasNoTimeConstraint: z.boolean(),
+    })
+    const chatOutput = await chat.completions.create({
+        messages: [
+            {
+                role: 'user',
+                content:
+                    'The current date is ' +
+                    getFormattedCurrentDate() +
+                    ' Fill out the best suited date range for the following query: ' +
+                    prompt.substring(0, 100),
+            },
+        ],
+        model: 'gpt-4o-mini',
+        response_format: zodResponseFormat(AcceptableValuesForDateRange, 'dateRange'),
+    })
+    return chatOutput.choices[0].message!
+}
+
+export const getNeededInformationFromModel = async (prompt: string) => {
+    console.log('Getting needed information')
+    const AcceptableInformationOptions = z.object({
+        optionsForInformation: z.array(z.enum(['INVESTMENTS', 'TRANSACTIONS', 'BANKACCOUNTS'])),
+    })
+    const chatOutput = await chat.completions.create({
+        messages: [
+            {
+                role: 'user',
+                content: 'What information is best suited to answer the following query: ' + prompt.substring(0, 100),
+            },
+        ],
+        model: 'gpt-4o-mini',
+        response_format: zodResponseFormat(AcceptableInformationOptions, 'dateRange'),
+    })
+    return chatOutput.choices[0].message!
+}
+
 const flatten = (value: any): any[] => {
     // If the value is an array, flatten each element recursively
     if (Array.isArray(value)) {

@@ -34,6 +34,8 @@ type Account {
 type Balances {
     current: String
     iso_currency_code: String
+    available: String
+    limit: String
 }
 
 type Transaction {
@@ -105,6 +107,7 @@ enum ChatFocus {
 input ChatQuery {
     prompt: String
     chatFocus: ChatFocus
+    accountId: String
 }
 
 type ChatResponse {
