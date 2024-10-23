@@ -1,11 +1,12 @@
 import { QueryCommand } from '@aws-sdk/client-dynamodb'
 import { DataRangeResponse, GptDateResponse, InformationOptions } from '../gpt'
+import { EntityName } from '../getResponseUsingFinancialContext'
 
 export interface EntityQueryParams {
     username: string
     id: string
     dateRange: DataRangeResponse | undefined
-    entityName: InformationOptions
+    entityName: string
 }
 
 function mapStartDayToDate(startDay: GptDateResponse): string {
@@ -22,7 +23,7 @@ function mapStartDayToDate(startDay: GptDateResponse): string {
 // SECURITY and ACCOUNT dont have date range in key
 export const GetEntities = (params: EntityQueryParams) => {
     const filter: any = {
-        KeyConditionExpression: '#pk = :pk AND begins_with(#sk, :sk)',
+        KeyConditionExpression: 'pk = :pk AND begins_with(sk, :sk)',
         ExpressionAttributeValues: {
             ':pk': { S: `USER#${params.username}#ITEM#${params.id}` },
             ':sk': { S: `${params.entityName}` },
@@ -33,6 +34,7 @@ export const GetEntities = (params: EntityQueryParams) => {
         filter['ExpressionAttributeValues'][':startDate'] = { S: mapStartDayToDate(params.dateRange.startDay) }
         filter['ExpressionAttributeValues'][':endDate'] = { S: mapStartDayToDate(params.dateRange.endDay) }
     }
+    console.info(params)
     return new QueryCommand({
         TableName: process.env.TABLE_NAME,
         ...filter,

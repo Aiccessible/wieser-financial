@@ -30,6 +30,8 @@ export const getAccounts = /* GraphQL */ `query GetAccounts($id: ID!) {
     balances {
       current
       iso_currency_code
+      available
+      limit
       __typename
     }
     mask

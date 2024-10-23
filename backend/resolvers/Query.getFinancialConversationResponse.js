@@ -4,6 +4,7 @@ export function request(ctx) {
         operation: 'Invoke',
         payload: {
             arguments: ctx.args,
+            identity: ctx.identity,
             field: 'getFinancialConversationResponse',
         },
     }

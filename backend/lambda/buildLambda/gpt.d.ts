@@ -19,9 +19,9 @@ export declare const apiClient: OpenAI;
 export declare const getFinancialRecommendationsFromData: (prompt: string) => Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
 export declare const completeChatFromPrompt: (prompt: string, type: ChatFocus | null | undefined) => Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
 export declare enum InformationOptions {
-    'SECURITY' = 0,
-    'TRANSACTION' = 1,
-    'ACCOUNT' = 2
+    'INVESTMENTS' = 0,
+    'TRANSACTIONS' = 1,
+    'BANKACCOUNTS' = 2
 }
 export interface GptDateResponse {
     day: number;
@@ -34,7 +34,7 @@ export interface DataRangeResponse {
     hasNoTimeConstraint: boolean;
 }
 export interface InformationOptionsResponse {
-    informationOptions: InformationOptions[];
+    optionsForInformation: InformationOptions[];
 }
 export declare const getDateRangeFromModel: (prompt: string) => Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
 export declare const getNeededInformationFromModel: (prompt: string) => Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;

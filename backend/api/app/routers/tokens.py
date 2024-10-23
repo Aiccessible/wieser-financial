@@ -69,7 +69,7 @@ def create_link_token() -> Dict[str, str]:
         language="en",
         webhook=WEBHOOK_URL,
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        optional_products=[Products("investments"), Products("transfer")],
+        optional_products=[Products("investments")],
         investments_auth={
             "masked_number_match_enabled": True,
             "stated_account_number_enabled": True,

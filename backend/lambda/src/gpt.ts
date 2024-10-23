@@ -90,9 +90,9 @@ export const completeChatFromPrompt = async (prompt: string, type: ChatFocus | n
 }
 
 export enum InformationOptions {
-    'SECURITY',
-    'TRANSACTION',
-    'ACCOUNT',
+    'INVESTMENTS',
+    'TRANSACTIONS',
+    'BANKACCOUNTS',
 }
 export interface GptDateResponse {
     day: number
@@ -106,7 +106,7 @@ export interface DataRangeResponse {
 }
 
 export interface InformationOptionsResponse {
-    informationOptions: InformationOptions[]
+    optionsForInformation: InformationOptions[]
 }
 
 function getFormattedCurrentDate(): string {

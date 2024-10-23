@@ -13,9 +13,10 @@ import { useDataLoading } from '../../hooks/useDataLoading'
 interface SidebarProps {
     isSidebarOpen: boolean
     setIsSidebarOpen: (arg: boolean) => void
+    id: string
 }
 
-const Chatbar = ({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) => {
+const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const dispatch = useAppDispatch()
     const chats = useAppSelector((state) => state.chat.chats)
     const isChatLoading = useAppSelector((state) => state.chat.loadingChat)
@@ -41,6 +42,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) => {
                 newChat: inputValue,
                 client,
                 focus,
+                id,
             })
         )
         setInputValue('') // Clear input after submission

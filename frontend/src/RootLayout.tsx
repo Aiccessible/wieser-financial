@@ -9,11 +9,12 @@ import Header from './components/Header'
 import ChatBar from './components/Chatbar/Chatbar'
 import { Provider } from 'react-redux'
 import { store } from './store'
+import { useParams } from 'react-router-dom'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [chatbarOpen, setChatbarOpen] = useState(false)
-
+    const { id } = useParams()
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             </main>
                             {/* <!-- ===== Main Content End ===== --> */}
                         </div>
-                        <ChatBar isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
+                        <ChatBar id={id || ''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
 
                         {/* <!-- ===== Content Area End ===== --> */}
                     </div>

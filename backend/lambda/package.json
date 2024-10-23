@@ -9,7 +9,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "recodegen": "npx @aws-amplify/cli codegen --max-depth 5",
         "codegen": "./codegen.sh",
-        "build": "rm -rf buildLambda && tsc",
+        "build": "rm -rf buildLambda && tsc && npm run zip",
         "zip": "zip -r lambda-code.zip ."
     },
     "author": "",

@@ -22,6 +22,8 @@ export type Balances = {
     __typename: "Balances";
     current?: string | null;
     iso_currency_code?: string | null;
+    available?: string | null;
+    limit?: string | null;
 };
 export type PaginatedTransactions = {
     __typename: "PaginatedTransactions";
@@ -88,6 +90,7 @@ export type Security = {
 export type ChatQuery = {
     prompt?: string | null;
     chatFocus?: ChatFocus | null;
+    accountId?: string | null;
 };
 export declare enum ChatFocus {
     All = "All",
@@ -148,6 +151,8 @@ export type GetAccountsQuery = {
             __typename: "Balances";
             current?: string | null;
             iso_currency_code?: string | null;
+            available?: string | null;
+            limit?: string | null;
         } | null;
         mask?: string | null;
     }>;
@@ -224,11 +229,11 @@ export type GetInvestmentsQuery = {
         })>;
     };
 };
-export type GetRecommentdationsQueryVariables = {
+export type GetFinancialRecommendationsQueryVariables = {
     chat?: ChatQuery | null;
 };
-export type GetRecommentdationsQuery = {
-    getRecommentdations: Array<{
+export type GetFinancialRecommendationsQuery = {
+    getFinancialRecommendations: Array<{
         __typename: "Recommendation";
         explanation?: string | null;
         action?: {

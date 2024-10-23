@@ -30,6 +30,8 @@ export const getAccounts = /* GraphQL */ `query GetAccounts($id: ID!) {
     balances {
       current
       iso_currency_code
+      available
+      limit
       __typename
     }
     mask
@@ -111,8 +113,8 @@ export const getInvestments = /* GraphQL */ `query GetInvestments($id: ID!, $lim
   APITypes.GetInvestmentsQueryVariables,
   APITypes.GetInvestmentsQuery
 >;
-export const getRecommentdations = /* GraphQL */ `query GetRecommentdations($chat: ChatQuery) {
-  getRecommentdations(chat: $chat) {
+export const getFinancialRecommendations = /* GraphQL */ `query GetFinancialRecommendations($chat: ChatQuery) {
+  getFinancialRecommendations(chat: $chat) {
     explanation
     action {
       transfers {
@@ -130,8 +132,8 @@ export const getRecommentdations = /* GraphQL */ `query GetRecommentdations($cha
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetRecommentdationsQueryVariables,
-  APITypes.GetRecommentdationsQuery
+  APITypes.GetFinancialRecommendationsQueryVariables,
+  APITypes.GetFinancialRecommendationsQuery
 >;
 export const getFinancialConversationResponse = /* GraphQL */ `query GetFinancialConversationResponse($chat: ChatQuery) {
   getFinancialConversationResponse(chat: $chat) {

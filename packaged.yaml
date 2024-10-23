@@ -746,7 +746,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda/c084bc1e0827321adb1b3da45d5063c1
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda/71d1419c3f3821c95be8fb90d374b33c
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -818,7 +818,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/1aae112c623dc9b21f8f409812fc38ba
+      CodeS3Location: s3://sam-s3-bucket-for-lambda/003d0f5ed0c24253d976e184fcc28bfa
       DataSourceName:
         Fn::GetAtt:
         - GetFinancialRecommendationsDataSource
@@ -858,7 +858,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/e76c84a547e4f9e3fc27df55900710d7
+      CodeS3Location: s3://sam-s3-bucket-for-lambda/9cba37f8d624f4796ec88aa2e0ff3c9e
       DataSourceName:
         Fn::GetAtt:
         - GetFinancialConversationResponseDataSource
@@ -1483,7 +1483,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/b80af4c0645be6658ee91aba441e0f41
+      CodeUri: s3://sam-s3-bucket-for-lambda/9f4ff6a8c552e7db4380271e2af4d863
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1503,7 +1503,7 @@ Resources:
         - ApiFunctionRole
         - Arn
       Runtime: nodejs18.x
-      Timeout: 60
+      Timeout: 61
   GetFinancialConversationResponseLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -1517,7 +1517,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/b80af4c0645be6658ee91aba441e0f41
+      CodeUri: s3://sam-s3-bucket-for-lambda/9f4ff6a8c552e7db4380271e2af4d863
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1537,7 +1537,7 @@ Resources:
         - ApiFunctionRole
         - Arn
       Runtime: nodejs18.x
-      Timeout: 60
+      Timeout: 61
   WebhookProcessorFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     UpdateReplacePolicy: Delete

@@ -29,6 +29,8 @@ export type Balances = {
   __typename: "Balances",
   current?: string | null,
   iso_currency_code?: string | null,
+  available?: string | null,
+  limit?: string | null,
 };
 
 export type PaginatedTransactions = {
@@ -103,6 +105,7 @@ export type Security = {
 export type ChatQuery = {
   prompt?: string | null,
   chatFocus?: ChatFocus | null,
+  accountId?: string | null,
 };
 
 export enum ChatFocus {
@@ -173,6 +176,8 @@ export type GetAccountsQuery = {
       __typename: "Balances",
       current?: string | null,
       iso_currency_code?: string | null,
+      available?: string | null,
+      limit?: string | null,
     } | null,
     mask?: string | null,
   } >,

@@ -1190,7 +1190,7 @@ Resources:
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
             Runtime: nodejs18.x
-            Timeout: 60
+            Timeout: 61
 
     GetFinancialConversationResponseLambda:
         Type: 'AWS::Serverless::Function'
@@ -1215,7 +1215,7 @@ Resources:
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
             Runtime: nodejs18.x
-            Timeout: 60 # seconds
+            Timeout: 61 # seconds
     WebhookProcessorFunctionLogGroup:
         Type: 'AWS::Logs::LogGroup'
         UpdateReplacePolicy: Delete

@@ -19,25 +19,22 @@ const initialState: ChatState = {
 
 export const sendChatToLLM = createAsyncThunk<
     any,
-    { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus },
+    { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus; id: string },
     { state: RootState }
 >(
     'chat/chat-llm',
-    async (input: { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus }, getThunkApi) => {
+    async (
+        input: { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus; id: string },
+        getThunkApi
+    ) => {
         try {
             const res = await input.client.graphql({
                 query: getFinancialConversationResponse,
                 variables: {
                     chat: {
-                        prompt:
-                            input.newChat +
-                            '\n Accounts:' +
-                            JSON.stringify((getThunkApi.getState() as any).accounts.accounts) +
-                            ' Investments: ' +
-                            JSON.stringify(getThunkApi.getState().investments.investments) +
-                            ' Transactions: ' +
-                            JSON.stringify(getThunkApi.getState().transactions.transactions),
+                        prompt: input.newChat,
                         chatFocus: input.focus,
+                        accountId: input.id,
                     },
                 },
             })
