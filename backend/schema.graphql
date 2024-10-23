@@ -114,14 +114,15 @@ type ChatResponse {
     response: String
 }
 
+type GraphType {
+    pieChart: String
+    barChart: String
+    histogram: String
+    timePlot: String
+}
 type PremiumChatResponse {
     response: String
-    svgs: {
-        pieChart: String
-        barChart: String
-        histogram: String
-        timePlot: String
-    }
+    graphs: GraphType
 }
 
 type Transfer {

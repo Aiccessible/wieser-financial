@@ -1134,7 +1134,7 @@ Resources:
                 - Key: 'aws-cloudformation:stack-id'
                   Value: !Ref 'AWS::StackId'
                 - Key: 'aws-cloudformation:logical-id'
-                  Value: ApiFunctionLogGroup
+                  Value: GetFinancialConversationResponseLogGroup
                 - Key: GITHUB_ORG
                   Value: !Ref GitHubOrg
                 - Key: GITHUB_REPO
@@ -1160,7 +1160,7 @@ Resources:
                 - Key: 'aws-cloudformation:stack-id'
                   Value: !Ref 'AWS::StackId'
                 - Key: 'aws-cloudformation:logical-id'
-                  Value: ApiFunctionLogGroup
+                  Value: GetFinancialRecommendationsLogGroup
                 - Key: GITHUB_ORG
                   Value: !Ref GitHubOrg
                 - Key: GITHUB_REPO
@@ -1186,9 +1186,11 @@ Resources:
                 Variables:
                     GptSecretKey: !Ref GptSecretKey
                     KEY_ARN: !GetAtt EncryptionKey.Arn
+                    TABLE_NAME: !Ref Table
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
             Runtime: nodejs18.x
+            Timeout: 60
 
     GetFinancialConversationResponseLambda:
         Type: 'AWS::Serverless::Function'
@@ -1209,9 +1211,11 @@ Resources:
                 Variables:
                     GptSecretKey: !Ref GptSecretKey
                     KEY_ARN: !GetAtt EncryptionKey.Arn
+                    TABLE_NAME: !Ref Table
             MemorySize: 256 # megabytes
             Role: !GetAtt ApiFunctionRole.Arn
             Runtime: nodejs18.x
+            Timeout: 60 # seconds
     WebhookProcessorFunctionLogGroup:
         Type: 'AWS::Logs::LogGroup'
         UpdateReplacePolicy: Delete
