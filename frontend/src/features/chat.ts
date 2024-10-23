@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { getFinancialConversationResponse } from '../graphql/queries'
 import { ChatFocus, GetFinancialConversationResponseQuery } from '../API'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
 // Define a type for the slice state
 interface ChatState {
     chats: string[]
@@ -18,37 +19,42 @@ const initialState: ChatState = {
 
 export const sendChatToLLM = createAsyncThunk<
     any,
-    { newChat: string; client: any; focus: ChatFocus },
+    { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus },
     { state: RootState }
->('chat/chat-llm', async (input: { newChat: string; client: any; focus: ChatFocus }, getThunkApi) => {
-    try {
-        const res = await input.client.graphql({
-            query: getFinancialConversationResponse,
-            variables: {
-                prompt:
-                    input.newChat +
-                    '\n Accounts:' +
-                    JSON.stringify((getThunkApi.getState() as any).accounts.accounts) +
-                    ' Investments: ' +
-                    JSON.stringify(getThunkApi.getState().investments.investments) +
-                    ' Transactions: ' +
-                    JSON.stringify(getThunkApi.getState().transactions.transactions),
-                focus: input.focus,
-            },
-        })
-        const errors = res.errors
-        if (errors && errors.length > 0) {
-            return { errors, chatResponse: res, loading: false }
+>(
+    'chat/chat-llm',
+    async (input: { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus }, getThunkApi) => {
+        try {
+            const res = await input.client.graphql({
+                query: getFinancialConversationResponse,
+                variables: {
+                    chat: {
+                        prompt:
+                            input.newChat +
+                            '\n Accounts:' +
+                            JSON.stringify((getThunkApi.getState() as any).accounts.accounts) +
+                            ' Investments: ' +
+                            JSON.stringify(getThunkApi.getState().investments.investments) +
+                            ' Transactions: ' +
+                            JSON.stringify(getThunkApi.getState().transactions.transactions),
+                        chatFocus: input.focus,
+                    },
+                },
+            })
+            const errors = res.errors
+            if (errors && errors.length > 0) {
+                return { errors, chatResponse: res, loading: false }
+            }
+            const data: GetFinancialConversationResponseQuery = res.data
+            return {
+                chatResponse: data.getFinancialConversationResponse.response,
+                loading: false,
+            }
+        } catch (e: any) {
+            return { error: e?.message }
         }
-        const data: GetFinancialConversationResponseQuery = res.data
-        return {
-            chatResponse: data.getFinancialConversationResponse.response,
-            loading: false,
-        }
-    } catch (e: any) {
-        return { error: e?.message }
     }
-})
+)
 
 export const chatSlice = createSlice({
     name: 'chat',

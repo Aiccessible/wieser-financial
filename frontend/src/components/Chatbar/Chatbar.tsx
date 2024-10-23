@@ -23,15 +23,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) => {
     const client = generateClient()
 
     const [inputValue, setInputValue] = useState<string>('') // For handling input state
-    const { id } = useParams()
-    const { investments, accounts, transactions } = useDataLoading({
-        id: id || '',
-        client,
-        loadAccounts: true,
-        loadInvestments: true,
-        loadRecommendations: true,
-        loadTransactions: true,
-    })
     const handleChatSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!inputValue.trim()) return // Prevent sending empty messages
@@ -48,7 +39,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen }: SidebarProps) => {
         dispatch(
             sendChatToLLM({
                 newChat: inputValue,
-
                 client,
                 focus,
             })

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getTransactions } from '../graphql/queries'
 import { Transaction } from '../API'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
 // Define a type for the slice state
 interface AccountsState {
     acccountRecommendation: string
@@ -15,12 +16,12 @@ const initialState: AccountsState = {
     acccountRecommendation: '',
     error: undefined,
     loading: false,
-    transactions: undefined,
+    transactions: [],
     cursor: undefined,
 }
 
 export interface GetTransactionInput {
-    client: any
+    client: { graphql: GraphQLMethod }
     id: string
     append: boolean
 }
@@ -36,7 +37,6 @@ export const getTransactionsAsync = createAsyncThunk(
             query: getTransactions,
             variables: { id: input.id, cursor: (getThunk.getState() as any).transactions.cursor },
         })
-        console.log(res)
         const errors = res.errors
         if (errors && errors.length > 0) {
             return { errors, accounts: res.data.getTransactions }
@@ -59,9 +59,9 @@ export const investmentSlice = createSlice({
     extraReducers(builder) {
         builder.addCase(getTransactionsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
-            state.error = action.payload.errors ? action.payload.errors : undefined
+            state.error = action.payload.errors ? action.payload.errors.toString() : undefined
             state.transactions = action.payload.transactions ?? []
-            state.cursor = action.payload.cursor
+            state.cursor = action.payload.cursor || undefined
             state.loading = false
         })
         builder.addCase(getTransactionsAsync.rejected, (state, action) => {

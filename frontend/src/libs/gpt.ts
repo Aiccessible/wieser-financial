@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { AssistantToolChoice } from 'openai/resources/beta/threads/threads.mjs'
 import { getFinancialRecommendations } from '../graphql/queries'
 import { ChatFocus, GetFinancialRecommendationsQuery, Recommendation } from '../API'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
 
 export interface Transfer {
     fromAccountName: string
@@ -16,10 +17,13 @@ export const apiClient = new OpenAI({
 
 const chat = apiClient.chat
 
-export const getFinancialRecommendationsFromData = async (prompt: string, client: any): Promise<Recommendation[]> => {
+export const getFinancialRecommendationsFromData = async (
+    prompt: string,
+    client: { graphql: GraphQLMethod }
+): Promise<Recommendation[]> => {
     const res = await client.graphql({
         query: getFinancialRecommendations,
-        variables: { prompt: prompt, focus: ChatFocus.All },
+        variables: { chat: { prompt: prompt, chatFocus: ChatFocus.All } },
     })
     const data: GetFinancialRecommendationsQuery = res.data!
     const recommendations = data.getFinancialRecommendations!

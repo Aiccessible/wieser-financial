@@ -79,10 +79,10 @@ export default function AnalyzeRecommendation() {
     const { investments, accounts, transactions } = useDataLoading({
         id: id || '',
         client,
-        loadAccounts: true,
-        loadInvestments: true,
-        loadRecommendations: true,
-        loadTransactions: true,
+        loadAccounts: false,
+        loadInvestments: false,
+        loadRecommendations: false,
+        loadTransactions: false,
     })
     const targetRecommendation =
         recommendations && recommendations?.find((recommendation) => recommendation.title === name)
