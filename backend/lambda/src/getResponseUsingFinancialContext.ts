@@ -26,6 +26,8 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     await Promise.all([informationNeeded, dateRange])
     const neededInfo: InformationOptionsResponse = JSON.parse((await informationNeeded).content || '')
     const dateRangeResponse: DataRangeResponse = JSON.parse((await dateRange).content || '')
+    console.info('Needed info ', neededInfo)
+    console.info('Date range: ', dateRangeResponse)
     const user = context.identity?.cognitoIdentityId
     let tupleOfTypeToElements: [InformationOptions, QueryCommandOutput][]
     tupleOfTypeToElements = await Promise.all(
