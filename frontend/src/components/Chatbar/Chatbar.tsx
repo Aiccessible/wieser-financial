@@ -11,6 +11,7 @@ import { CustomTextBox } from '../common/CustomTextBox'
 import { useDataLoading } from '../../hooks/useDataLoading'
 import { onCreateChat } from '../../graphql/subscriptions'
 import { fetchAuthSession } from 'aws-amplify/auth'
+import WordByWordRender from '../WordByWord'
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
     return { Authorization: `Bearer ${accessToken}` }
@@ -43,12 +44,11 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
 
     const getSortedChunks = useMemo(() => {
         const mostRecentMessage = Object.keys(chunks || {})
-        console.log(getActiveChunkIds)
-        const mostRecentKey = mostRecentMessage.filter((x) => !getActiveChunkIds.find((y) => y === x)).sort()[0]
-        console.log(mostRecentKey, mostRecentMessage)
+        const mostRecentKey = mostRecentMessage
+            .filter((x) => !getActiveChunkIds.find((y) => y === x))
+            .sort((a, b) => parseInt(b.split('#')[1]) - parseInt(a.split('#')[1]))[0]
         const chunksOfConcern = chunks?.[mostRecentKey] ?? []
         chunksOfConcern?.sort((a, b) => (parseInt(a.sk || '') || 0) - parseInt(b.sk || ''))
-        console.log(chunksOfConcern)
         return chunksOfConcern?.map((chunks) => chunks.message).join('')
     }, [chunks, getActiveChunkIds])
 
@@ -69,8 +69,16 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             }
         }
     }, [getSortedChunks])
+    const [wordIndex, setWordIndex] = useState(0)
 
-    console.log(chunks)
+    const typingSpeed = 200
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setWordIndex((wordIndex) => wordIndex + 1)
+        }, typingSpeed)
+
+        return () => clearInterval(intervalId) // Cleanup if component unmounts
+    }, [typingSpeed])
 
     useEffect(() => {
         const createSub = async () => {
@@ -101,6 +109,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     }, [])
     const [inputValue, setInputValue] = useState<string>('') // For handling input state
     const handleChatSubmit = (e: React.FormEvent) => {
+        setChunks({})
         e.preventDefault()
         if (!inputValue.trim()) return // Prevent sending empty messages
 
@@ -122,25 +131,29 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             })
         )
         setInputValue('') // Clear input after submission
+        setWordIndex(0)
     }
-
-    const renderPremiumChat = (chat: any) => (
-        <div>
-            {chat && <div>{chat?.response ?? ''}</div>}
-            {
-                /**    graphs: zod_1.z.object({
+    const renderPremiumChat = (chat: any) => {
+        const splitResponse = chat?.response?.split(' ')
+        const length = wordIndex > splitResponse?.length ? splitResponse?.length : wordIndex
+        return (
+            <div>
+                {chat && <CustomTextBox>{splitResponse?.slice(0, length ?? 0).join(' ')}</CustomTextBox>}
+                {
+                    /**    graphs: zod_1.z.object({
         pieChart: zod_1.z.string(),
         barChart: zod_1.z.string(),
         histogram: zod_1.z.string(),
         timePlot: zod_1.z.string(),
     }), */
-                chat?.graphs?.pieChart && <span dangerouslySetInnerHTML={chat?.pieChart}></span>
-            }
-            {chat?.graphs?.barChart && <span dangerouslySetInnerHTML={chat?.barChart}></span>}
-            {chat?.graphs?.histogram && <span dangerouslySetInnerHTML={chat?.histogram}></span>}
-            {chat?.graphs?.timePlot && <span dangerouslySetInnerHTML={chat?.timePlot}></span>}
-        </div>
-    )
+                    chat?.graphs?.pieChart && <span dangerouslySetInnerHTML={chat?.pieChart}></span>
+                }
+                {chat?.graphs?.barChart && <span dangerouslySetInnerHTML={chat?.barChart}></span>}
+                {chat?.graphs?.histogram && <span dangerouslySetInnerHTML={chat?.histogram}></span>}
+                {chat?.graphs?.timePlot && <span dangerouslySetInnerHTML={chat?.timePlot}></span>}
+            </div>
+        )
+    }
     console.log(getChunksAsValidJson)
 
     return (
