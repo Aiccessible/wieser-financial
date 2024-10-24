@@ -134,11 +134,11 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         histogram: zod_1.z.string(),
         timePlot: zod_1.z.string(),
     }), */
-                chat?.graphs?.pieChart && <svg>{chat?.pieChart}</svg>
+                chat?.graphs?.pieChart && <span dangerouslySetInnerHTML={chat?.pieChart}></span>
             }
-            {chat?.graphs?.barChart && <svg>{chat?.barChart}</svg>}
-            {chat?.graphs?.histogram && <svg>{chat?.histogram}</svg>}
-            {chat?.graphs?.timePlot && <svg>{chat?.timePlot}</svg>}
+            {chat?.graphs?.barChart && <span dangerouslySetInnerHTML={chat?.barChart}></span>}
+            {chat?.graphs?.histogram && <span dangerouslySetInnerHTML={chat?.histogram}></span>}
+            {chat?.graphs?.timePlot && <span dangerouslySetInnerHTML={chat?.timePlot}></span>}
         </div>
     )
     console.log(getChunksAsValidJson)
@@ -174,7 +174,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
 
             {/* Chats */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
-                {completedChats.map((chat) => renderPremiumChat(chat))}
                 {getChunksAsValidJson && renderPremiumChat(getChunksAsValidJson)}
             </div>
 
