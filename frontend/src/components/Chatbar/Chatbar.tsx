@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Loader, MessageCircleIcon } from 'lucide-react'
 import { cn } from '../../libs/utlis'
@@ -6,10 +6,15 @@ import { useAppDispatch, useAppSelector } from '../../hooks'
 import { Alert } from '@aws-amplify/ui-react'
 import { sendChatToLLM } from '../../features/chat'
 import { generateClient } from 'aws-amplify/api'
-import { ChatFocus } from '../../API'
+import { Chat, ChatFocus, ChatResponse } from '../../API'
 import { CustomTextBox } from '../common/CustomTextBox'
 import { useDataLoading } from '../../hooks/useDataLoading'
-
+import { onCreateChat } from '../../graphql/subscriptions'
+import { fetchAuthSession } from 'aws-amplify/auth'
+export async function custom_headers() {
+    const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
+    return { Authorization: `Bearer ${accessToken}` }
+}
 interface SidebarProps {
     isSidebarOpen: boolean
     setIsSidebarOpen: (arg: boolean) => void
@@ -22,7 +27,78 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const isChatLoading = useAppSelector((state) => state.chat.loadingChat)
     const error = useAppSelector((state) => state.chat.error)
     const client = generateClient()
+    const [chunks, setChunks] = useState<Record<string, Chat[]>>()
+    const [completedChats, setCompletedChats] = useState<any[]>([])
 
+    const getActiveChunkIds = useMemo(() => {
+        const keys = Object.keys(chunks || {})
+        const activeKeys: string[] = []
+        keys.forEach((key) => {
+            if (completedChats?.find((chat) => chat.messageId === key)) {
+                activeKeys.push(key)
+            }
+        })
+        return activeKeys
+    }, [completedChats, chunks, setChunks])
+
+    const getSortedChunks = useMemo(() => {
+        const mostRecentMessage = Object.keys(chunks || {})
+        console.log(getActiveChunkIds)
+        const mostRecentKey = mostRecentMessage.filter((x) => !getActiveChunkIds.find((y) => y === x)).sort()[0]
+        console.log(mostRecentKey, mostRecentMessage)
+        const chunksOfConcern = chunks?.[mostRecentKey] ?? []
+        chunksOfConcern?.sort((a, b) => (parseInt(a.sk || '') || 0) - parseInt(b.sk || ''))
+        console.log(chunksOfConcern)
+        return chunksOfConcern?.map((chunks) => chunks.message).join('')
+    }, [chunks, getActiveChunkIds])
+
+    const getChunksAsValidJson = useMemo(() => {
+        try {
+            const chatIsDone = JSON.parse(getSortedChunks || '')
+            setCompletedChats((prevValue) => [...prevValue, chatIsDone])
+            return chatIsDone
+        } catch {
+            try {
+                return JSON.parse(getSortedChunks + '"}}' || '')
+            } catch {
+                try {
+                    return JSON.parse(getSortedChunks + '"}' || '')
+                } catch {
+                    return { message: 'Trying to parse' }
+                }
+            }
+        }
+    }, [getSortedChunks])
+
+    console.log(chunks)
+
+    useEffect(() => {
+        const createSub = async () => {
+            console.log(await fetchAuthSession())
+            const headers = await custom_headers()
+            client
+                .graphql(
+                    {
+                        query: onCreateChat,
+                        variables: {
+                            pk: (await fetchAuthSession()).userSub || '',
+                        },
+                    },
+                    headers
+                )
+                .subscribe({
+                    next: ({ data }) => {
+                        const chunk = data.onCreateChat
+                        setChunks((prevChunks: Record<string, Chat[]> | undefined) => ({
+                            ...(prevChunks ?? {}),
+                            [chunk?.messageId ?? '']: [...(prevChunks?.[chunk?.messageId ?? ''] ?? []), chunk],
+                        }))
+                    },
+                    error: (error) => console.warn(error),
+                })
+        }
+        createSub()
+    }, [])
     const [inputValue, setInputValue] = useState<string>('') // For handling input state
     const handleChatSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -47,6 +123,25 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         )
         setInputValue('') // Clear input after submission
     }
+
+    const renderPremiumChat = (chat: any) => (
+        <div>
+            {chat && <div>{chat?.response ?? ''}</div>}
+            {
+                /**    graphs: zod_1.z.object({
+        pieChart: zod_1.z.string(),
+        barChart: zod_1.z.string(),
+        histogram: zod_1.z.string(),
+        timePlot: zod_1.z.string(),
+    }), */
+                chat?.graphs?.pieChart && <svg>{chat?.pieChart}</svg>
+            }
+            {chat?.graphs?.barChart && <svg>{chat?.barChart}</svg>}
+            {chat?.graphs?.histogram && <svg>{chat?.histogram}</svg>}
+            {chat?.graphs?.timePlot && <svg>{chat?.timePlot}</svg>}
+        </div>
+    )
+    console.log(getChunksAsValidJson)
 
     return (
         <aside
@@ -79,15 +174,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
 
             {/* Chats */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
-                {chats.length ? (
-                    chats.map((chat, index) => (
-                        <div key={index} className="mb-2 p-2 bg-gray-700 text-white rounded-lg">
-                            {chat}
-                        </div>
-                    ))
-                ) : (
-                    <CustomTextBox>No chats yet</CustomTextBox>
-                )}
+                {completedChats.map((chat) => renderPremiumChat(chat))}
+                {getChunksAsValidJson && renderPremiumChat(getChunksAsValidJson)}
             </div>
 
             {/* Chat Input */}

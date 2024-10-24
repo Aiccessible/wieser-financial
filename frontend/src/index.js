@@ -15,7 +15,7 @@ ConsoleLogger.LOG_LEVEL = 'DEBUG';
 
 const existingConfig = Amplify.getConfig();
 
-async function custom_headers() {
+export async function custom_headers() {
   const accessToken  = (await fetchAuthSession()).tokens?.accessToken?.toString();
   return { Authorization: `Bearer ${accessToken}` }
 }

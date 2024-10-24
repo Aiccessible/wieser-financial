@@ -2,6 +2,25 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
+export type ChatInput = {
+  pk?: string | null,
+  sk?: string | null,
+  message?: string | null,
+  time?: string | null,
+  isLastChunk?: boolean | null,
+  messageId?: string | null,
+};
+
+export type Chat = {
+  __typename: "Chat",
+  pk?: string | null,
+  sk?: string | null,
+  message?: string | null,
+  time?: string | null,
+  isLastChunk?: boolean | null,
+  messageId?: string | null,
+};
+
 export type PaginatedItems = {
   __typename: "PaginatedItems",
   cursor?: string | null,
@@ -141,6 +160,22 @@ export type Transfer = {
 export type ChatResponse = {
   __typename: "ChatResponse",
   response?: string | null,
+};
+
+export type CreateChatMutationVariables = {
+  chat: ChatInput,
+};
+
+export type CreateChatMutation = {
+  createChat?:  {
+    __typename: "Chat",
+    pk?: string | null,
+    sk?: string | null,
+    message?: string | null,
+    time?: string | null,
+    isLastChunk?: boolean | null,
+    messageId?: string | null,
+  } | null,
 };
 
 export type GetItemsQueryVariables = {
@@ -292,4 +327,20 @@ export type GetFinancialConversationResponseQuery = {
     __typename: "ChatResponse",
     response?: string | null,
   },
+};
+
+export type OnCreateChatSubscriptionVariables = {
+  pk: string,
+};
+
+export type OnCreateChatSubscription = {
+  onCreateChat?:  {
+    __typename: "Chat",
+    pk?: string | null,
+    sk?: string | null,
+    message?: string | null,
+    time?: string | null,
+    isLastChunk?: boolean | null,
+    messageId?: string | null,
+  } | null,
 };
