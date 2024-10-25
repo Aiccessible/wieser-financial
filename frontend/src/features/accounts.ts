@@ -2,6 +2,7 @@ import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getAccounts } from '../graphql/queries'
 import { Account } from '../API'
 import { completeChatFromPrompt } from '../libs/gpt'
+import { RootState } from '../store'
 // Define a type for the slice state
 interface AccountsState {
     acccountRecommendation: string
@@ -58,6 +59,12 @@ export const getAccountRecommendationAsync = createAsyncThunk(
         return { accountRecommendation: res.content }
     }
 )
+
+export const selectNetWorth = (state: RootState) =>
+    state.accounts.accounts?.reduce(
+        (val: number, acc) => val + (acc.type === 'loan' ? -1 : 1) * parseFloat(acc.balances?.current || '0'),
+        0
+    ) ?? 0
 
 export const accountSlice = createSlice({
     name: 'account',

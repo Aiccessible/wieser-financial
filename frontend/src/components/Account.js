@@ -14,9 +14,6 @@ export default function Account({ account }) {
                 </p>
             </TableCell>
             <TableCell className="items-center justify-center p-2.5 xl:p-5">
-                <p className="text-black dark:text-white">{account.type}</p>
-            </TableCell>
-            <TableCell className="items-center justify-center p-2.5 xl:p-5">
                 <p className="text-black dark:text-white">{account.subtype}</p>
             </TableCell>
             <TableCell className="items-center justify-center p-2.5 xl:p-5">

@@ -66,7 +66,7 @@ export default function Accounts({ updateAccounts }) {
   }, []);
 
   return (
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-x-scroll">
           <Title>Accounts</Title>
           {linkedAnalysisText && linkedAnalysisText}
           {!linkedAnalysisText && gptAnalysis && <CustomTextBox>{gptAnalysis}</CustomTextBox>}
@@ -76,7 +76,6 @@ export default function Accounts({ updateAccounts }) {
                       <TableHeaderCell>Name</TableHeaderCell>
                       <TableHeaderCell>Balances</TableHeaderCell>
                       <TableHeaderCell>Type</TableHeaderCell>
-                      <TableHeaderCell>Subtype</TableHeaderCell>
                       <TableHeaderCell>Mask</TableHeaderCell>
                   </TableRow>
               </TableHead>
@@ -87,7 +86,7 @@ export default function Accounts({ updateAccounts }) {
                               <Loader />
                           </TableCell>
                       </TableRow>
-                  ) : accounts.length ? (
+                  ) : accounts?.length ? (
                       accounts.map((account) => {
                           return <Account key={account.account_id} account={account} />
                       })

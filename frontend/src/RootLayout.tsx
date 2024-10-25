@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         {/* <!-- ===== Sidebar End ===== --> */}
 
                         {/* <!-- ===== Content Area Start ===== --> */}
-                        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden hide-scrollbar">
                             {/* <!-- ===== Header Start ===== --> */}
                             <Header
                                 sidebarOpen={sidebarOpen}

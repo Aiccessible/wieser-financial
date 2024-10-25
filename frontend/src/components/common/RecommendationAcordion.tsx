@@ -52,7 +52,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                         value={`item-${index}`}
                         className="border text-black dark:text-white rounded-lg"
                     >
-                        <Accordion.Header className="flex justify-between items-center p-4 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer">
+                        <Accordion.Header className="flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer">
                             <Accordion.Trigger className="flex items-center justify-between w-full text-lg font-semibold text-gray-700">
                                 <Link
                                     to={`/institution/${id}/analyze/recommendation/${recommendation.title}`}
@@ -77,7 +77,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                             {recommendation!.action!.transfers!.map((transfer, index) => (
                                 <div
                                     key={index}
-                                    className="flex justify-between items-center bg-gray-100 p-4 rounded-lg mb-4"
+                                    className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-4"
                                 >
                                     <div>
                                         <CustomTextBox className="text-sm font-semibold">

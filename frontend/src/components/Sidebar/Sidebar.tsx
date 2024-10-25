@@ -92,13 +92,6 @@ const Sidebar = ({}: SidebarProps) => {
                             </li>
 
                             {/* <!-- Menu Item Tables --> */}
-                            <li>
-                                <LinkItem
-                                    title="Accounts"
-                                    href={id ? `/institution/${id}/accounts` : '/accounts'}
-                                    icon={<User2Icon className="h-6 w-6" />}
-                                ></LinkItem>
-                            </li>
 
                             {/* <!-- Menu Item Settings --> */}
                             <li>
