@@ -11,7 +11,8 @@ import { CustomTextBox } from '../common/CustomTextBox'
 import { useDataLoading } from '../../hooks/useDataLoading'
 import { onCreateChat } from '../../graphql/subscriptions'
 import { fetchAuthSession } from 'aws-amplify/auth'
-import WordByWordRender from '../WordByWord'
+import Markdown from 'react-markdown'
+
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
     return { Authorization: `Bearer ${accessToken}` }
@@ -138,7 +139,11 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         const length = wordIndex > splitResponse?.length ? splitResponse?.length : wordIndex
         return (
             <div>
-                {chat && <CustomTextBox>{splitResponse?.slice(0, length ?? 0).join(' ')}</CustomTextBox>}
+                {chat && (
+                    <CustomTextBox>
+                        <Markdown>{splitResponse?.slice(0, length ?? 0).join(' ')}</Markdown>
+                    </CustomTextBox>
+                )}
                 {
                     /**    graphs: zod_1.z.object({
         pieChart: zod_1.z.string(),
