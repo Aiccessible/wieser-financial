@@ -1,3 +1,20 @@
+export type ChatInput = {
+    pk?: string | null;
+    sk?: string | null;
+    message?: string | null;
+    time?: string | null;
+    isLastChunk?: boolean | null;
+    messageId?: string | null;
+};
+export type Chat = {
+    __typename: "Chat";
+    pk?: string | null;
+    sk?: string | null;
+    message?: string | null;
+    time?: string | null;
+    isLastChunk?: boolean | null;
+    messageId?: string | null;
+};
 export type PaginatedItems = {
     __typename: "PaginatedItems";
     cursor?: string | null;
@@ -91,6 +108,10 @@ export type ChatQuery = {
     prompt?: string | null;
     chatFocus?: ChatFocus | null;
     accountId?: string | null;
+    requiresLiveData?: boolean | null;
+    chatType?: ChatType | null;
+    shouldRagFetch?: boolean | null;
+    cacheIdentifiers?: Array<CacheIdentifer> | null;
 };
 export declare enum ChatFocus {
     All = "All",
@@ -98,6 +119,21 @@ export declare enum ChatFocus {
     Transaction = "Transaction",
     Accounts = "Accounts",
     Tax = "Tax"
+}
+export declare enum ChatType {
+    Regular = "Regular",
+    FinancialNewsQuery = "FinancialNewsQuery",
+    FinancialAnalysisQuery = "FinancialAnalysisQuery"
+}
+export type CacheIdentifer = {
+    key?: string | null;
+    cacheType?: CacheType | null;
+};
+export declare enum CacheType {
+    StockNews = "StockNews",
+    StockAnalysis = "StockAnalysis",
+    InvestmentAnalysis = "InvestmentAnalysis",
+    PortfolioAnalysis = "PortfolioAnalysis"
 }
 export type Recommendation = {
     __typename: "Recommendation";
@@ -120,6 +156,20 @@ export type Transfer = {
 export type ChatResponse = {
     __typename: "ChatResponse";
     response?: string | null;
+};
+export type CreateChatMutationVariables = {
+    chat: ChatInput;
+};
+export type CreateChatMutation = {
+    createChat?: {
+        __typename: "Chat";
+        pk?: string | null;
+        sk?: string | null;
+        message?: string | null;
+        time?: string | null;
+        isLastChunk?: boolean | null;
+        messageId?: string | null;
+    } | null;
 };
 export type GetItemsQueryVariables = {
     limit?: number | null;
@@ -258,4 +308,18 @@ export type GetFinancialConversationResponseQuery = {
         __typename: "ChatResponse";
         response?: string | null;
     };
+};
+export type OnCreateChatSubscriptionVariables = {
+    pk: string;
+};
+export type OnCreateChatSubscription = {
+    onCreateChat?: {
+        __typename: "Chat";
+        pk?: string | null;
+        sk?: string | null;
+        message?: string | null;
+        time?: string | null;
+        isLastChunk?: boolean | null;
+        messageId?: string | null;
+    } | null;
 };

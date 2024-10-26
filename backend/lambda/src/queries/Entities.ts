@@ -1,4 +1,4 @@
-import { QueryCommand } from '@aws-sdk/client-dynamodb'
+import { QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { DataRangeResponse, GptDateResponse, InformationOptions } from '../gpt'
 import { EntityName } from '../getResponseUsingFinancialContext'
 
@@ -7,6 +7,11 @@ export interface EntityQueryParams {
     id: string
     dateRange: DataRangeResponse | undefined
     entityName: string
+}
+
+export interface CacheEntityQueryParam {
+    id: string
+    expiresAt: number
 }
 
 function mapStartDayToDate(startDay: GptDateResponse): string {
@@ -38,5 +43,41 @@ export const GetEntities = (params: EntityQueryParams) => {
     return new QueryCommand({
         TableName: process.env.TABLE_NAME,
         ...filter,
+    })
+}
+
+export const GetCacheEntity = (params: CacheEntityQueryParam) => {
+    const filter: any = {
+        KeyConditionExpression: 'pk = :pk',
+        ExpressionAttributeValues: {
+            ':pk': { S: `CACHEENTITY#${params.id}` },
+        },
+    }
+    if (params.expiresAt) {
+        // Adding the FilterExpression to check if ExpiresAt is less than the provided expiresAt
+        filter['FilterExpression'] = '#expiresAt < :expiresAt'
+        filter['ExpressionAttributeNames'] = {
+            '#expiresAt': 'ExpiresAt', // Using attribute name mapping for ExpiresAt
+        }
+        filter['ExpressionAttributeValues'][':expiresAt'] = { N: params.expiresAt.toString() } // Assuming expiresAt is a number (timestamp)
+    }
+
+    console.info(params)
+    return new QueryCommand({
+        TableName: process.env.TABLE_NAME,
+        ...filter,
+    })
+}
+
+export const PutCacheEntity = (params: CacheEntityQueryParam, data: any) => {
+    const item: any = {
+        pk: `CACHEENTITY#${params.id}`,
+        ExpiresAt: params.expiresAt, // Storing ExpiresAt as a number (timestamp)
+        ...data, // Spread any additional data attributes
+    }
+
+    return new PutItemCommand({
+        TableName: process.env.TABLE_NAME,
+        Item: item,
     })
 }

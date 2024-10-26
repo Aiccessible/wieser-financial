@@ -1,5 +1,5 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent, AppSyncResolverHandler, Context } from 'aws-lambda'
-import { ChatQuery, ChatResponse } from './API'
+import { ChatFocus, ChatQuery, ChatResponse, ChatType, CacheType } from './API'
 import {
     DataRangeResponse,
     InformationOptions,
@@ -9,10 +9,11 @@ import {
     getNeededInformationFromModel,
 } from './gpt'
 import { DynamoDBClient, QueryCommand, QueryCommandOutput } from '@aws-sdk/client-dynamodb'
-import { GetEntities } from './queries/Entities'
+import { GetCacheEntity, GetEntities, PutCacheEntity } from './queries/Entities'
 import { mapJointDataToChatInput, mapSecuritiesToJoinedData } from './mappers/Security'
 import { mapAccountToChatInput, mapDynamoDBToAccount } from './mappers/Accounts'
 import { mapDynamoDBToTransaction, mapTransactionToChatInput } from './mappers/Transactions'
+import { mapDdbResponseToCacheEntity } from './mappers/CacheEntity'
 const client = new DynamoDBClient({ region: 'ca-central-1' })
 
 const dateSupportedFiltering = ['TRANSACTION']
@@ -22,16 +23,55 @@ const mapOfInformationOptionToKey: Record<string, EntityName> = {
     INVESTMENTS: 'SECURITY',
     TRANSACTIONS: 'TRANSACTION',
 }
+
+const mapOfCacheTypeToExpiry: Record<CacheType, number> = {
+    [CacheType.InvestmentAnalysis]: 60 * 60 * 1000,
+    [CacheType.PortfolioAnalysis]: 60 * 60 * 1000 * 24,
+    [CacheType.StockAnalysis]: 60 * 60 * 1000 * 24,
+    [CacheType.StockNews]: 60 * 60 * 1000,
+}
+
 export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatResponse> = async (
     event: AppSyncResolverEvent<{ chat: ChatQuery }>,
     context: Context
 ) => {
     console.info('Get response for', event)
-    const informationNeeded = getNeededInformationFromModel(event.arguments.chat.prompt || '')
-    const dateRange = getDateRangeFromModel(event.arguments.chat.prompt || '')
-    await Promise.all([informationNeeded, dateRange])
-    const neededInfo: InformationOptionsResponse = JSON.parse((await informationNeeded).content || '')
-    const dateRangeResponse: DataRangeResponse = JSON.parse((await dateRange).content || '')
+    let neededInfo: { optionsForInformation: InformationOptions[] } = { optionsForInformation: [] }
+    let dateRangeResponse: any
+    if (event.arguments.chat.shouldRagFetch) {
+        const informationNeeded = getNeededInformationFromModel(event.arguments.chat.prompt || '')
+        const dateRange = getDateRangeFromModel(event.arguments.chat.prompt || '')
+        await Promise.all([informationNeeded, dateRange])
+        neededInfo = JSON.parse((await informationNeeded).content || '')
+        dateRangeResponse = JSON.parse((await dateRange).content || '')
+    }
+
+    if (event.arguments.chat.cacheIdentifiers) {
+        const cacheChecks = await Promise.all(
+            event.arguments.chat.cacheIdentifiers.map((id) => {
+                return client.send(
+                    GetCacheEntity({
+                        id: id.key || '',
+                        expiresAt: mapOfCacheTypeToExpiry[id.cacheType!] + Date.now(),
+                    })
+                )
+            })
+        )
+        const itemHits = cacheChecks.flatMap((el) => el.Items ?? [])
+        if (itemHits.length) {
+            return {
+                response: itemHits.map(mapDdbResponseToCacheEntity).join('') || '',
+                __typename: 'ChatResponse',
+            }
+        }
+    }
+    if (
+        event.arguments.chat.chatFocus === ChatFocus.Investment &&
+        !neededInfo.optionsForInformation.find((el) => el === InformationOptions.INVESTMENTS)
+    ) {
+        neededInfo.optionsForInformation.push('INVESTMENTS' as any)
+    }
+
     console.info('Context: ', context)
     console.info('Needed info ', neededInfo)
     console.info('Date range: ', dateRangeResponse)
@@ -53,6 +93,8 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
             ]
         })
     )
+
+    /** Get the contextual data */
     const ddbResponses = tupleOfTypeToElements.map((tuple) => {
         if (tuple[0].toString() === 'INVESTMENTS') {
             const mappedData = mapSecuritiesToJoinedData(tuple[1].Items ?? [])
@@ -75,10 +117,24 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     const { prompt } = event.arguments.chat
     const response = await completeChatFromPrompt(
         prompt + ' Use this data for your answer: ' + ragData || '',
-        event.arguments.chat.chatFocus
+        event.arguments.chat.chatFocus,
+        user,
+        event.arguments.chat.requiresLiveData ?? false,
+        event.arguments.chat.chatType ?? ChatType.Regular
     )
+    event.arguments.chat.cacheIdentifiers?.map((id) => {
+        client.send(
+            PutCacheEntity(
+                {
+                    id: id.key || '',
+                    expiresAt: mapOfCacheTypeToExpiry[id.cacheType!] + Date.now(),
+                },
+                {}
+            )
+        )
+    })
     return {
-        response: response.content || '',
+        response: response || '',
         __typename: 'ChatResponse',
     }
 }

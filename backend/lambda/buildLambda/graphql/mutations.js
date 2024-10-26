@@ -1,0 +1,19 @@
+"use strict";
+/* tslint:disable */
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createChat = void 0;
+exports.createChat = `mutation CreateChat($chat: ChatInput!) {
+  createChat(chat: $chat) {
+    pk
+    sk
+    message
+    time
+    isLastChunk
+    messageId
+    __typename
+  }
+}
+`;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibXV0YXRpb25zLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL2dyYXBocWwvbXV0YXRpb25zLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQSxvQkFBb0I7QUFDcEIsb0JBQW9CO0FBQ3BCLDJEQUEyRDs7O0FBUTlDLFFBQUEsVUFBVSxHQUFpQjs7Ozs7Ozs7Ozs7Q0FjdkMsQ0FBQyIsInNvdXJjZXNDb250ZW50IjpbIi8qIHRzbGludDpkaXNhYmxlICovXG4vKiBlc2xpbnQtZGlzYWJsZSAqL1xuLy8gdGhpcyBpcyBhbiBhdXRvIGdlbmVyYXRlZCBmaWxlLiBUaGlzIHdpbGwgYmUgb3ZlcndyaXR0ZW5cblxuaW1wb3J0ICogYXMgQVBJVHlwZXMgZnJvbSBcIi4uL0FQSVwiO1xudHlwZSBHZW5lcmF0ZWRNdXRhdGlvbjxJbnB1dFR5cGUsIE91dHB1dFR5cGU+ID0gc3RyaW5nICYge1xuICBfX2dlbmVyYXRlZE11dGF0aW9uSW5wdXQ6IElucHV0VHlwZTtcbiAgX19nZW5lcmF0ZWRNdXRhdGlvbk91dHB1dDogT3V0cHV0VHlwZTtcbn07XG5cbmV4cG9ydCBjb25zdCBjcmVhdGVDaGF0ID0gLyogR3JhcGhRTCAqLyBgbXV0YXRpb24gQ3JlYXRlQ2hhdCgkY2hhdDogQ2hhdElucHV0ISkge1xuICBjcmVhdGVDaGF0KGNoYXQ6ICRjaGF0KSB7XG4gICAgcGtcbiAgICBza1xuICAgIG1lc3NhZ2VcbiAgICB0aW1lXG4gICAgaXNMYXN0Q2h1bmtcbiAgICBtZXNzYWdlSWRcbiAgICBfX3R5cGVuYW1lXG4gIH1cbn1cbmAgYXMgR2VuZXJhdGVkTXV0YXRpb248XG4gIEFQSVR5cGVzLkNyZWF0ZUNoYXRNdXRhdGlvblZhcmlhYmxlcyxcbiAgQVBJVHlwZXMuQ3JlYXRlQ2hhdE11dGF0aW9uXG4+O1xuIl19

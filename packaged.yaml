@@ -22,6 +22,9 @@ Parameters:
   GptSecretKey:
     Type: String
     Description: Gpt Secret Key
+  PerplexitySecretKey:
+    Type: String
+    Description: Perplexity Secret Key
   PlaidEnvironment:
     Type: String
     Description: Plaid Environment
@@ -115,6 +118,31 @@ Resources:
       Name: GPT/credentials1
       SecretString:
         Fn::Sub: "{\n  \"gpt_secret_key\": \"${GptSecretKey}\",\n}"
+      Tags:
+      - Key: GITHUB_ORG
+        Value:
+          Ref: GitHubOrg
+      - Key: GITHUB_REPO
+        Value:
+          Ref: GitHubRepo
+      - Key: Environment
+        Value:
+          Ref: Environment
+  PerplexityCredential:
+    Type: AWS::SecretsManager::Secret
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W77
+          reason: Ignoring KMS key
+      SamResourceId: PerplexityCredential
+    Properties:
+      Description: GPT Key
+      Name: GPT/credentials2
+      SecretString:
+        Fn::Sub: "{\n  \"perplexity_secret_key\": \"${PerplexitySecretKey}\",\n}"
       Tags:
       - Key: GITHUB_ORG
         Value:
@@ -381,7 +409,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda/677d29dbfded7211e988e52a28eadb57
+      ContentUri: s3://sam-s3-bucket-for-lambda/b3cc77d6128c400e4015159a9a466b84
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -719,6 +747,17 @@ Resources:
         - Arn
     Metadata:
       SamResourceId: GetFinancialConversationResponseDataSource
+  NoneDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Name: NoneDataSource
+      Type: NONE
+    Metadata:
+      SamResourceId: NoneDataSource
   AppSyncLambdaInvokeRole:
     Type: AWS::IAM::Role
     Properties:
@@ -746,7 +785,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda/71d1419c3f3821c95be8fb90d374b33c
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda/d3036d54190ba9e108f6cd1824f467e2
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -789,6 +828,86 @@ Resources:
         RuntimeVersion: 1.0.0
     Metadata:
       SamResourceId: GetItemsFunctionConfiguration
+  SubscriptionAuthorizer:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: onCreateChat
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - BasicAuthFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Subscription
+    Metadata:
+      SamResourceId: SubscriptionAuthorizer
+  CreateChatResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: createChat
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - CreateChatFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Mutation
+    Metadata:
+      SamResourceId: CreateChatResolver
+  CreateChatFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda/b58eb1d3e860a522eb32edb782073afa
+      DataSourceName:
+        Fn::GetAtt:
+        - DynamoDBDataSource
+        - Name
+      Name: CREATE_CHAT
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: CreateChatFunctionConfiguration
+  BasicAuthFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda/03f1bb90d2cba1be4cb9247f7baa1dd9
+      DataSourceName:
+        Fn::GetAtt:
+        - NoneDataSource
+        - Name
+      Name: BASIC_AUTH
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: BasicAuthFunctionConfiguration
   GetFinancialRecommendationResolver:
     Type: AWS::AppSync::Resolver
     Properties:
@@ -1325,6 +1444,9 @@ Resources:
         Version: '2012-10-17'
         Statement:
         - Effect: Allow
+          Action: appsync:GraphQL
+          Resource: '*'
+        - Effect: Allow
           Action: secretsmanager:GetSecretValue
           Resource:
             Ref: PlaidCredential
@@ -1385,7 +1507,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/ea1a0190c6f1b8b2bb02f4ea233f314a
+      CodeUri: s3://sam-s3-bucket-for-lambda/cbf6fef815105a048536f7f407c5faeb
       Description:
         Fn::Sub: Plaid (${Environment}) - API
       Environment:
@@ -1483,7 +1605,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/9f4ff6a8c552e7db4380271e2af4d863
+      CodeUri: s3://sam-s3-bucket-for-lambda/535e730a13e762eb13fbae0112ce86d8
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1491,12 +1613,18 @@ Resources:
         Variables:
           GptSecretKey:
             Ref: GptSecretKey
+          PerplexitySecretKey:
+            Ref: PerplexitySecretKey
           KEY_ARN:
             Fn::GetAtt:
             - EncryptionKey
             - Arn
           TABLE_NAME:
             Ref: Table
+          APPSYNC_URL:
+            Fn::GetAtt:
+            - GraphQLApi
+            - GraphQLUrl
       MemorySize: 256
       Role:
         Fn::GetAtt:
@@ -1517,7 +1645,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/9f4ff6a8c552e7db4380271e2af4d863
+      CodeUri: s3://sam-s3-bucket-for-lambda/535e730a13e762eb13fbae0112ce86d8
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1525,12 +1653,18 @@ Resources:
         Variables:
           GptSecretKey:
             Ref: GptSecretKey
+          PerplexitySecretKey:
+            Ref: PerplexitySecretKey
           KEY_ARN:
             Fn::GetAtt:
             - EncryptionKey
             - Arn
           TABLE_NAME:
             Ref: Table
+          APPSYNC_URL:
+            Fn::GetAtt:
+            - GraphQLApi
+            - GraphQLUrl
       MemorySize: 256
       Role:
         Fn::GetAtt:

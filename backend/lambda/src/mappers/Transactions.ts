@@ -5,7 +5,7 @@ import { Transaction } from '../API'
 export function mapDynamoDBToTransaction(item: { [key: string]: AttributeValue }): Transaction {
     return {
         __typename: 'Transaction', // Fixed typename value
-        transaction_id: item.transaction_id.S || '', // DynamoDB string type
+        transaction_id: item.transaction_id?.S || '', // DynamoDB string type
         account_id: item.account_id?.S || null, // Nullable string
         amount: item.amount?.N || null, // Nullable string
         name: item.name?.S || null, // Nullable string

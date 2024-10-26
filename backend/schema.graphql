@@ -1,27 +1,3 @@
-schema {
-    query: Query
-}
-
-type Query {
-    getItems(limit: Int, cursor: String): PaginatedItems!
-    getAccounts(id: ID!): [Account!]!
-    getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
-    getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
-    getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
-    getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
-}
-
-type Item {
-    item_id: ID!
-    institution_id: ID!
-    institution_name: String!
-}
-
-type PaginatedItems {
-    cursor: String
-    items: [Item!]!
-}
-
 type Account {
     account_id: ID!
     type: String
@@ -38,20 +14,122 @@ type Balances {
     limit: String
 }
 
-type Transaction {
-    transaction_id: ID!
+type Chat {
+    pk: String @aws_iam @aws_cognito_user_pools
+    sk: String @aws_iam @aws_cognito_user_pools
+    message: String @aws_iam @aws_cognito_user_pools
+    time: String @aws_iam @aws_cognito_user_pools
+    isLastChunk: Boolean @aws_iam @aws_cognito_user_pools
+    messageId: String @aws_iam @aws_cognito_user_pools
+}
+
+enum ChatFocus {
+    All
+    Investment
+    Transaction
+    Accounts
+    Tax
+}
+
+input ChatInput {
+    pk: String
+    sk: String
+    message: String
+    time: String
+    isLastChunk: Boolean
+    messageId: String
+}
+
+enum CacheType {
+    StockNews
+    StockAnalysis
+    InvestmentAnalysis
+    PortfolioAnalysis
+}
+
+input CacheIdentifer {
+    key: String
+    cacheType: CacheType
+}
+input ChatQuery {
+    prompt: String
+    chatFocus: ChatFocus
+    accountId: String
+    requiresLiveData: Boolean
+    chatType: ChatType
+    shouldRagFetch: Boolean
+    cacheIdentifiers: [CacheIdentifer!]
+}
+
+enum ChatType {
+    Regular
+    FinancialNewsQuery
+    FinancialAnalysisQuery
+}
+
+type ChatResponse {
+    response: String
+}
+
+type GraphType {
+    pieChart: String
+    barChart: String
+    histogram: String
+    timePlot: String
+}
+
+type Holding {
     account_id: ID
-    amount: String
-    name: String
+    cost_basis: Float
+    institution_price: Float
+    institution_price_as_of: String
+    institution_price_datetime: String
+    institution_value: Float
     iso_currency_code: String
-    date: String
-    payment_channel: String
-    transaction_type: String
+    quantity: Float
+    security_id: String
+    unofficial_currency_code: String
+    plaid_type: String
+}
+
+union Investment = Holding | Security
+
+type Item {
+    item_id: ID!
+    institution_id: ID!
+    institution_name: String!
+}
+
+type PaginatedInvestments {
+    cursor: String
+    transactions: [Investment!]!
+}
+
+type PaginatedItems {
+    cursor: String
+    items: [Item!]!
 }
 
 type PaginatedTransactions {
     cursor: String
     transactions: [Transaction!]!
+}
+
+type PremiumChatResponse {
+    response: String
+    graphs: GraphType
+}
+
+type Recommendation {
+    explanation: String
+    action: RecommendationAction
+    title: String
+    priority: String
+}
+
+type RecommendationAction {
+    transfers: [Transfer]
+    description: String
 }
 
 type Security {
@@ -80,49 +158,15 @@ type Security {
     plaid_type: String
 }
 
-type Holding {
+type Transaction {
+    transaction_id: ID!
     account_id: ID
-    cost_basis: Float
-    institution_price: Float
-    institution_price_as_of: String
-    institution_price_datetime: String
-    institution_value: Float
+    amount: String
+    name: String
     iso_currency_code: String
-    quantity: Float
-    security_id: String
-    unofficial_currency_code: String
-    plaid_type: String
-}
-
-union Investment = Holding | Security
-
-enum ChatFocus {
-    All
-    Investment
-    Transaction
-    Accounts
-    Tax
-}
-
-input ChatQuery {
-    prompt: String
-    chatFocus: ChatFocus
-    accountId: String
-}
-
-type ChatResponse {
-    response: String
-}
-
-type GraphType {
-    pieChart: String
-    barChart: String
-    histogram: String
-    timePlot: String
-}
-type PremiumChatResponse {
-    response: String
-    graphs: GraphType
+    date: String
+    payment_channel: String
+    transaction_type: String
 }
 
 type Transfer {
@@ -131,19 +175,25 @@ type Transfer {
     amount: String
 }
 
-type RecommendationAction {
-    transfers: [Transfer]
-    description: String
+type Mutation {
+    createChat(chat: ChatInput!): Chat @aws_iam
 }
 
-type Recommendation {
-    explanation: String
-    action: RecommendationAction
-    title: String
-    priority: String
+type Query {
+    getItems(limit: Int, cursor: String): PaginatedItems!
+    getAccounts(id: ID!): [Account!]!
+    getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
+    getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
+    getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
+    getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
 }
 
-type PaginatedInvestments {
-    cursor: String
-    transactions: [Investment!]!
+type Subscription {
+    onCreateChat(pk: String!): Chat @aws_subscribe(mutations: ["createChat"]) @aws_iam @aws_cognito_user_pools
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
 }
