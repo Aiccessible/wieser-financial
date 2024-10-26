@@ -1507,7 +1507,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/cbf6fef815105a048536f7f407c5faeb
+      CodeUri: s3://sam-s3-bucket-for-lambda/6294fe719af958ef3d11af052d41d9b6
       Description:
         Fn::Sub: Plaid (${Environment}) - API
       Environment:
@@ -1605,7 +1605,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/535e730a13e762eb13fbae0112ce86d8
+      CodeUri: s3://sam-s3-bucket-for-lambda/84502a43ecee4584d5a63ae97c4c176a
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1645,7 +1645,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/535e730a13e762eb13fbae0112ce86d8
+      CodeUri: s3://sam-s3-bucket-for-lambda/84502a43ecee4584d5a63ae97c4c176a
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda

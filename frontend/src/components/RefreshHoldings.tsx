@@ -14,9 +14,14 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const refresh = async () => {
         setLoading(true)
         try {
+            // const { body } = await post({
+            //     apiName,
+            //     path: `/v1/items/${item_id}/refresh/holdings`,
+            // }).response
+            // const data = await body.json()
             const { body } = await post({
                 apiName,
-                path: `/v1/items/${item_id}/refresh/holdings`,
+                path: `/v1/stock/${'TSLA'}/closing-prices`,
             }).response
             const data = await body.json()
             logger.debug(`POST /v1/items/${item_id}/refresh/holdings response:`, data)

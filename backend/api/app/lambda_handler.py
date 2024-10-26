@@ -21,6 +21,7 @@ metrics.set_default_dimensions(environment=ENVIRONMENT)
 cors_config = CORSConfig()
 resolver = APIGatewayHttpResolver(cors=CORSConfig())
 resolver.include_router(routers.items_router, prefix="/v1/items")
+resolver.include_router(routers.stock_router, prefix="/v1/stock")
 resolver.include_router(routers.tokens_router, prefix="/v1/tokens")
 resolver.include_router(routers.webhook_router, prefix="/v1/webhook")
 
