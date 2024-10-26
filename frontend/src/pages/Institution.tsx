@@ -14,6 +14,7 @@ import PlaidLink from '../components/PlaidLink'
 import { selectNetWorth } from '../features/accounts'
 import Accounts from '../components/Accounts'
 import NetWorthChart from '../components/Charting/NetWorth'
+import { Title } from '@tremor/react'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -49,24 +50,24 @@ export default function Institution() {
                         </CustomTextBox>
                     )}
                 </Heading>
-                <div className="grid grid-cols-3 gap-6 p-2">
-                    {/* Left Section (Chart) */}
-                    <div className="col-span-2 bg-gray-800 rounded-lg text-white">
-                        <Heading level={4}>
-                            <CustomTextBox>Net Worth {netWorth.toFixed(2) ?? '...'}$</CustomTextBox>
-                        </Heading>
-                        <NetWorthChart />
-                        <Accounts updateAccounts={() => {}} />
-                    </div>
+                <div className="col-span-2 bg-gray-800 rounded-lg shadow-lg">
+                    <Title>Net Worth</Title>
+                    <Heading level={4} className="text-xl font-semibold mb-4">
+                        <CustomTextBox className="text-4xl font-bold tracking-tight text-white relative">
+                            <CustomTextBox className="relative z-10">{netWorth?.toFixed(2) ?? '...'}$</CustomTextBox>
+                        </CustomTextBox>
+                    </Heading>
+                    <NetWorthChart />
+                    <Accounts updateAccounts={() => {}} />
+                </div>
 
-                    {/* Right Section (Recommendations Placeholder) */}
-                    <div className="bg-gray-900 rounded-lg text-white">
-                        <Heading className="text-lg mb-4">
-                            <CustomTextBox>Key Recommendations</CustomTextBox>
-                        </Heading>
-                        {<RecommendationsAccordion id={id || ''} recommendations={recommendations} />}
-                        {/* Your recommendation component goes here */}
-                    </div>
+                {/* Right Section (Recommendations Placeholder) */}
+                <div className="bg-gray-900 rounded-lg text-white">
+                    <Heading className="text-lg mb-4">
+                        <CustomTextBox>Key Recommendations</CustomTextBox>
+                    </Heading>
+                    {<RecommendationsAccordion id={id || ''} recommendations={recommendations} />}
+                    {/* Your recommendation component goes here */}
                 </div>
             </Flex>
         </Flex>

@@ -8,6 +8,7 @@
         "@headlessui/tailwindcss": "^0.2.1",
         "@radix-ui/react-accordion": "^1.2.1",
         "@radix-ui/react-collapsible": "^1.1.1",
+        "@radix-ui/react-dialog": "^1.1.2",
         "@reduxjs/toolkit": "^2.3.0",
         "@testing-library/jest-dom": "6.5.0",
         "@testing-library/react": "16.0.1",

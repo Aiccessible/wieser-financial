@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Security } from '../API'
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
@@ -66,3 +67,5 @@ const makeLinksOfTechnicalPhrases = ({
 }
 
 export default makeLinksOfTechnicalPhrases
+
+export const getIdFromSecurity = (sec: Security | undefined) => (sec?.ticker_symbol ?? '') + ' ' + (sec?.name ?? '')

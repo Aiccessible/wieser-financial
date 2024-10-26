@@ -30,8 +30,7 @@ const NetWorthChart: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col  w-full">
-            <h3 className="text-lg text-white mb-4">Net Worth</h3>
+        <div className="flex flex-col w-full">
             <div className="h-52 w-full">
                 <Line data={data} options={options} />
             </div>

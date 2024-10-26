@@ -3,6 +3,7 @@ import { getAccounts } from '../graphql/queries'
 import { Account } from '../API'
 import { completeChatFromPrompt } from '../libs/gpt'
 import { RootState } from '../store'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
 // Define a type for the slice state
 interface AccountsState {
     acccountRecommendation: string
@@ -20,7 +21,7 @@ const initialState: AccountsState = {
 }
 
 export interface GetAccountsInput {
-    client: any
+    client: { graphql: GraphQLMethod }
     id: string
 }
 
@@ -74,7 +75,7 @@ export const accountSlice = createSlice({
     extraReducers(builder) {
         builder.addCase(getAccountsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
-            state.error = action.payload.errors ? action.payload.errors : undefined
+            state.error = action.payload.errors ? action.payload.errors?.toString() : undefined
             state.accounts = action.payload.accounts ?? []
             state.loading = false
         })

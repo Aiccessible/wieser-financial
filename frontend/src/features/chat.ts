@@ -35,6 +35,7 @@ export const sendChatToLLM = createAsyncThunk<
                         prompt: input.newChat,
                         chatFocus: input.focus,
                         accountId: input.id,
+                        shouldRagFetch: true,
                     },
                 },
             })

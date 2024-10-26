@@ -125,6 +125,9 @@ export type ChatQuery = {
   prompt?: string | null,
   chatFocus?: ChatFocus | null,
   accountId?: string | null,
+  requiresLiveData?: boolean | null,
+  chatType?: ChatType | null,
+  shouldRagFetch?: boolean | null,
 };
 
 export enum ChatFocus {
@@ -133,6 +136,13 @@ export enum ChatFocus {
   Transaction = "Transaction",
   Accounts = "Accounts",
   Tax = "Tax",
+}
+
+
+export enum ChatType {
+  Regular = "Regular",
+  FinancialNewsQuery = "FinancialNewsQuery",
+  FinancialAnalysisQuery = "FinancialAnalysisQuery",
 }
 
 

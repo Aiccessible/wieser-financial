@@ -3,13 +3,33 @@ import { InvestmentViewModel } from './Investments'
 import Currency from './Currency'
 import { CustomTableCell } from './common/CustomTableCell'
 import { CustomTextBox } from './common/CustomTextBox'
-export default function Investment({ investment }: { investment: InvestmentViewModel }) {
+import { InvestmentKnoweldgeViewModel } from '../features/investments'
+import ExpandableTextWithModal from './ExpandableTextWithModal'
+import { ChevronDownIcon, Loader } from 'lucide-react'
+import Markdown from 'react-markdown'
+import * as Accordion from '@radix-ui/react-accordion'
+import { setActiveStock } from '../features/investments'
+import { useAppDispatch } from '../hooks'
+import { getIdFromSecurity } from '../libs/utlis'
+export default function Investment({
+    investment,
+    knoweldge,
+}: {
+    investment: InvestmentViewModel
+    knoweldge: InvestmentKnoweldgeViewModel
+}) {
+    const dispatch = useAppDispatch()
     // Name, close, quantity, cost
     return (
         <TableRow>
             <CustomTableCell>
-                <CustomTextBox>
-                    {investment.security?.ticker_symbol ?? investment?.security?.name ?? 'Unknown Security'}
+                <CustomTextBox className="underline mt-2">
+                    <button
+                        className="underline"
+                        onClick={() => dispatch(setActiveStock(getIdFromSecurity(investment?.security)))}
+                    >
+                        {getIdFromSecurity(investment?.security) ?? 'Unknown Security'}
+                    </button>
                 </CustomTextBox>
             </CustomTableCell>
             <CustomTableCell>
