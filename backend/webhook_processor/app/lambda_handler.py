@@ -84,8 +84,8 @@ def record_handler(record: Union[DynamoDBRecord, SQSRecord]) -> None:
             logger.exception(f"Webhook payload is invalid JSON: {record.body}")
             return
 
-        # refresh all balances on the item
-        accounts_balance.get_balances(user_id, item_id)
+        # refresh all balances on the item balances is billed on flat fee dont want to use that, use cached account balance
+        # accounts_balance.get_balances(user_id, item_id)
 
         # https://plaid.com/docs/api/products/transactions/#webhooks
         if webhook_type == constants.PLAID_WEBHOOK_TYPE_TRANSACTIONS:

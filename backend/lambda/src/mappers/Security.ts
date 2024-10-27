@@ -1,6 +1,7 @@
 import { AttributeValue } from 'aws-sdk/clients/dynamodb'
 import { Holding, Security } from '../API'
 import { mapDynamoDBToInvestmentHolding } from './InvestmentHoldings'
+import { decryptItemsInBatches } from '../queries/Encryption'
 
 // Mapper function for DynamoDB to SecurityDetails interface
 export function mapDynamoDBToSecurityDetails(item: { [key: string]: AttributeValue }): Security {
@@ -27,8 +28,11 @@ export function mapDynamoDBToSecurityDetails(item: { [key: string]: AttributeVal
     }
 }
 type JoinedSecurityData = Record<string, { security: Security | undefined; holding: Holding }>
-export function mapSecuritiesToJoinedData(items: { [key: string]: AttributeValue }[]): JoinedSecurityData {
-    const mappedItems = items.map((item) => {
+export async function mapSecuritiesToJoinedData(
+    items: { [key: string]: AttributeValue }[]
+): Promise<JoinedSecurityData> {
+    const decryptedItems = await decryptItemsInBatches(items)
+    const mappedItems = decryptedItems.map((item) => {
         if (item.plaid_type?.S === 'Security') {
             return mapDynamoDBToSecurityDetails(item)
         } else if (item.plaid_type?.S === 'Holding') {

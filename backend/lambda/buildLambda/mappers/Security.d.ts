@@ -9,7 +9,7 @@ type JoinedSecurityData = Record<string, {
 }>;
 export declare function mapSecuritiesToJoinedData(items: {
     [key: string]: AttributeValue;
-}[]): JoinedSecurityData;
+}[]): Promise<JoinedSecurityData>;
 export declare const mapJointDataToChatInput: (jointData: JoinedSecurityData) => string;
 export declare const mapHoldingsAndSecuritiesToJointData: (holdings: (Holding | Security)[]) => JoinedSecurityData;
 export {};

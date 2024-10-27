@@ -5,6 +5,7 @@ export interface EntityQueryParams {
     id: string;
     dateRange: DataRangeResponse | undefined;
     entityName: string;
+    pk?: string | undefined;
 }
 export interface CacheEntityQueryParam {
     id: string;
@@ -13,3 +14,5 @@ export interface CacheEntityQueryParam {
 export declare const GetEntities: (params: EntityQueryParams) => QueryCommand;
 export declare const GetCacheEntity: (params: CacheEntityQueryParam) => QueryCommand;
 export declare const PutCacheEntity: (params: CacheEntityQueryParam, data: any) => PutItemCommand;
+export declare const GetItems: () => QueryCommand;
+export declare const GetUser: (id: string) => QueryCommand;

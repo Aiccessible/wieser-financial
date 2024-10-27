@@ -1,12 +1,12 @@
 import { QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb'
-import { DataRangeResponse, GptDateResponse, InformationOptions } from '../gpt'
-import { EntityName } from '../getResponseUsingFinancialContext'
+import { DataRangeResponse, GptDateResponse } from '../gpt'
 
 export interface EntityQueryParams {
     username: string
     id: string
     dateRange: DataRangeResponse | undefined
     entityName: string
+    pk?: string | undefined
 }
 
 export interface CacheEntityQueryParam {
@@ -30,7 +30,7 @@ export const GetEntities = (params: EntityQueryParams) => {
     const filter: any = {
         KeyConditionExpression: 'pk = :pk AND begins_with(sk, :sk)',
         ExpressionAttributeValues: {
-            ':pk': { S: `USER#${params.username}#ITEM#${params.id}` },
+            ':pk': { S: params.pk ?? `USER#${params.username}#ITEM#${params.id}` },
             ':sk': { S: `${params.entityName}` },
         },
     }
@@ -79,5 +79,31 @@ export const PutCacheEntity = (params: CacheEntityQueryParam, data: any) => {
     return new PutItemCommand({
         TableName: process.env.TABLE_NAME,
         Item: item,
+    })
+}
+
+export const GetItems = () => {
+    const filter: any = {
+        KeyConditionExpression: 'pk = :pk',
+        ExpressionAttributeValues: {
+            ':pk': { S: `ITEMS` },
+        },
+    }
+    return new QueryCommand({
+        TableName: process.env.TABLE_NAME,
+        ...filter,
+    })
+}
+
+export const GetUser = (id: string) => {
+    const filter: any = {
+        KeyConditionExpression: 'pk = :pk',
+        ExpressionAttributeValues: {
+            ':pk': { S: id },
+        },
+    }
+    return new QueryCommand({
+        TableName: process.env.TABLE_NAME,
+        ...filter,
     })
 }

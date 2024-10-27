@@ -25,6 +25,9 @@ export type Item = {
     item_id: string;
     institution_id: string;
     institution_name: string;
+    sk?: string | null;
+    created_at?: string | null;
+    pk?: string | null;
 };
 export type Account = {
     __typename: "Account";
@@ -57,7 +60,32 @@ export type Transaction = {
     date?: string | null;
     payment_channel?: string | null;
     transaction_type?: string | null;
+    personal_finance_category?: PersonalFinanceCategory | null;
 };
+export type PersonalFinanceCategory = {
+    __typename: "PersonalFinanceCategory";
+    detailed?: string | null;
+    confidence_level?: string | null;
+    primary?: HighLevelTransactionCategory | null;
+};
+export declare enum HighLevelTransactionCategory {
+    INCOME = "INCOME",
+    TRANSFER_IN = "TRANSFER_IN",
+    TRANSFER_OUT = "TRANSFER_OUT",
+    LOAN_PAYMENTS = "LOAN_PAYMENTS",
+    BANK_FEES = "BANK_FEES",
+    ENTERTAINMENT = "ENTERTAINMENT",
+    FOOD_AND_DRINK = "FOOD_AND_DRINK",
+    GENERAL_MERCHANDISE = "GENERAL_MERCHANDISE",
+    HOME_IMPROVEMENT = "HOME_IMPROVEMENT",
+    MEDICAL = "MEDICAL",
+    PERSONAL_CARE = "PERSONAL_CARE",
+    GENERAL_SERVICES = "GENERAL_SERVICES",
+    GOVERNMENT_AND_NON_PROFIT = "GOVERNMENT_AND_NON_PROFIT",
+    TRANSPORTATION = "TRANSPORTATION",
+    TRAVEL = "TRAVEL",
+    RENT_AND_UTILITIES = "RENT_AND_UTILITIES"
+}
 export type PaginatedInvestments = {
     __typename: "PaginatedInvestments";
     cursor?: string | null;
@@ -184,6 +212,9 @@ export type GetItemsQuery = {
             item_id: string;
             institution_id: string;
             institution_name: string;
+            sk?: string | null;
+            created_at?: string | null;
+            pk?: string | null;
         }>;
     };
 };
@@ -226,6 +257,12 @@ export type GetTransactionsQuery = {
             date?: string | null;
             payment_channel?: string | null;
             transaction_type?: string | null;
+            personal_finance_category?: {
+                __typename: "PersonalFinanceCategory";
+                detailed?: string | null;
+                confidence_level?: string | null;
+                primary?: HighLevelTransactionCategory | null;
+            } | null;
         }>;
     };
 };

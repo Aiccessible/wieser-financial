@@ -1,19 +1,13 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent, AppSyncResolverHandler, Context } from 'aws-lambda'
 import { ChatFocus, ChatQuery, ChatResponse, ChatType, CacheType } from './API'
-import {
-    DataRangeResponse,
-    InformationOptions,
-    InformationOptionsResponse,
-    completeChatFromPrompt,
-    getDateRangeFromModel,
-    getNeededInformationFromModel,
-} from './gpt'
-import { DynamoDBClient, QueryCommand, QueryCommandOutput } from '@aws-sdk/client-dynamodb'
+import { InformationOptions, completeChatFromPrompt, getDateRangeFromModel, getNeededInformationFromModel } from './gpt'
+import { DynamoDBClient, QueryCommandOutput } from '@aws-sdk/client-dynamodb'
 import { GetCacheEntity, GetEntities, PutCacheEntity } from './queries/Entities'
 import { mapJointDataToChatInput, mapSecuritiesToJoinedData } from './mappers/Security'
 import { mapAccountToChatInput, mapDynamoDBToAccount } from './mappers/Accounts'
 import { mapDynamoDBToTransaction, mapTransactionToChatInput } from './mappers/Transactions'
 import { mapDdbResponseToCacheEntity } from './mappers/CacheEntity'
+import { decryptItemsInBatches } from './queries/Encryption'
 const client = new DynamoDBClient({ region: 'ca-central-1' })
 
 const dateSupportedFiltering = ['TRANSACTION']
@@ -95,23 +89,24 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     )
 
     /** Get the contextual data */
-    const ddbResponses = tupleOfTypeToElements.map((tuple) => {
-        if (tuple[0].toString() === 'INVESTMENTS') {
-            const mappedData = mapSecuritiesToJoinedData(tuple[1].Items ?? [])
-            return '\nInvestments:\n' + mapJointDataToChatInput(mappedData)
-        } else if (tuple[0].toString() === 'TRANSACTIONS') {
-            return (
-                '\nTranasactions:\n' +
-                (tuple[1].Items ?? []).map(mapDynamoDBToTransaction).map(mapTransactionToChatInput).join('')
-            )
-        } else if (tuple[0].toString() === 'BANKACCOUNTS') {
-            return (
-                '\nAccounts:\n' + (tuple[1].Items ?? []).map(mapDynamoDBToAccount).map(mapAccountToChatInput).join('')
-            )
-        } else {
-            throw new Error('UNRECOGNIZED OPTION ' + tuple[0])
-        }
-    })
+    const ddbResponses = await Promise.all(
+        tupleOfTypeToElements.map(async (tuple) => {
+            const decryptedItems = await decryptItemsInBatches(tuple[1]?.Items ?? [])
+            if (tuple[0].toString() === 'INVESTMENTS') {
+                const mappedData = await mapSecuritiesToJoinedData(decryptedItems)
+                return '\nInvestments:\n' + mapJointDataToChatInput(mappedData)
+            } else if (tuple[0].toString() === 'TRANSACTIONS') {
+                return (
+                    '\nTranasactions:\n' +
+                    decryptedItems.map(mapDynamoDBToTransaction).map(mapTransactionToChatInput).join('')
+                )
+            } else if (tuple[0].toString() === 'BANKACCOUNTS') {
+                return '\nAccounts:\n' + decryptedItems.map(mapDynamoDBToAccount).map(mapAccountToChatInput).join('')
+            } else {
+                throw new Error('UNRECOGNIZED OPTION ' + tuple[0])
+            }
+        })
+    )
     const ragData = ddbResponses.join('')
     console.info('FINAL RAG DATA: ', ragData)
     const { prompt } = event.arguments.chat

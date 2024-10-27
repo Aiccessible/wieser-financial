@@ -13,6 +13,9 @@ export function mapDynamoDBToTransaction(item: { [key: string]: AttributeValue }
         date: item.date?.S || null, // Nullable string
         payment_channel: item.payment_channel?.S || null, // Nullable string
         transaction_type: item.transaction_type?.S || null, // Nullable string
+        personal_finance_category: item.personal_finance_category
+            ? { ...item.personal_finance_category?.M, __typename: 'PersonalFinanceCategory' }
+            : undefined,
     }
 }
 

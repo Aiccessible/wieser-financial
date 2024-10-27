@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.mapDdbResponseToItem = mapDdbResponseToItem;
+// DynamoDB Mapper Function
+function mapDdbResponseToItem(item) {
+    return {
+        sk: item.sk.S, // DynamoDB string type
+        item_id: item.item_id.S ?? '',
+        institution_id: item.institution_id.S ?? '',
+        institution_name: item.institution_name.S ?? '',
+        created_at: item.created_at?.S ?? '',
+        pk: item.pk.S ?? '',
+        __typename: 'Item',
+    };
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiSXRlbS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9tYXBwZXJzL0l0ZW0udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFLQSxvREFVQztBQVhELDJCQUEyQjtBQUMzQixTQUFnQixvQkFBb0IsQ0FBQyxJQUF1QztJQUN4RSxPQUFPO1FBQ0gsRUFBRSxFQUFFLElBQUksQ0FBQyxFQUFFLENBQUMsQ0FBQyxFQUFFLHVCQUF1QjtRQUN0QyxPQUFPLEVBQUUsSUFBSSxDQUFDLE9BQU8sQ0FBQyxDQUFDLElBQUksRUFBRTtRQUM3QixjQUFjLEVBQUUsSUFBSSxDQUFDLGNBQWMsQ0FBQyxDQUFDLElBQUksRUFBRTtRQUMzQyxnQkFBZ0IsRUFBRSxJQUFJLENBQUMsZ0JBQWdCLENBQUMsQ0FBQyxJQUFJLEVBQUU7UUFDL0MsVUFBVSxFQUFHLElBQUksQ0FBQyxVQUFrQixFQUFFLENBQUMsSUFBSSxFQUFFO1FBQzdDLEVBQUUsRUFBRSxJQUFJLENBQUMsRUFBRSxDQUFDLENBQUMsSUFBSSxFQUFFO1FBQ25CLFVBQVUsRUFBRSxNQUFNO0tBQ3JCLENBQUE7QUFDTCxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgQXR0cmlidXRlVmFsdWUgfSBmcm9tICdhd3Mtc2RrL2NsaWVudHMvZHluYW1vZGInIC8vIFRoaXMgaXMgdGhlIGZvcm1hdCB1c2VkIGJ5IER5bmFtb0RCIGZvciBhdHRyaWJ1dGVzXG5pbXBvcnQgeyBJdGVtIH0gZnJvbSAnLi4vQVBJJ1xuaW1wb3J0IHsgYW55IH0gZnJvbSAnem9kJ1xuXG4vLyBEeW5hbW9EQiBNYXBwZXIgRnVuY3Rpb25cbmV4cG9ydCBmdW5jdGlvbiBtYXBEZGJSZXNwb25zZVRvSXRlbShpdGVtOiB7IFtrZXk6IHN0cmluZ106IEF0dHJpYnV0ZVZhbHVlIH0pOiBJdGVtIHtcbiAgICByZXR1cm4ge1xuICAgICAgICBzazogaXRlbS5zay5TLCAvLyBEeW5hbW9EQiBzdHJpbmcgdHlwZVxuICAgICAgICBpdGVtX2lkOiBpdGVtLml0ZW1faWQuUyA/PyAnJyxcbiAgICAgICAgaW5zdGl0dXRpb25faWQ6IGl0ZW0uaW5zdGl0dXRpb25faWQuUyA/PyAnJyxcbiAgICAgICAgaW5zdGl0dXRpb25fbmFtZTogaXRlbS5pbnN0aXR1dGlvbl9uYW1lLlMgPz8gJycsXG4gICAgICAgIGNyZWF0ZWRfYXQ6IChpdGVtLmNyZWF0ZWRfYXQgYXMgYW55KT8uUyA/PyAnJyxcbiAgICAgICAgcGs6IGl0ZW0ucGsuUyA/PyAnJyxcbiAgICAgICAgX190eXBlbmFtZTogJ0l0ZW0nLFxuICAgIH1cbn1cbiJdfQ==

@@ -34,15 +34,15 @@ PAYMENT_STATUS = {
 }
 
 EXPECTED_NEXT_STATES = {
-    PAYMENT_STATUS.NEW: [PAYMENT_STATUS.PENDING],
-    PAYMENT_STATUS.PENDING: [
-        PAYMENT_STATUS.PENDING,
-        PAYMENT_STATUS.FAILED,
-        PAYMENT_STATUS.POSTED,
-        PAYMENT_STATUS.CANCELLED,
+    "new": ["pending"],
+    "pending": [
+        "pending",
+        "failed",
+        "posted",
+        "cancelled",
     ],
-    PAYMENT_STATUS.POSTED: [PAYMENT_STATUS.SETTLED, PAYMENT_STATUS.RETURNED],
-    PAYMENT_STATUS.SETTLED: [PAYMENT_STATUS.RETURNED],
+    "posted": ["settled", "returned"],
+    "settled": ["returned"],
 }
 
 class Transfer(AbstractProduct):

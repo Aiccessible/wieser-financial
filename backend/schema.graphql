@@ -98,6 +98,9 @@ type Item {
     item_id: ID!
     institution_id: ID!
     institution_name: String!
+    sk: String
+    created_at: String
+    pk: String
 }
 
 type PaginatedInvestments {
@@ -158,6 +161,31 @@ type Security {
     plaid_type: String
 }
 
+enum HighLevelTransactionCategory {
+    INCOME
+    TRANSFER_IN
+    TRANSFER_OUT
+    LOAN_PAYMENTS
+    BANK_FEES
+    ENTERTAINMENT
+    FOOD_AND_DRINK
+    GENERAL_MERCHANDISE
+    HOME_IMPROVEMENT
+    MEDICAL
+    PERSONAL_CARE
+    GENERAL_SERVICES
+    GOVERNMENT_AND_NON_PROFIT
+    TRANSPORTATION
+    TRAVEL
+    RENT_AND_UTILITIES
+}
+
+type PersonalFinanceCategory {
+    detailed: String
+    confidence_level: String
+    primary: HighLevelTransactionCategory
+}
+
 type Transaction {
     transaction_id: ID!
     account_id: ID
@@ -167,6 +195,12 @@ type Transaction {
     date: String
     payment_channel: String
     transaction_type: String
+    personal_finance_category: PersonalFinanceCategory
+}
+
+type SpendingSummary {
+    sk: String! # Date in string format (e.g., "YYYY-MM-DD")
+    spending: AWSJSON
 }
 
 type Transfer {
@@ -179,6 +213,11 @@ type Mutation {
     createChat(chat: ChatInput!): Chat @aws_iam
 }
 
+enum SpendingSummaryType {
+    MONTHLYSUMMARY
+    DAILYSUMMARY
+}
+
 type Query {
     getItems(limit: Int, cursor: String): PaginatedItems!
     getAccounts(id: ID!): [Account!]!
@@ -186,6 +225,7 @@ type Query {
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
     getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
     getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
+    getSpendingSummary(minDate: String, maxDate: String, id: String!, type: SpendingSummaryType): SpendingSummary!
 }
 
 type Subscription {

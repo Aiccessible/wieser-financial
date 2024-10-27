@@ -10,7 +10,7 @@
         "recodegen": "npx @aws-amplify/cli codegen --max-depth 5",
         "codegen": "./codegen.sh",
         "build": "rm -rf buildLambda && tsc && npm run zip",
-        "zip": "zip -r lambda-code.zip ."
+        "zip": "zip -r lambda-code.zip . -x 'package-lock.json' -x '.DS_Store' -x 'schema.json' -x 'lambda-code.zip' -x 'src/*' -x 'node_modules/typescript/*' 'node_modules/aws-sdk/*' 'node_modules/@aws-sdk/*' 'node_modules/@types/*' 'node_modules/@smithy/*'"
     },
     "author": "",
     "license": "ISC",

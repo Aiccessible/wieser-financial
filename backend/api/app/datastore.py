@@ -22,14 +22,16 @@ __all__ = ["check_institution", "delete_transactions"]
 
 KEY_ARN = os.getenv("KEY_ARN")
 TABLE_NAME = os.getenv("TABLE_NAME")
+STAGE = os.getenv("STAGE")
 
 logger = Logger(child=True)
 
 dynamodb: DynamoDBServiceResource = boto3.resource("dynamodb", config=constants.BOTO3_CONFIG)
 table: Table = dynamodb.Table(TABLE_NAME)
 aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=KEY_ARN)
+default_action = CryptoAction.ENCRYPT_AND_SIGN if (STAGE == 'prod') else CryptoAction.DO_NOTHING
 actions = AttributeActions(
-    default_action=CryptoAction.DO_NOTHING,
+    default_action=default_action,
     attribute_actions={constants.TOKEN_ATTRIBUTE_NAME: CryptoAction.ENCRYPT_AND_SIGN},
 )
 encrypted_table = EncryptedTable(

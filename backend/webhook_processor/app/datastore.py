@@ -23,15 +23,17 @@ __all__ = ["get_user_by_item", "get_item"]
 
 TABLE_NAME = os.getenv("TABLE_NAME")
 KEY_ARN = os.getenv("KEY_ARN")
-
+STAGE = os.getenv("STAGE")
 logger = Logger(child=True)
 metrics = Metrics()
 
 dynamodb: DynamoDBServiceResource = boto3.resource("dynamodb", config=constants.BOTO3_CONFIG)
 table: Table = dynamodb.Table(TABLE_NAME)
+default_action = CryptoAction.ENCRYPT_AND_SIGN if (STAGE == 'prod') else CryptoAction.DO_NOTHING
+
 aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=KEY_ARN)
 actions = AttributeActions(
-    default_action=CryptoAction.DO_NOTHING,
+    default_action=default_action,
     attribute_actions={constants.TOKEN_ATTRIBUTE_NAME: CryptoAction.ENCRYPT_AND_SIGN},
 )
 encrypted_table = EncryptedTable(

@@ -127,71 +127,6 @@ const makePerplexityCall = async (body: any) => {
     }
 }
 
-async function processStreamedResponse(
-    stream: Response,
-    userId: string,
-    messageId: string,
-    firstFewLimit = 3,
-    batchSize = 25
-): Promise<string[]> {
-    const reader = stream.body?.getReader()
-    if (!reader) {
-        throw new TypeError('Stream is not readable')
-    }
-
-    const decoder = new TextDecoder()
-    let done = false
-    let count = 0
-    const message: string[] = []
-    let buffer: string[] = []
-
-    while (!done) {
-        const { value, done: streamDone } = await reader.read()
-        done = streamDone
-
-        if (value) {
-            const decodedChunk = decoder.decode(value, { stream: true })
-            try {
-                console.info('Got and decoded', decodedChunk, value)
-                const parsedChunk: any = JSON.parse(decodedChunk)
-                const content = parsedChunk.choices[0]?.delta?.content || ''
-
-                if (count < firstFewLimit) {
-                    // For the first few chunks, send immediately
-                    console.info('Got:', content)
-                    message.push(content)
-                    sendChatToUI(userId, count.toString(), content, false, messageId)
-                    count++
-                } else {
-                    // After the first few, accumulate chunks in a buffer
-                    buffer.push(content)
-
-                    // Once we've accumulated enough chunks (batchSize), send them as one combined message
-                    if (buffer.length >= batchSize) {
-                        const combinedMessage = buffer.join('')
-                        console.info('Sending combined message:', combinedMessage)
-                        sendChatToUI(userId, count.toString(), combinedMessage, false, messageId)
-                        message.push(combinedMessage)
-
-                        // Reset the buffer after sending
-                        buffer = []
-                        count++
-                    }
-                }
-            } catch (error) {
-                console.error('Error parsing chunk:', error, decodedChunk)
-            }
-        }
-    }
-
-    // If there's any remaining content in the buffer after the stream ends, send it
-    const remainingMessage = buffer.join('')
-    console.info('Sending remaining buffered message:', remainingMessage)
-    sendChatToUI(userId, count.toString(), remainingMessage, true, messageId)
-    message.push(remainingMessage)
-    return message
-}
-
 export const completeChatFromPrompt = async (
     prompt: string,
     type: ChatFocus | null | undefined,
@@ -234,7 +169,7 @@ export const completeChatFromPrompt = async (
     let count = 0
     let buffer: string[] = []
     const firstFewLimit = 3 // Send the first 3 chunks immediately
-    const batchSize = 10 // Then combine 10 chunks at a time
+    const batchSize = 100 // Then combine 10 chunks at a time
     const messageId = userId + '#' + Date.now().toString()
 
     if (!requiresLiveData) {

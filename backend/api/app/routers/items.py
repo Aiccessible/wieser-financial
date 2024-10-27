@@ -32,7 +32,6 @@ table: Table = dynamodb.Table(TABLE_NAME)
 dynamodb_client: DynamoDBClient = dynamodb.meta.client
 sqs: SQSClient = boto3.client("sqs", config=constants.BOTO3_CONFIG)
 
-@router.post("/initiateTransfer")
 
 @router.post("/<item_id>/refresh")
 @tracer.capture_method(capture_response=False)
