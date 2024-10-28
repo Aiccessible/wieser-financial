@@ -140,9 +140,9 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         return (
             <div>
                 {chat && (
-                    <CustomTextBox>
+                    <div className="text-white dark:text-white-300">
                         <Markdown>{splitResponse?.slice(0, length ?? 0).join(' ')}</Markdown>
-                    </CustomTextBox>
+                    </div>
                 )}
                 {
                     /**    graphs: zod_1.z.object({
@@ -159,12 +159,11 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             </div>
         )
     }
-    console.log(getChunksAsValidJson)
 
     return (
         <aside
             className={cn(
-                `absolute right-0 top-0 z-9999 flex h-screen w-5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0`,
+                `absolute right-0 top-0 z-997 flex h-screen w-5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0`,
                 {
                     'w-70': isSidebarOpen,
                 }

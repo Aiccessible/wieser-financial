@@ -15,6 +15,7 @@ import { selectNetWorth } from '../features/accounts'
 import Accounts from '../components/Accounts'
 import NetWorthChart from '../components/Charting/NetWorth'
 import { Title } from '@tremor/react'
+import { MonthlySpending } from '../components/common/MonthlySpending'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -68,6 +69,7 @@ export default function Institution() {
                     </Heading>
                     {<RecommendationsAccordion id={id || ''} recommendations={recommendations} />}
                     {/* Your recommendation component goes here */}
+                    <MonthlySpending width={100} />
                 </div>
             </Flex>
         </Flex>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { post } from 'aws-amplify/api'
+import { get, post } from 'aws-amplify/api'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { Button } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
@@ -14,17 +14,24 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const refresh = async () => {
         setLoading(true)
         try {
-            // const { body } = await post({
-            //     apiName,
-            //     path: `/v1/items/${item_id}/refresh/holdings`,
-            // }).response
-            // const data = await body.json()
             const { body } = await post({
                 apiName,
-                path: `/v1/stock/${'TSLA'}/closing-prices`,
+                path: `/v1/items/${item_id}/refresh/holdings`,
             }).response
-            const data = await body.json()
-            logger.debug(`POST /v1/items/${item_id}/refresh/holdings response:`, data)
+            //const data = await body.json()
+            console.log('eee')
+            // const { body } = await get({
+            //     apiName,
+            //     path: `/v1/stock/${'TSLA'}/closing-prices`,
+            //     options: {
+            //         body: {
+            //             start_date: '2024-01-01',
+            //             end_date: '2024-05-09',
+            //         },
+            //     },
+            // }).response
+            //const data = await body.json()
+            //logger.debug(`POST /v1/items/${item_id}/refresh/holdings response:`, data)
             setLoading(false)
         } catch (err) {
             setLoading(false)

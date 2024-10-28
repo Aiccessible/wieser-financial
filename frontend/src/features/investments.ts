@@ -1,8 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getFinancialConversationResponse, getInvestments } from '../graphql/queries'
-import { ChatFocus, ChatType, Investment } from '../API'
+import { ChatFocus, ChatType, Investment, Security } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
+import { get, post } from 'aws-amplify/api'
+import { getIdFromSecurity } from '../libs/utlis'
 // Define a type for the slice state
 
 export interface InvestmentKnoweldgeViewModel {
@@ -10,6 +12,7 @@ export interface InvestmentKnoweldgeViewModel {
     news: string
     loadingAnalysis: boolean
     loadingNews: boolean
+    priceData: number[]
 }
 interface InvestmentsState {
     investments: Investment[] | undefined
@@ -40,8 +43,14 @@ export interface GetInvestmentInput {
     append: boolean
 }
 
+export interface GetInvestmentNewsSummaryInput {
+    client: { graphql: GraphQLMethod }
+    id: string
+}
+
 export interface GetInvestmentNewsInput {
     client: { graphql: GraphQLMethod }
+    security: Security | undefined | null
     id: string
 }
 
@@ -89,9 +98,9 @@ const getAnalysisKey = (id: string) => {
 
 export const getInvestmentNewsSummary = createAsyncThunk<
     any, // Return type
-    GetInvestmentNewsInput, // Input type
+    GetInvestmentNewsSummaryInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
->('investment/get-investment-news-summary', async (input: GetInvestmentNewsInput, getThunk) => {
+>('investment/get-investment-news-summary', async (input: GetInvestmentNewsSummaryInput, getThunk) => {
     if (localStorage.getItem(getStorageKey(input.id))) {
         return { investmentSummary: localStorage.getItem(getStorageKey(input.id)) }
     }
@@ -126,8 +135,10 @@ export const getInvestmentNews = createAsyncThunk<
     GetInvestmentNewsInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-news', async (input: GetInvestmentNewsInput, getThunk) => {
-    if (localStorage.getItem(getNewsKey(input.id))) {
-        return { value: localStorage.getItem(getNewsKey(input.id)), key: input.id }
+    const idForSecurity = input?.security ? getIdFromSecurity(input?.security) : ''
+
+    if (localStorage.getItem(getNewsKey(idForSecurity))) {
+        return { value: localStorage.getItem(getNewsKey(idForSecurity)), key: idForSecurity }
     }
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
@@ -137,7 +148,7 @@ export const getInvestmentNews = createAsyncThunk<
                 accountId: input.id ?? '',
                 prompt:
                     'Provide me the news summary for the investments which I will send in the prompt as well tickers' +
-                    input.id,
+                    idForSecurity,
                 chatFocus: ChatFocus.Investment,
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
@@ -146,15 +157,15 @@ export const getInvestmentNews = createAsyncThunk<
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getNewsKey(input.id), res.data?.getFinancialConversationResponse?.response)
+        localStorage.setItem(getNewsKey(idForSecurity), res.data?.getFinancialConversationResponse?.response)
     const errors = res.errors
     if (errors && errors.length > 0) {
-        return { errors, value: res.data?.getFinancialConversationResponse?.response, key: input.id }
+        return { errors, value: res.data?.getFinancialConversationResponse?.response, key: idForSecurity }
     }
     return {
         value: res.data.getFinancialConversationResponse?.response,
         loading: false,
-        key: input.id,
+        key: idForSecurity,
     }
 })
 
@@ -163,8 +174,31 @@ export const getInvestmentAnalysis = createAsyncThunk<
     GetInvestmentNewsInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-analysis', async (input: GetInvestmentNewsInput, getThunk) => {
-    if (localStorage.getItem(getAnalysisKey(input.id))) {
-        return { value: localStorage.getItem(getAnalysisKey(input.id)), key: input.id }
+    let priceData: number[] = []
+    const endDate = new Date() // Current date
+    const startDate = new Date()
+    startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
+    const idForSecurity = input?.security ? getIdFromSecurity(input?.security) : ''
+    try {
+        if (input.security?.ticker_symbol) {
+            const { body } = await post({
+                apiName: 'plaidapi',
+                path: `/v1/stock/${input.security?.ticker_symbol}/closing-prices`,
+                options: {
+                    body: {
+                        start_date: startDate.toISOString().split('T')[0], // Format as "YYYY-MM-DD"
+                        end_date: endDate.toISOString().split('T')[0],
+                    },
+                },
+            }).response
+            console.log(await body.json())
+            priceData = (await body.json()) as number[]
+        }
+    } catch (e) {
+        console.log(e)
+    }
+    if (localStorage.getItem(getAnalysisKey(idForSecurity))) {
+        return { value: localStorage.getItem(getAnalysisKey(idForSecurity)), key: idForSecurity, priceData }
     }
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
@@ -173,8 +207,10 @@ export const getInvestmentAnalysis = createAsyncThunk<
             chat: {
                 accountId: input.id ?? '',
                 prompt:
-                    'Provide me the technical analysis for the investments which I will send in the prompt as well tickers' +
-                    input.id,
+                    'Provide me the technical analysis for the investments which I will send in the prompt as well tickers ' +
+                    idForSecurity +
+                    ' The daily closes of the last two weeks are ' +
+                    priceData.map((prive) => prive.toFixed(2)),
                 chatFocus: ChatFocus.Investment,
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
@@ -183,15 +219,16 @@ export const getInvestmentAnalysis = createAsyncThunk<
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getAnalysisKey(input.id), res.data?.getFinancialConversationResponse?.response)
+        localStorage.setItem(getAnalysisKey(idForSecurity), res.data?.getFinancialConversationResponse?.response)
     const errors = res.errors
     if (errors && errors.length > 0) {
-        return { errors, value: res.data?.getFinancialConversationResponse?.response, key: input.id }
+        return { errors, value: res.data?.getFinancialConversationResponse?.response, key: idForSecurity, priceData }
     }
     return {
         value: res.data.getFinancialConversationResponse?.response,
         loading: false,
-        key: input.id,
+        key: idForSecurity,
+        priceData,
     }
 })
 
@@ -251,17 +288,19 @@ export const investmentSlice = createSlice({
             state.investmentKnoweldge[(action.payload as any).key ?? ''].loadingNews = false
         })
         builder.addCase(getInvestmentNews.pending, (state, action) => {
+            const id = action.meta.arg.security ? getIdFromSecurity(action.meta.arg.security) : ''
             state.error = undefined
             state.investmentKnoweldge = {
                 ...state.investmentKnoweldge,
-                [action.meta.arg.id]: state.investmentKnoweldge[action.meta.arg.id] ?? {},
+                [id]: state.investmentKnoweldge[id] ?? {},
             }
-            state.investmentKnoweldge[action.meta.arg.id].loadingNews = true
+            state.investmentKnoweldge[id].loadingNews = true
         })
         builder.addCase(getInvestmentAnalysis.fulfilled, (state, action) => {
             state.error = action.payload.errors ? action.payload.errors : undefined
             state.investmentKnoweldge[action.payload.key ?? ''].analysis =
                 action.payload.value ?? 'Could not get summary'
+            state.investmentKnoweldge[action.payload.key ?? ''].priceData = action.payload.priceData ?? []
             state.investmentKnoweldge[action.payload.key ?? ''].loadingAnalysis = false
         })
         builder.addCase(getInvestmentAnalysis.rejected, (state, action) => {
@@ -269,14 +308,17 @@ export const investmentSlice = createSlice({
             state.investmentKnoweldge[(action.payload as any).key ?? ''].analysis =
                 (action.payload as any).value ?? 'Could not get summary'
             state.investmentKnoweldge[(action.payload as any).key ?? ''].loadingAnalysis = false
+            state.investmentKnoweldge[(action.payload as any).key ?? ''].priceData =
+                (action.payload as any).priceData ?? []
         })
         builder.addCase(getInvestmentAnalysis.pending, (state, action) => {
+            const id = action.meta.arg.security ? getIdFromSecurity(action.meta.arg.security) : ''
             state.error = undefined
             state.investmentKnoweldge = {
                 ...state.investmentKnoweldge,
-                [action.meta.arg.id]: state.investmentKnoweldge[action.meta.arg.id] ?? {},
+                [id]: state.investmentKnoweldge[id] ?? {},
             }
-            state.investmentKnoweldge[action.meta.arg.id].loadingAnalysis = true
+            state.investmentKnoweldge[id].loadingAnalysis = true
         })
     },
 })

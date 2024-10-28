@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getInvestementsAsync } from '../features/investments'
-import { getTransactionsAsync } from '../features/transactions'
+import {
+    getTransactionsAsync,
+    getYesterdaySummaryAsyncThunk,
+    getMonthlySummariesAsyncThunk,
+} from '../features/transactions'
 import { getAccountsAsync } from '../features/accounts'
 import { getFullPictureRecommendationAsync } from '../features/analysis'
 import { ConsoleLogger } from 'aws-amplify/utils'
@@ -24,6 +28,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const transactions = useAppSelector((state) => state.transactions.transactions)
     const investmentCursor = useAppSelector((state) => state.investments.cursor)
     const transactionCursor = useAppSelector((state) => state.transactions.cursor)
+    const transactionsLoading = useAppSelector((state) => state.transactions.loading)
 
     // Load accounts
     const getAccounts = useCallback(async () => {
@@ -46,6 +51,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
     // Load transactions
     const getTransactions = useCallback(async () => {
         try {
+            dispatch(getYesterdaySummaryAsyncThunk({ id: id || '', client, append: false }))
+            dispatch(getMonthlySummariesAsyncThunk({ id: id || '', client, append: false }))
             await dispatch(getTransactionsAsync({ id: id || '', client, append: !transactionCursor }))
         } catch (err) {
             logger.error('unable to get transactions', err)
@@ -58,10 +65,9 @@ export const useDataLoading = (input: DataLoadingInput) => {
         [investmentCursor, investments]
     )
 
-    const isTransactionsLoading = useCallback(
-        () => (!transactions || transactionCursor) && (transactions?.length ?? 0) < 100,
-        [transactionCursor, transactions]
-    )
+    const isTransactionsLoading = useCallback(() => {
+        return !transactions
+    }, [transactions])
 
     // Load accounts on mount if not already loaded
     useEffect(() => {
@@ -73,17 +79,16 @@ export const useDataLoading = (input: DataLoadingInput) => {
     // Load investments based on loading state
     useEffect(() => {
         if (isInvestmentsLoading() && loadInvestments) {
-            console.log(isInvestmentsLoading(), loadInvestments, investmentCursor)
             getInvestments()
         }
     }, [isInvestmentsLoading, getInvestments, loadInvestments])
 
     // Load transactions based on loading state
     useEffect(() => {
-        if (isTransactionsLoading() && loadTransactions) {
+        if (isTransactionsLoading() && loadTransactions && !transactionsLoading) {
             getTransactions()
         }
-    }, [isTransactionsLoading, getTransactions, loadTransactions])
+    }, [isTransactionsLoading, loadTransactions, transactionsLoading])
 
     // Trigger recommendations once everything else is loaded
     useEffect(() => {

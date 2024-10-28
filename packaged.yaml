@@ -40,6 +40,15 @@ Parameters:
     Type: String
     Description: Git branch name
     Default: main
+  Stage:
+    Type: String
+    Description: The stage of the deployment
+    Default: prod
+    AllowedValues:
+    - owen-dev
+    - beta
+    - gamma
+    - prod
 Globals:
   Function:
     Architectures:
@@ -115,7 +124,8 @@ Resources:
       SamResourceId: GptCredential
     Properties:
       Description: GPT Key
-      Name: GPT/credentials1
+      Name:
+        Fn::Sub: GPT/${Stage}/credentials1
       SecretString:
         Fn::Sub: "{\n  \"gpt_secret_key\": \"${GptSecretKey}\",\n}"
       Tags:
@@ -140,7 +150,8 @@ Resources:
       SamResourceId: PerplexityCredential
     Properties:
       Description: GPT Key
-      Name: GPT/credentials2
+      Name:
+        Fn::Sub: GPT/${Stage}/credentials2
       SecretString:
         Fn::Sub: "{\n  \"perplexity_secret_key\": \"${PerplexitySecretKey}\",\n}"
       Tags:
@@ -409,7 +420,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda/b3cc77d6128c400e4015159a9a466b84
+      ContentUri: s3://sam-s3-bucket-for-lambda2/9b61d97938e46d5f4bf2236d30364e41
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -593,7 +604,9 @@ Resources:
           Version: '2012-10-17'
           Statement:
           - Effect: Allow
-            Action: dynamodb:Query
+            Action:
+            - dynamodb:Query
+            - dynamodb:PutItem
             Resource:
             - Fn::GetAtt:
               - Table
@@ -785,7 +798,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda/d3036d54190ba9e108f6cd1824f467e2
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/6acdab2da123b0a8126217c89048d2d7
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -810,6 +823,46 @@ Resources:
       TypeName: Query
     Metadata:
       SamResourceId: GetItemsResolver
+  GetSpendingSummaryResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: getSpendingSummary
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - GetSpendingSummaryFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Query
+    Metadata:
+      SamResourceId: GetSpendingSummaryResolver
+  GetSpendingSummaryFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/bb1c1b9012f0872f8e452eca47d36ad0
+      DataSourceName:
+        Fn::GetAtt:
+        - DynamoDBDataSource
+        - Name
+      Name: GET_SPENDING_SUMMARY
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: GetSpendingSummaryFunctionConfiguration
   GetItemsFunctionConfiguration:
     Type: AWS::AppSync::FunctionConfiguration
     Properties:
@@ -817,7 +870,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/3da2ac87be95ad2391cc4dfd87865488
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/3da2ac87be95ad2391cc4dfd87865488
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -879,7 +932,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/b58eb1d3e860a522eb32edb782073afa
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/b58eb1d3e860a522eb32edb782073afa
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -897,7 +950,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/03f1bb90d2cba1be4cb9247f7baa1dd9
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/03f1bb90d2cba1be4cb9247f7baa1dd9
       DataSourceName:
         Fn::GetAtt:
         - NoneDataSource
@@ -937,7 +990,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/003d0f5ed0c24253d976e184fcc28bfa
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/003d0f5ed0c24253d976e184fcc28bfa
       DataSourceName:
         Fn::GetAtt:
         - GetFinancialRecommendationsDataSource
@@ -977,7 +1030,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/9cba37f8d624f4796ec88aa2e0ff3c9e
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/9cba37f8d624f4796ec88aa2e0ff3c9e
       DataSourceName:
         Fn::GetAtt:
         - GetFinancialConversationResponseDataSource
@@ -1017,7 +1070,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/ef605ddc9f3905a9f30ba065f31cad2a
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/ef605ddc9f3905a9f30ba065f31cad2a
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -1057,7 +1110,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/1855c3cc9c6da5d88db5643ae8dc0613
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/1855c3cc9c6da5d88db5643ae8dc0613
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -1097,7 +1150,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda/8e8f74717df4aef518cabf382db73b03
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/8e8f74717df4aef518cabf382db73b03
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -1463,6 +1516,7 @@ Resources:
           - dynamodb:DescribeTable
           - dynamodb:GetItem
           - dynamodb:PutItem
+          - dynamodb:Query
           Resource:
             Fn::GetAtt:
             - Table
@@ -1507,7 +1561,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/6294fe719af958ef3d11af052d41d9b6
+      CodeUri: s3://sam-s3-bucket-for-lambda2/d49a47e131122d11dad725579308e106
       Description:
         Fn::Sub: Plaid (${Environment}) - API
       Environment:
@@ -1551,6 +1605,38 @@ Resources:
           Ref: AWS::StackId
       - Key: aws-cloudformation:logical-id
         Value: GetFinancialConversationResponseLogGroup
+      - Key: GITHUB_ORG
+        Value:
+          Ref: GitHubOrg
+      - Key: GITHUB_REPO
+        Value:
+          Ref: GitHubRepo
+      - Key: Environment
+        Value:
+          Ref: Environment
+  CalculateIncomeAndSpendingLogGroup:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Ignoring KMS key
+      SamResourceId: CalculateIncomeAndSpendingLogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${CalculateIncomeAndSpendingLambda}
+      RetentionInDays: 3
+      Tags:
+      - Key: aws-cloudformation:stack-name
+        Value:
+          Ref: AWS::StackName
+      - Key: aws-cloudformation:stack-id
+        Value:
+          Ref: AWS::StackId
+      - Key: aws-cloudformation:logical-id
+        Value: CalculateIncomeAndSpendingLogGroup
       - Key: GITHUB_ORG
         Value:
           Ref: GitHubOrg
@@ -1605,7 +1691,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/84502a43ecee4584d5a63ae97c4c176a
+      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1645,7 +1731,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/84502a43ecee4584d5a63ae97c4c176a
+      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1672,6 +1758,72 @@ Resources:
         - Arn
       Runtime: nodejs18.x
       Timeout: 61
+  CalculateIncomeAndSpendingSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(1 day)
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - CalculateIncomeAndSpendingLambda
+          - Arn
+        Id: CalculateIncomeAndSpendingFunctionTarget
+    Metadata:
+      SamResourceId: CalculateIncomeAndSpendingSchedule
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: CalculateIncomeAndSpendingLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - CalculateIncomeAndSpendingSchedule
+        - Arn
+    Metadata:
+      SamResourceId: PermissionForEventsToInvokeLambda
+  CalculateIncomeAndSpendingLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W58
+          reason: Ignoring CloudWatch
+        - id: W89
+          reason: Ignoring VPC
+        - id: W92
+          reason: Ignoring Reserved Concurrency
+      SamResourceId: CalculateIncomeAndSpendingLambda
+    Properties:
+      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
+      Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
+      Description:
+        Fn::Sub: Calculate the income and spending for users
+      Environment:
+        Variables:
+          GptSecretKey:
+            Ref: GptSecretKey
+          PerplexitySecretKey:
+            Ref: PerplexitySecretKey
+          KEY_ARN:
+            Fn::GetAtt:
+            - EncryptionKey
+            - Arn
+          TABLE_NAME:
+            Ref: Table
+          APPSYNC_URL:
+            Fn::GetAtt:
+            - GraphQLApi
+            - GraphQLUrl
+      MemorySize: 2048
+      Role:
+        Fn::GetAtt:
+        - ApiFunctionRole
+        - Arn
+      Runtime: nodejs18.x
+      Timeout: 900
   WebhookProcessorFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     UpdateReplacePolicy: Delete
@@ -1821,7 +1973,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/085b1790dc3e0478d2b6077bb7e49982
+      CodeUri: s3://sam-s3-bucket-for-lambda2/7df2cfff24581d7e6901004a1bf0e201
       Description:
         Fn::Sub: Plaid (${Environment}) - WebhookProcessor
       Environment:
@@ -1987,7 +2139,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda/e92a09e0181e61b480bb59a0e91fb786
+      CodeUri: s3://sam-s3-bucket-for-lambda2/e92a09e0181e61b480bb59a0e91fb786
       Description:
         Fn::Sub: Plaid (${Environment}) - BatchWriter
       Environment:

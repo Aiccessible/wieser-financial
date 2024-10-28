@@ -122,14 +122,16 @@ export default function Investments({}: { id: string; accounts: any }) {
                         batch.map(async (el) => {
                             await dispatch(
                                 getInvestmentAnalysis({
-                                    id: getIdFromSecurity(el?.security) ?? '',
+                                    security: el?.security,
                                     client,
+                                    id: id || '',
                                 })
                             )
                             await dispatch(
                                 getInvestmentNews({
-                                    id: getIdFromSecurity(el?.security) ?? '',
+                                    security: el?.security,
                                     client,
+                                    id: id || '',
                                 })
                             )
                         })

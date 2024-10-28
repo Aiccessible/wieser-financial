@@ -15,6 +15,9 @@ export const getItems = /* GraphQL */ `query GetItems($limit: Int, $cursor: Stri
       item_id
       institution_id
       institution_name
+      sk
+      created_at
+      pk
       __typename
     }
     __typename
@@ -54,6 +57,12 @@ export const getTransactions = /* GraphQL */ `query GetTransactions($id: ID!, $l
       date
       payment_channel
       transaction_type
+      personal_finance_category {
+        detailed
+        confidence_level
+        primary
+        __typename
+      }
       __typename
     }
     __typename
@@ -144,4 +153,25 @@ export const getFinancialConversationResponse = /* GraphQL */ `query GetFinancia
 ` as GeneratedQuery<
   APITypes.GetFinancialConversationResponseQueryVariables,
   APITypes.GetFinancialConversationResponseQuery
+>;
+export const getSpendingSummary = /* GraphQL */ `query GetSpendingSummary(
+  $minDate: Long
+  $maxDate: Long
+  $id: String!
+  $type: SpendingSummaryType
+) {
+  getSpendingSummary(
+    minDate: $minDate
+    maxDate: $maxDate
+    id: $id
+    type: $type
+  ) {
+    sk
+    spending
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetSpendingSummaryQueryVariables,
+  APITypes.GetSpendingSummaryQuery
 >;

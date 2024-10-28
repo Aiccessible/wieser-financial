@@ -25,7 +25,7 @@ const Sidebar = ({}: SidebarProps) => {
     return (
         <aside
             className={cn(
-                `absolute left-0 top-0 z-9999 flex h-screen w-20 flex-col overflow-y-hidden bg-black duration-300 ease-linear  dark:bg-boxdark lg:static lg:translate-x-0 `,
+                `absolute left-0 top-0 z-997 flex h-screen w-20 flex-col overflow-y-hidden bg-black duration-300 ease-linear  dark:bg-boxdark lg:static lg:translate-x-0 `,
                 {
                     'w-70': isSidebarOpen,
                 }
@@ -42,7 +42,7 @@ const Sidebar = ({}: SidebarProps) => {
                         src={'/images/logo/logo-icon.png'}
                         alt="Logo"
                     />
-                    {isSidebarOpen && <h1 className=" ml-2 text-xl font-semibold text-white">FinanceGPT</h1>}
+                    {isSidebarOpen && <h1 className=" ml-2 text-xl font-semibold text-white">Wieser</h1>}
                 </Link>
                 {isSidebarOpen && <MenuIcon onClick={toggleSidebar} className="h-6 w-6" />}
             </div>

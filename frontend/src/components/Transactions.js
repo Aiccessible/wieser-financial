@@ -9,7 +9,8 @@ import { CustomTextBox } from './common/CustomTextBox';
 import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { getTransactionsAsync } from '../features/transactions';
-
+import { useDataLoading } from '../hooks/useDataLoading';
+import { MonthlySpending } from '../components/common/MonthlySpending'
 const logger = new ConsoleLogger("Transactions");
 
 export default function Transactions({  accounts = {} }) {
@@ -17,17 +18,9 @@ export default function Transactions({  accounts = {} }) {
   const { id } = useParams();
   const client = generateClient();
   const dispatch = useAppDispatch()
-  const transactions = useAppSelector(state => state.transactions.transactions)
   const cursor = useAppSelector((state) => state.transactions.cursor)
   const loading = useAppSelector((state) => state.transactions.loading)
-  const getTransactions = async () => {
-    try {
-      await dispatch(getTransactionsAsync({ id, client }))
-    } catch (err) {
-      logger.error('unable to get transactions', err);
-    }
-  }
-
+  const { transactions } = useDataLoading({ id: id || "", client, loadTransactions: true})
   const handleLoadMore = async () => {
     try {
        await dispatch(getTransactionsAsync({ id, client, append: true }))
@@ -36,13 +29,10 @@ export default function Transactions({  accounts = {} }) {
     }
   }
 
-  useEffect(() => {
-    (!transactions || !transactions.length) && getTransactions();
-  }, [transactions]);
-
   return (
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
           <Title>Transactions</Title>
+          <MonthlySpending width={65} />
           <Table>
               <TableHead>
                   <TableRow>
@@ -61,7 +51,7 @@ export default function Transactions({  accounts = {} }) {
                               <Loader />
                           </TableCell>
                       </TableRow>
-                  ) : transactions.length ? (
+                  ) : transactions?.length ? (
                       transactions.map((transaction) => {
                           return (
                               <Transaction
@@ -78,7 +68,7 @@ export default function Transactions({  accounts = {} }) {
                   )}
               </TableBody>
           </Table>
-          {transactions.length ? (
+          {transactions?.length ? (
               <Button isDisabled={!cursor} onClick={handleLoadMore} size="small" variable="primary">
                   <CustomTextBox>Load More</CustomTextBox>
               </Button>
