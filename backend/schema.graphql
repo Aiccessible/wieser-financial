@@ -14,6 +14,18 @@ type Balances {
     limit: String
 }
 
+input CacheIdentifer {
+    key: String
+    cacheType: CacheType
+}
+
+enum CacheType {
+    StockNews
+    StockAnalysis
+    InvestmentAnalysis
+    PortfolioAnalysis
+}
+
 type Chat {
     pk: String @aws_iam @aws_cognito_user_pools
     sk: String @aws_iam @aws_cognito_user_pools
@@ -40,17 +52,6 @@ input ChatInput {
     messageId: String
 }
 
-enum CacheType {
-    StockNews
-    StockAnalysis
-    InvestmentAnalysis
-    PortfolioAnalysis
-}
-
-input CacheIdentifer {
-    key: String
-    cacheType: CacheType
-}
 input ChatQuery {
     prompt: String
     chatFocus: ChatFocus
@@ -61,14 +62,14 @@ input ChatQuery {
     cacheIdentifiers: [CacheIdentifer!]
 }
 
+type ChatResponse {
+    response: String
+}
+
 enum ChatType {
     Regular
     FinancialNewsQuery
     FinancialAnalysisQuery
-}
-
-type ChatResponse {
-    response: String
 }
 
 type GraphType {
@@ -76,6 +77,25 @@ type GraphType {
     barChart: String
     histogram: String
     timePlot: String
+}
+
+enum HighLevelTransactionCategory {
+    INCOME
+    TRANSFER_IN
+    TRANSFER_OUT
+    LOAN_PAYMENTS
+    BANK_FEES
+    ENTERTAINMENT
+    FOOD_AND_DRINK
+    GENERAL_MERCHANDISE
+    HOME_IMPROVEMENT
+    MEDICAL
+    PERSONAL_CARE
+    GENERAL_SERVICES
+    GOVERNMENT_AND_NON_PROFIT
+    TRANSPORTATION
+    TRAVEL
+    RENT_AND_UTILITIES
 }
 
 type Holding {
@@ -116,6 +136,12 @@ type PaginatedItems {
 type PaginatedTransactions {
     cursor: String
     transactions: [Transaction!]!
+}
+
+type PersonalFinanceCategory {
+    detailed: String
+    confidence_level: String
+    primary: HighLevelTransactionCategory
 }
 
 type PremiumChatResponse {
@@ -161,29 +187,15 @@ type Security {
     plaid_type: String
 }
 
-enum HighLevelTransactionCategory {
-    INCOME
-    TRANSFER_IN
-    TRANSFER_OUT
-    LOAN_PAYMENTS
-    BANK_FEES
-    ENTERTAINMENT
-    FOOD_AND_DRINK
-    GENERAL_MERCHANDISE
-    HOME_IMPROVEMENT
-    MEDICAL
-    PERSONAL_CARE
-    GENERAL_SERVICES
-    GOVERNMENT_AND_NON_PROFIT
-    TRANSPORTATION
-    TRAVEL
-    RENT_AND_UTILITIES
+type SpendingSummary {
+    sk: String @aws_iam @aws_cognito_user_pools
+    # Date in string format (e.g., "YYYY-MM-DD")
+    spending: AWSJSON @aws_iam @aws_cognito_user_pools
 }
 
-type PersonalFinanceCategory {
-    detailed: String
-    confidence_level: String
-    primary: HighLevelTransactionCategory
+enum SpendingSummaryType {
+    MONTHLYSUMMARY
+    DAILYSUMMARY
 }
 
 type Transaction {
@@ -198,11 +210,6 @@ type Transaction {
     personal_finance_category: PersonalFinanceCategory
 }
 
-type SpendingSummary {
-    sk: String! # Date in string format (e.g., "YYYY-MM-DD")
-    spending: AWSJSON
-}
-
 type Transfer {
     fromAccountName: String
     toAccountName: String
@@ -213,11 +220,6 @@ type Mutation {
     createChat(chat: ChatInput!): Chat @aws_iam
 }
 
-enum SpendingSummaryType {
-    MONTHLYSUMMARY
-    DAILYSUMMARY
-}
-
 type Query {
     getItems(limit: Int, cursor: String): PaginatedItems!
     getAccounts(id: ID!): [Account!]!
@@ -225,7 +227,9 @@ type Query {
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
     getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
     getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
-    getSpendingSummary(minDate: String, maxDate: String, id: String!, type: SpendingSummaryType): SpendingSummary!
+    getSpendingSummary(minDate: Long, maxDate: Long, id: String!, type: SpendingSummaryType): SpendingSummary!
+        @aws_iam
+        @aws_cognito_user_pools
 }
 
 type Subscription {

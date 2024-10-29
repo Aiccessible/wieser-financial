@@ -7,6 +7,7 @@ from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.event_handler.api_gateway import Router, Response
 from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools.event_handler.exceptions import InternalServerError
+import json
 
 # TODO
 from app import constants, datastore, utils
@@ -21,10 +22,12 @@ router = Router()
 from datetime import datetime
 
 
-@router.get("/<ticker>/closing-prices")
+@router.post("/<ticker>/closing-prices")
 @tracer.capture_method(capture_response=False)
-def get_closing_prices(ticker: str, start_date: str, end_date: str) -> Dict[str, Any]:
-
+def get_closing_prices(ticker: str) -> Dict[str, Any]:
+    body = json.loads(router.current_event.get("body", "{}"))
+    start_date = body.get("start_date")
+    end_date = body.get("end_date")
     # TODO
     user_id: str = utils.authorize_request(router)
     # user_id: str = "test"

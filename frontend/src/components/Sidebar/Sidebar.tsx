@@ -85,8 +85,8 @@ const Sidebar = ({}: SidebarProps) => {
 
                             <li>
                                 <LinkItem
-                                    title="Analyze"
-                                    href="/analyze"
+                                    title="The Lab"
+                                    href={id ? `/analyze/${id}` : '/analyze'}
                                     icon={<BrainCircuitIcon className="h-6 w-6" />}
                                 ></LinkItem>
                             </li>

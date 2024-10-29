@@ -17,27 +17,27 @@ metrics = Metrics()
 router = Router()
 
 
-@router.get("/projection")
+@router.post("/projection")
 @tracer.capture_method(capture_response=False)
-def simulate_account_balances(
-    initial_salary: float,
-    salary_growth: float,
-    initial_bonus: float,
-    bonus_growth: float,
-    initial_expenses: float,
-    expenses_growth: float,
-    investment_yield: float,
-    tax_rate: float,
-    years: int,
-    initial_rrsp_balance: float,
-    initial_fhsa_balance: float,
-    initial_tfsa_balance: float,
-    initial_brokerage_balance: float,
-    initial_rrsp_room: float,
-    initial_fhsa_room: float,
-    initial_tfsa_room: float,
-) -> Dict[str, List[float]]:
+def simulate_account_balances() -> Dict[str, List[float]]:
     # Initialize account balances
+    body = json.loads(router.current_event.get("body", "{}"))
+    initial_salary= body.get("initial_salary")
+    salary_growth= body.get("salary_growth")
+    initial_bonus= body.get("initial_bonus")
+    bonus_growth= body.get("bonus_growth")
+    initial_expenses= body.get("initial_expenses")
+    expenses_growth= body.get("expenses_growth")
+    investment_yield= body.get("investment_yield")
+    tax_rate= body.get("tax_rate")
+    years= body.get("years")
+    initial_rrsp_balance= body.get("initial_rrsp_balance")
+    initial_fhsa_balance= body.get("initial_fhsa_balance")
+    initial_tfsa_balance= body.get("initial_tfsa_balance")
+    initial_brokerage_balance= body.get("initial_brokerage_balance")
+    initial_rrsp_room= body.get("initial_rrsp_room")
+    initial_fhsa_room= body.get("initial_fhsa_room")
+    initial_tfsa_room= body.get("initial_tfsa_room")
     rrsp_balance = initial_rrsp_balance
     fhsa_balance = initial_fhsa_balance
     tfsa_balance = initial_tfsa_balance

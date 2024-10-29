@@ -8,25 +8,32 @@ import { util } from '@aws-appsync/utils';
 export function request(ctx) {
   const { username } = ctx.identity;
   const { minDate, maxDate, id, type } = ctx.arguments;
+    
+    return {
+      operation: 'Query',
+      query: {
+        expression: '#pk = :pk',
+        expressionNames: {
+          '#pk': 'pk',
+          '#date': 'date',
+        },
+        expressionValues: util.dynamodb.toMapValues({
+          ':pk': `USER#${username}#ITEM#${id}#${type}`,
+        }),
 
-  return {
-    operation: 'Query',
-    query: {
-      expression: '#pk = :pk AND #sk BETWEEN :minDate AND :maxDate',
-      expressionNames: {
-        '#pk': 'pk',
-        '#sk': 'sk',
       },
-      expressionValues: util.dynamodb.toMapValues({
-        ':pk': `USER#${username}#ITEM#${id}#${type}`,
-        ':minDate': minDate,
-        ':maxDate': maxDate
-      }),
-    },
-    scanIndexForward: false,
-    limit,
-    nextToken,
-  };
+              filter: {
+        expression: '#date BETWEEN :minDate AND :maxDate',
+        expressionNames: {
+          '#date': 'date',
+        },
+        expressionValues: util.dynamodb.toMapValues({
+          ':minDate': minDate,
+          ':maxDate': maxDate,
+        }),
+        },
+      scanIndexForward: false,
+    };
 }
 
 /**
@@ -36,14 +43,14 @@ export function request(ctx) {
  */
 export function response(ctx) {
   const { error, result } = ctx;
+  console.error(result)
   if (error) {
     return util.appendError(error.message, error.type, result);
   }
 
-  const { items: transactions = [], nextToken: cursor } = result;
+  const { items: spending = [] } = result;
 
   return {
-    transactions,
-    cursor,
+    spending,
   };
 }

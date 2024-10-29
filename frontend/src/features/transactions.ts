@@ -3,6 +3,7 @@ import { getSpendingSummary, getTransactions } from '../graphql/queries'
 import { SpendingSummary, SpendingSummaryType, Transaction } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { stat } from 'fs'
+import { RootState } from '../store'
 // Define a type for the slice state
 interface TransactionsState {
     acccountRecommendation: string
@@ -14,6 +15,7 @@ interface TransactionsState {
     error: string | undefined
     dailySummaries: SpendingSummary[] | undefined
     monthlySummaries: SpendingSummary[] | undefined
+    currentDateRange: number[] | undefined
 }
 
 // Define the initial state using that type
@@ -27,6 +29,7 @@ const initialState: TransactionsState = {
     loadingMonthlySummary: false,
     dailySummaries: undefined,
     monthlySummaries: undefined,
+    currentDateRange: undefined,
 }
 
 export interface GetTransactionInput {
@@ -63,31 +66,48 @@ export const getTransactionsAsync = createAsyncThunk(
     }
 )
 
-export const getYesterdaySummaryAsyncThunk = createAsyncThunk(
-    'transaction/get-transactions-summary-daily',
-    async (input: GetTransactionInput, getThunk: any) => {
-        const endDate = new Date() // Current date
-        const startDate = new Date()
-        startDate.setDate(endDate.getDate() - 1)
-        const res = await input.client.graphql({
-            query: getSpendingSummary,
-            variables: {
-                id: input.id,
-                minDate: startDate.getTime() as any,
-                maxDate: endDate.getTime() as any,
-                type: SpendingSummaryType.DAILYSUMMARY,
-            },
-        })
-        const errors = res.errors
-        if (errors && errors.length > 0) {
-            return { errors, summarys: JSON.parse(res.data.getSpendingSummary.spending ?? '') }
-        }
-        return {
-            summarys: JSON.parse(res.data.getSpendingSummary.spending ?? ''),
-            loading: false,
-        }
+export const getYesterdaySummaryAsyncThunk = createAsyncThunk<
+    any, // Return type
+    GetTransactionInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('transaction/get-transactions-summary-daily', async (input: GetTransactionInput, getThunk) => {
+    let endDate
+    let startDate
+    if (getThunk.getState().transactions.currentDateRange) {
+        startDate = getThunk.getState().transactions.currentDateRange?.[0] ?? new Date().getTime()
+        endDate = getThunk.getState().transactions.currentDateRange?.[1] ?? new Date().getTime()
+    } else {
+        endDate = new Date()
+        startDate = new Date()
+        startDate.setDate(endDate.getDate() - 14)
+        startDate = startDate.getTime()
+        endDate = endDate.getTime()
     }
-)
+    const res = await input.client.graphql({
+        query: getSpendingSummary,
+        variables: {
+            id: input.id,
+            minDate: startDate as any,
+            maxDate: endDate as any,
+            type: SpendingSummaryType.DAILYSUMMARY,
+        },
+    })
+    return processSummaryResult(res)
+})
+
+const processSummaryResult = (res: any) => {
+    const errors = res.errors
+    if (errors && errors.length > 0) {
+        return { errors, summarys: JSON.parse(res.data.getSpendingSummary.spending ?? '') }
+    }
+
+    return {
+        summarys: JSON.parse(res.data.getSpendingSummary.spending ?? '').sort(
+            (el: any, el2: any) => el2?.date - el?.date
+        ),
+        loadingSummary: false,
+    }
+}
 
 export const getMonthlySummariesAsyncThunk = createAsyncThunk(
     'transaction/get-transactions-summary-monthly',
@@ -108,16 +128,7 @@ export const getMonthlySummariesAsyncThunk = createAsyncThunk(
         })
         console.log('h232')
         console.error(res.data?.getSpendingSummary?.spending ?? '', 'geree', res.errors)
-
-        const errors = res.errors
-        if (errors && errors.length > 0) {
-            return { errors, summarys: JSON.parse(res.data.getSpendingSummary.spending ?? '') }
-        }
-
-        return {
-            summarys: JSON.parse(res.data.getSpendingSummary.spending ?? ''),
-            loadingSummary: false,
-        }
+        return processSummaryResult(res)
     }
 )
 
@@ -125,7 +136,12 @@ export const transactionSlice = createSlice({
     name: 'transaction',
     // `createSlice` will infer the state type from the `initialState` argument
     initialState,
-    reducers: { removeError: (state) => (state.error = undefined) },
+    reducers: {
+        removeError: (state) => (state.error = undefined),
+        setCurrentDateRange: (state, action) => {
+            state.currentDateRange = action.payload
+        },
+    },
     extraReducers(builder) {
         builder.addCase(getTransactionsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
@@ -173,7 +189,7 @@ export const transactionSlice = createSlice({
     },
 })
 
-export const { removeError } = transactionSlice.actions
+export const { removeError, setCurrentDateRange } = transactionSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

@@ -5,6 +5,7 @@ import { mapDdbResponseToItem } from './mappers/Item'
 import { HighLevelTransactionCategory, Item, Transaction } from './API'
 import { mapDynamoDBToTransaction } from './mappers/Transactions'
 import { uploadSpendingSummaries } from './queries/Summaries'
+import { any } from 'zod'
 
 const client = new DynamoDBClient({ region: 'ca-central-1' })
 
@@ -39,7 +40,8 @@ function aggregateSpendingByCategory(transactions: Transaction[]): AggregatedSpe
             const dateKey = date.toISOString().split('T')[0] // Format date as YYYY-MM-DD
 
             // Only consider transactions that are spending, not income or transfers
-            const category = transaction.personal_finance_category?.primary
+            const category: HighLevelTransactionCategory =
+                (transaction.personal_finance_category?.primary as any).S ?? ''
             if (category) {
                 // Initialize daily spending map for the date if not present
                 if (!dailySpendingMap[dateKey]) {
@@ -107,19 +109,7 @@ function groupTransactionsByMonth(transactions: Transaction[]): MonthlySpendingA
     return monthlyAggregates
 }
 function getEarliestFirstOfMonthWithin90Days(createdAt: Date) {
-    const date90DaysAgo = new Date(createdAt)
-    date90DaysAgo.setDate(date90DaysAgo.getDate() - 90)
-
-    // Get the first day of the current month of `createdAt`
-    const firstOfCurrentMonth = new Date(createdAt.getFullYear(), createdAt.getMonth(), 1)
-
-    // Check if the first day of the current month is within 90 days
-    if (firstOfCurrentMonth >= date90DaysAgo) {
-        return firstOfCurrentMonth
-    }
-
-    // If not, return the first day of the earliest month within the 90-day range
-    return new Date(date90DaysAgo.getFullYear(), date90DaysAgo.getMonth(), 1)
+    return new Date(new Date().getTime() - 1000 * 3600 * 24 * 365)
 }
 
 export const calculateIncomeAndSpending = async () => {
@@ -127,7 +117,14 @@ export const calculateIncomeAndSpending = async () => {
     const items = (await decryptItemsInBatches((await client.send(GetItems()))?.Items ?? [])).map(mapDdbResponseToItem)
     /** TODO: Just add created at to the item? */
     const encryptedUserItemRecord = await Promise.all(items.map(async (el) => await client.send(GetUser(el.sk || ''))))
-    const decryptedUserItemRecord = (await decryptItemsInBatches(encryptedUserItemRecord)).map(mapDdbResponseToItem)
+    const decryptedUserItemRecord = (
+        await decryptItemsInBatches(encryptedUserItemRecord.flatMap((output) => output.Items ?? []))
+    )
+        .map(mapDdbResponseToItem)
+        .filter((item) => {
+            console.info('Processing', item)
+            return item.pk && item.created_at
+        })
     /** Go through users and aggregate transactions */
     await processUsersInBatches(decryptedUserItemRecord)
 }
@@ -148,7 +145,7 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
         await Promise.all(
             batch.map(async (item) => {
                 const startDay = getEarliestFirstOfMonthWithin90Days(new Date(item?.created_at ?? 0))
-
+                console.info(startDay)
                 const encryptedTransactions = await client.send(
                     GetEntities({
                         pk: item.pk ?? '',
@@ -174,7 +171,7 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                 const decryptedTransactions = (await decryptItemsInBatches(encryptedTransactions.Items ?? [])).map(
                     mapDynamoDBToTransaction
                 )
-
+                console.info(decryptedTransactions)
                 const aggregates = groupTransactionsByMonth(decryptedTransactions)
 
                 await uploadSpendingSummaries(

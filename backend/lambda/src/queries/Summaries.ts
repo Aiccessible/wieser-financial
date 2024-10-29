@@ -26,6 +26,7 @@ export async function uploadSpendingSummaries(
                         return acc
                     }, {} as Record<string, { N: string }>),
                 },
+                date: { N: new Date(sk).getTime().toString() },
             },
         })
 
@@ -53,6 +54,7 @@ export async function uploadSpendingSummaries(
                         return acc
                     }, {} as Record<string, { N: string }>),
                 },
+                date: { N: new Date(sk + '-01').getTime().toString() },
             },
         })
 

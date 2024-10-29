@@ -2,11 +2,32 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getFinancialRecommendationsFromData } from '../libs/gpt'
 import { RootState } from '../store'
 import { Recommendation } from '../API'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
+import { post } from 'aws-amplify/api'
 // Define a type for the slice state
 interface AnalysisState {
     fullPictureRecommendations: Recommendation[]
     loading: boolean
     error: string | undefined
+}
+
+export interface FinancialInputs {
+    initial_salary: number
+    salary_growth: number
+    initial_bonus: number
+    bonus_growth: number
+    initial_expenses: number
+    expenses_growth: number
+    investment_yield: number
+    tax_rate: number
+    years: number
+    initial_rrsp_balance: number
+    initial_fhsa_balance: number
+    initial_tfsa_balance: number
+    initial_brokerage_balance: number
+    initial_rrsp_room: number
+    initial_fhsa_room: number
+    initial_tfsa_room: number
 }
 
 // Define the initial state using that type
@@ -18,8 +39,31 @@ const initialState: AnalysisState = {
 
 export interface GetFullPictureRecommendationInput {
     id: string
-    client: any
+    client: { graphql: GraphQLMethod }
 }
+
+export interface GetFinancialProjectionInput {
+    id: string
+    client: { graphql: GraphQLMethod }
+    input: FinancialInputs
+}
+
+export const getFinancialProjection = createAsyncThunk<
+    any, // Return type
+    GetFinancialProjectionInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('analysis/get-financial-projection', async (input: GetFinancialProjectionInput, getThunkApi) => {
+    const { body } = await post({
+        apiName: 'plaidapi',
+        path: `/v1/analyze/projection`,
+        options: {
+            body: {
+                ...input.input,
+            },
+        },
+    }).response
+    return { proejction: body }
+})
 
 export const getFullPictureRecommendationAsync = createAsyncThunk<
     any, // Return type

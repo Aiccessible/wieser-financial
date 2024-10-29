@@ -33,11 +33,13 @@ export const GetEntities = (params: EntityQueryParams) => {
             ':pk': { S: params.pk ?? `USER#${params.username}#ITEM#${params.id}` },
             ':sk': { S: `${params.entityName}` },
         },
+        ExpressionAttributeNames: {},
     }
     if (params.dateRange && !params.dateRange.hasNoTimeConstraint) {
         filter['FilterExpression'] = '#date BETWEEN :startDate AND :endDate'
         filter['ExpressionAttributeValues'][':startDate'] = { S: mapStartDayToDate(params.dateRange.startDay) }
         filter['ExpressionAttributeValues'][':endDate'] = { S: mapStartDayToDate(params.dateRange.endDay) }
+        filter['ExpressionAttributeNames'] = { '#date': 'date' }
     }
     console.info(params)
     return new QueryCommand({
@@ -97,9 +99,10 @@ export const GetItems = () => {
 
 export const GetUser = (id: string) => {
     const filter: any = {
-        KeyConditionExpression: 'pk = :pk',
+        KeyConditionExpression: 'pk = :pk and sk = :sk',
         ExpressionAttributeValues: {
             ':pk': { S: id },
+            ':sk': { S: 'v0' },
         },
     }
     return new QueryCommand({

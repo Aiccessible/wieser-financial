@@ -420,7 +420,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda2/9b61d97938e46d5f4bf2236d30364e41
+      ContentUri: s3://sam-s3-bucket-for-lambda2/3a690e7728a12cf2368a217eae0b90c6
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -798,7 +798,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/6acdab2da123b0a8126217c89048d2d7
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/f8a4b6bcb41ed7a79866745ff80d2aad
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -852,7 +852,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda2/bb1c1b9012f0872f8e452eca47d36ad0
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/c6af067c0f6ebc0e326c7459d2acec85
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -1561,7 +1561,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/d49a47e131122d11dad725579308e106
+      CodeUri: s3://sam-s3-bucket-for-lambda2/1ce24ef9f68ca3a15e6ef524e0cb5e5b
       Description:
         Fn::Sub: Plaid (${Environment}) - API
       Environment:
@@ -1691,7 +1691,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
+      CodeUri: s3://sam-s3-bucket-for-lambda2/1c56221fed94c844d800930db8313a2d
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1731,7 +1731,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
+      CodeUri: s3://sam-s3-bucket-for-lambda2/1c56221fed94c844d800930db8313a2d
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1797,7 +1797,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: CalculateIncomeAndSpendingLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/3623e9e0946a8d234771e630884285de
+      CodeUri: s3://sam-s3-bucket-for-lambda2/1c56221fed94c844d800930db8313a2d
       Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
       Description:
         Fn::Sub: Calculate the income and spending for users

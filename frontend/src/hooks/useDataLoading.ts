@@ -13,10 +13,10 @@ const logger = new ConsoleLogger('DataLoading')
 interface DataLoadingInput {
     id: string
     client: any
-    loadAccounts: boolean
-    loadInvestments: boolean
-    loadTransactions: boolean
-    loadRecommendations: boolean
+    loadAccounts?: boolean
+    loadInvestments?: boolean
+    loadTransactions?: boolean
+    loadRecommendations?: boolean
 }
 export const useDataLoading = (input: DataLoadingInput) => {
     const { id, client, loadAccounts, loadInvestments, loadTransactions, loadRecommendations } = input

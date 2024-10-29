@@ -7,8 +7,7 @@ from typing import Dict, Any, List
 from aws_lambda_powertools import Logger, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 import plaid
-from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
-from plaid.model.accounts_balance_get_request_options import AccountsBalanceGetRequestOptions
+from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 from plaid.model.account_base import AccountBase
 
@@ -56,10 +55,7 @@ class AccountsBalance(AbstractProduct):
         body["pk"] = f"USER#{user_id}#ITEM#{item_id}"
         body["plaid_type"] = type(account).__name__
 
-        if today:
-            body["sk"] = f"BALANCE#{account.account_id}#{today}"
-        else:
-            body["sk"] = f"ACCOUNT#{account.account_id}"
+        body["sk"] = f"ACCOUNT#{account.account_id}"
 
         body["updated_at"] = utils.now_iso8601()
         message["MessageBody"] = utils.json_dumps(body)
@@ -87,10 +83,10 @@ class AccountsBalance(AbstractProduct):
             "access_token": access_token,
             "secret": secret,
             "client_id": client_id,
-            "options": AccountsBalanceGetRequestOptions(min_last_updated_datetime=now),
+            "options": AccountsGetRequest(min_last_updated_datetime=now),
         }
 
-        request = AccountsBalanceGetRequest(**params)
+        request = AccountsGetRequest(**params)
 
         try:
             response: AccountsGetResponse = self.client.accounts_balance_get(request)
