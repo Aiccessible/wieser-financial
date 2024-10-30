@@ -7,8 +7,9 @@ import {
     getMonthlySummariesAsyncThunk,
 } from '../features/transactions'
 import { getAccountsAsync } from '../features/accounts'
-import { getFullPictureRecommendationAsync } from '../features/analysis'
+import { getFinancialProjection, getFullPictureRecommendationAsync } from '../features/analysis'
 import { ConsoleLogger } from 'aws-amplify/utils'
+import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
 const logger = new ConsoleLogger('DataLoading')
 interface DataLoadingInput {
     id: string
@@ -17,9 +18,10 @@ interface DataLoadingInput {
     loadInvestments?: boolean
     loadTransactions?: boolean
     loadRecommendations?: boolean
+    loadProjection?: boolean
 }
 export const useDataLoading = (input: DataLoadingInput) => {
-    const { id, client, loadAccounts, loadInvestments, loadTransactions, loadRecommendations } = input
+    const { id, client, loadAccounts, loadInvestments, loadTransactions, loadRecommendations, loadProjection } = input
     const dispatch = useAppDispatch()
 
     // Selectors for state data
@@ -29,6 +31,13 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const investmentCursor = useAppSelector((state) => state.investments.cursor)
     const transactionCursor = useAppSelector((state) => state.transactions.cursor)
     const transactionsLoading = useAppSelector((state) => state.transactions.loading)
+    const loadRecommendationsError = useAppSelector((state) => state.analysis.error)
+    const loadingRecommendations = useAppSelector((state) => state.analysis.loading)
+    const monthlySummaries = useAppSelector((state) => state.transactions.monthlySummaries)
+    const loadingBalances = useAppSelector((state) => state.analysis.loadingProjections)
+    const loadingProjectionError = useAppSelector((state) => state.analysis.loadingProjectionsError)
+    const defaultParams = useDefaultValuesForProjection()
+    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
 
     // Load accounts
     const getAccounts = useCallback(async () => {
@@ -92,10 +101,40 @@ export const useDataLoading = (input: DataLoadingInput) => {
 
     // Trigger recommendations once everything else is loaded
     useEffect(() => {
-        if (loadRecommendations && accounts?.length && !isTransactionsLoading() && !isInvestmentsLoading()) {
+        if (
+            loadRecommendations &&
+            accounts?.length &&
+            !isTransactionsLoading() &&
+            !isInvestmentsLoading() &&
+            !loadRecommendationsError &&
+            !loadingRecommendations
+        ) {
             dispatch(getFullPictureRecommendationAsync({ id: id || '', client }))
         }
-    }, [accounts, isTransactionsLoading, isInvestmentsLoading, dispatch, id, loadRecommendations])
+    }, [
+        accounts,
+        isTransactionsLoading,
+        isInvestmentsLoading,
+        dispatch,
+        id,
+        loadRecommendations,
+        loadRecommendationsError,
+        loadingRecommendations,
+    ])
+
+    useEffect(() => {
+        if (
+            accounts &&
+            monthlySummaries &&
+            defaultParams &&
+            !projectedBalances &&
+            !loadingBalances &&
+            !loadingProjectionError &&
+            loadProjection
+        ) {
+            dispatch(getFinancialProjection({ input: defaultParams, client, id: id || '' }))
+        }
+    }, [defaultParams, monthlySummaries, accounts, projectedBalances, loadingBalances, loadingProjectionError])
 
     return {
         accounts,

@@ -28,20 +28,11 @@ export default function Institution() {
     const recommendationsLoading = useAppSelector((state) => state.analysis.loading)
     const transferToken = useAppSelector((state) => state.auth.transferToken)
     const authError = useAppSelector((state) => state.auth.error)
-    const accounts = useAppSelector((state) => state.accounts.accounts)
-    const investments = useAppSelector((state) => state.investments.investments)
-    const monthlySummaries = useAppSelector((state) => state.transactions.monthlySummaries)
+
     const netWorth = useAppSelector(selectNetWorth)
-    const defaultParams = useDefaultValuesForProjection()
-    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
-    const loadingBalances = useAppSelector((state) => state.analysis.loadingProjections)
 
     const dispatch = useAppDispatch()
-    useEffect(() => {
-        if (accounts && monthlySummaries && defaultParams && !projectedBalances && !loadingBalances) {
-            dispatch(getFinancialProjection({ input: defaultParams, client, id: id || '' }))
-        }
-    }, [defaultParams, monthlySummaries, accounts, projectedBalances, loadingBalances])
+
     useDataLoading({
         id: id || '',
         client: client,
@@ -49,6 +40,7 @@ export default function Institution() {
         loadInvestments: true,
         loadTransactions: true,
         loadRecommendations: true,
+        loadProjection: true,
     })
     return (
         <Flex direction="column" className="h-100">

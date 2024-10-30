@@ -12,6 +12,7 @@ interface AnalysisState {
     error: string | undefined
     projectedAccountBalances: AccountBalances | undefined
     loadingProjections: boolean
+    loadingProjectionsError: string | undefined
 }
 
 export interface FinancialInputs {
@@ -40,6 +41,7 @@ const initialState: AnalysisState = {
     loading: false,
     projectedAccountBalances: undefined,
     loadingProjections: false,
+    loadingProjectionsError: undefined,
 }
 
 export interface GetFullPictureRecommendationInput {
@@ -121,16 +123,15 @@ export const analysisSlice = createSlice({
             state.loading = true
         })
         builder.addCase(getFinancialProjection.fulfilled, (state, action) => {
-            console.log(action.payload.projection)
             state.projectedAccountBalances = action.payload.projection || undefined
             state.loadingProjections = false
         })
         builder.addCase(getFinancialProjection.rejected, (state, action) => {
-            state.error = 'Failed to get projections because ' + action.error.message
+            state.loadingProjectionsError = 'Failed to get projections because ' + action.error.message
             state.loadingProjections = false
         })
         builder.addCase(getFinancialProjection.pending, (state, action) => {
-            state.error = undefined
+            state.loadingProjectionsError = undefined
             state.loadingProjections = true
         })
     },
