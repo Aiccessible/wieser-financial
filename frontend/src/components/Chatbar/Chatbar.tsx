@@ -10,6 +10,7 @@ import { Chat, ChatFocus, ChatResponse } from '../../API'
 import { onCreateChat } from '../../graphql/subscriptions'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import Markdown from 'react-markdown'
+import { CustomTextBox } from '../common/CustomTextBox'
 
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
@@ -139,7 +140,9 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             <div>
                 {chat && (
                     <div className="text-white dark:text-white-300">
-                        <Markdown>{splitResponse?.slice(0, length ?? 0).join(' ')}</Markdown>
+                        <CustomTextBox>
+                            <Markdown>{splitResponse?.slice(0, length ?? 0).join(' ')}</Markdown>
+                        </CustomTextBox>
                     </div>
                 )}
                 {
