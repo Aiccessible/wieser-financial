@@ -65,8 +65,8 @@ export default function Institution() {
                     )}
                 </Heading>
                 <div className="col-span-2 bg-gray-800 rounded-lg shadow-lg">
-                    <Title>Net Worth</Title>
-                    <Heading level={4} className="text-xl font-semibold mb-4">
+                    <Title className="p-2">Net Worth</Title>
+                    <Heading level={4} className="text-xl font-semibold mb-4 p-2">
                         <CustomTextBox className="text-4xl font-bold tracking-tight text-white relative">
                             <CustomTextBox className="relative z-10">{netWorth?.toFixed(2) ?? '...'}$</CustomTextBox>
                         </CustomTextBox>
