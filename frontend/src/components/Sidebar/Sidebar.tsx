@@ -14,6 +14,7 @@ import { useSidebar } from './use-sidebar'
 import { cn } from '../../libs/utlis'
 import LinkItem from './LinkItem'
 import ExpandMenu from './ExpandMenu'
+import { CustomTextBox } from '../common/CustomTextBox'
 
 interface SidebarProps {}
 
@@ -25,7 +26,7 @@ const Sidebar = ({}: SidebarProps) => {
     return (
         <aside
             className={cn(
-                `absolute left-0 top-0 z-997 flex h-screen w-20 flex-col overflow-y-hidden bg-black duration-300 ease-linear  dark:bg-boxdark lg:static lg:translate-x-0 `,
+                `absolute left-0 top-0 z-997 flex h-screen w-20 flex-col overflow-y-hidden duration-300 ease-linear  dark:bg-boxdark lg:static lg:translate-x-0 `,
                 {
                     'w-70': isSidebarOpen,
                 }
@@ -42,9 +43,15 @@ const Sidebar = ({}: SidebarProps) => {
                         src={'/images/logo/logo-icon.png'}
                         alt="Logo"
                     />
-                    {isSidebarOpen && <h1 className=" ml-2 text-xl font-semibold text-white">Wieser</h1>}
+                    {isSidebarOpen && (
+                        <h1 className=" ml-2 text-xl font-semibold text-white">
+                            <CustomTextBox>Wieser</CustomTextBox>
+                        </h1>
+                    )}
                 </Link>
-                {isSidebarOpen && <MenuIcon onClick={toggleSidebar} className="h-6 w-6" />}
+                <CustomTextBox>
+                    {isSidebarOpen && <MenuIcon onClick={toggleSidebar} className="h-6 w-6" />}
+                </CustomTextBox>
             </div>
             {/* <!-- SIDEBAR HEADER --> */}
 
@@ -60,34 +67,52 @@ const Sidebar = ({}: SidebarProps) => {
                         >
                             {/* <!-- Menu Item Dashboard --> */}
                             <li>
-                                <ExpandMenu name="Homepage" icon={<HomeIcon className="  h-6 w-6 hover:text-white" />}>
-                                    <LinkItem icon={<ShoppingBag />} title="E-commerce" href="/" />
-                                </ExpandMenu>
+                                <LinkItem
+                                    title={(<CustomTextBox>HomePage</CustomTextBox>) as any}
+                                    href={id ? `/institution/${id}` : '/institution'}
+                                    icon={
+                                        <CustomTextBox>
+                                            <HomeIcon className="  h-6 w-6 hover:text-white" />
+                                        </CustomTextBox>
+                                    }
+                                ></LinkItem>
                             </li>
                             {/* <!-- Menu Item Dashboard --> */}
 
                             {/* <!-- Menu Item Calendar --> */}
                             <li>
                                 <LinkItem
-                                    title="Transactions"
+                                    title={(<CustomTextBox>Transactions</CustomTextBox>) as any}
                                     href={id ? `/institution/${id}/transactions` : 'transactions'}
-                                    icon={<ActivityIcon className="h-6 w-6" />}
+                                    icon={
+                                        <CustomTextBox>
+                                            <ActivityIcon className="h-6 w-6" />
+                                        </CustomTextBox>
+                                    }
                                 ></LinkItem>
                             </li>
 
                             <li>
                                 <LinkItem
-                                    title="Investments"
+                                    title={(<CustomTextBox>Investments</CustomTextBox>) as any}
                                     href={id ? `/institution/${id}/investments` : '/investments'}
-                                    icon={<BarChart2 className="h-6 w-6" />}
+                                    icon={
+                                        <CustomTextBox>
+                                            <BarChart2 className="h-6 w-6" />
+                                        </CustomTextBox>
+                                    }
                                 ></LinkItem>
                             </li>
 
                             <li>
                                 <LinkItem
-                                    title="The Lab"
+                                    title={(<CustomTextBox>The Lab</CustomTextBox>) as any}
                                     href={id ? `/analyze/${id}` : '/analyze'}
-                                    icon={<BrainCircuitIcon className="h-6 w-6" />}
+                                    icon={
+                                        <CustomTextBox>
+                                            <BrainCircuitIcon className="h-6 w-6" />
+                                        </CustomTextBox>
+                                    }
                                 ></LinkItem>
                             </li>
 
@@ -96,9 +121,13 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Settings --> */}
                             <li>
                                 <LinkItem
-                                    title="Settings"
+                                    title={(<CustomTextBox>Settings</CustomTextBox>) as any}
                                     href="/settings"
-                                    icon={<Settings className="h-6 w-6" />}
+                                    icon={
+                                        <CustomTextBox>
+                                            <Settings className="h-6 w-6" />
+                                        </CustomTextBox>
+                                    }
                                 ></LinkItem>
                             </li>
 

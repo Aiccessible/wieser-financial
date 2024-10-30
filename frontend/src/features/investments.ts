@@ -278,14 +278,20 @@ export const investmentSlice = createSlice({
         })
         builder.addCase(getInvestmentNews.fulfilled, (state, action) => {
             state.error = action.payload.errors ? action.payload.errors : undefined
-            state.investmentKnoweldge[action.payload.key ?? ''].news = action.payload.value ?? 'Could not get summary'
-            state.investmentKnoweldge[action.payload.key ?? ''].loadingNews = false
+            if (!state.investmentKnoweldge[action.payload?.key ?? '']) {
+                return
+            }
+            state.investmentKnoweldge[action.payload?.key ?? ''].news = action.payload?.value ?? 'Could not get summary'
+            state.investmentKnoweldge[action.payload?.key ?? ''].loadingNews = false
         })
         builder.addCase(getInvestmentNews.rejected, (state, action) => {
             state.error = 'Failed to summarize investments ' + action.error.message
-            state.investmentKnoweldge[(action.payload as any).key ?? ''].news =
-                (action.payload as any).value ?? 'Could not get summary'
-            state.investmentKnoweldge[(action.payload as any).key ?? ''].loadingNews = false
+            if (!state.investmentKnoweldge[(action.payload as any)?.key ?? '']) {
+                return
+            }
+            state.investmentKnoweldge[(action.payload as any)?.key ?? ''].news =
+                (action.payload as any)?.value ?? 'Could not get summary'
+            state.investmentKnoweldge[(action.payload as any)?.key ?? ''].loadingNews = false
         })
         builder.addCase(getInvestmentNews.pending, (state, action) => {
             const id = action.meta.arg.security ? getIdFromSecurity(action.meta.arg.security) : ''
@@ -298,18 +304,24 @@ export const investmentSlice = createSlice({
         })
         builder.addCase(getInvestmentAnalysis.fulfilled, (state, action) => {
             state.error = action.payload.errors ? action.payload.errors : undefined
-            state.investmentKnoweldge[action.payload.key ?? ''].analysis =
-                action.payload.value ?? 'Could not get summary'
-            state.investmentKnoweldge[action.payload.key ?? ''].priceData = action.payload.priceData ?? []
-            state.investmentKnoweldge[action.payload.key ?? ''].loadingAnalysis = false
+            if (!state.investmentKnoweldge[action.payload?.key ?? '']) {
+                return
+            }
+            state.investmentKnoweldge[action.payload?.key ?? ''].analysis =
+                action.payload?.value ?? 'Could not get summary'
+            state.investmentKnoweldge[action.payload?.key ?? ''].priceData = action.payload?.priceData ?? []
+            state.investmentKnoweldge[action.payload?.key ?? ''].loadingAnalysis = false
         })
         builder.addCase(getInvestmentAnalysis.rejected, (state, action) => {
             state.error = 'Failed to summarize investments ' + action.error.message
-            state.investmentKnoweldge[(action.payload as any).key ?? ''].analysis =
-                (action.payload as any).value ?? 'Could not get summary'
-            state.investmentKnoweldge[(action.payload as any).key ?? ''].loadingAnalysis = false
-            state.investmentKnoweldge[(action.payload as any).key ?? ''].priceData =
-                (action.payload as any).priceData ?? []
+            if (!state.investmentKnoweldge[(action.payload as any)?.key ?? '']) {
+                return
+            }
+            state.investmentKnoweldge[(action.payload as any)?.key ?? ''].analysis =
+                (action.payload as any)?.value ?? 'Could not get summary'
+            state.investmentKnoweldge[(action.payload as any)?.key ?? ''].loadingAnalysis = false
+            state.investmentKnoweldge[(action.payload as any)?.key ?? ''].priceData =
+                (action.payload as any)?.priceData ?? []
         })
         builder.addCase(getInvestmentAnalysis.pending, (state, action) => {
             const id = action.meta.arg.security ? getIdFromSecurity(action.meta.arg.security) : ''
