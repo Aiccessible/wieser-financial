@@ -6,9 +6,8 @@ import analysis from './features/analysis'
 import auth from './features/auth'
 import chat from './features/chat'
 // ...
-
 export const store = configureStore({
-    reducer: { accounts, investments, transactions, analysis, auth, chat },
+    reducer: { accounts, investments, analysis, auth, chat, transactions },
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

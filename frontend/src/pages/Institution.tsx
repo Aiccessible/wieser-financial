@@ -7,15 +7,15 @@ import { generateClient } from 'aws-amplify/api'
 import { Loader } from 'lucide-react'
 import RecommendationsAccordion from '../components/common/RecommendationAcordion'
 import { useDataLoading } from '../hooks/useDataLoading'
-import { get, post } from 'aws-amplify/api'
-import { useState } from 'react'
-import { setLoadingTransfer, setTransferToken } from '../features/auth'
+import { useEffect } from 'react'
 import PlaidLink from '../components/PlaidLink'
 import { selectNetWorth } from '../features/accounts'
 import Accounts from '../components/Accounts'
-import NetWorthChart from '../components/Charting/NetWorth'
 import { Title } from '@tremor/react'
 import { MonthlySpending } from '../components/common/MonthlySpending'
+import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
+import { getFinancialProjection } from '../features/analysis'
+import { NetWorthChart } from '../components/Analysis/NetworthChart'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -28,7 +28,20 @@ export default function Institution() {
     const recommendationsLoading = useAppSelector((state) => state.analysis.loading)
     const transferToken = useAppSelector((state) => state.auth.transferToken)
     const authError = useAppSelector((state) => state.auth.error)
+    const accounts = useAppSelector((state) => state.accounts.accounts)
+    const investments = useAppSelector((state) => state.investments.investments)
+    const monthlySummaries = useAppSelector((state) => state.transactions.monthlySummaries)
     const netWorth = useAppSelector(selectNetWorth)
+    const defaultParams = useDefaultValuesForProjection()
+    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
+    const loadingBalances = useAppSelector((state) => state.analysis.loadingProjections)
+
+    const dispatch = useAppDispatch()
+    useEffect(() => {
+        if (accounts && monthlySummaries && defaultParams && !projectedBalances && !loadingBalances) {
+            dispatch(getFinancialProjection({ input: defaultParams, client, id: id || '' }))
+        }
+    }, [defaultParams, monthlySummaries, accounts, projectedBalances, loadingBalances])
     useDataLoading({
         id: id || '',
         client: client,
@@ -58,7 +71,11 @@ export default function Institution() {
                             <CustomTextBox className="relative z-10">{netWorth?.toFixed(2) ?? '...'}$</CustomTextBox>
                         </CustomTextBox>
                     </Heading>
-                    <NetWorthChart />
+                    {projectedBalances ? (
+                        <NetWorthChart title="Networth Projection" accountBalances={projectedBalances} />
+                    ) : (
+                        <Loader />
+                    )}
                     <Accounts updateAccounts={() => {}} />
                 </div>
 

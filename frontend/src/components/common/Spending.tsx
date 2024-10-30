@@ -18,25 +18,7 @@ interface Props {
     spending: Record<string, number>
     title: string
 }
-try {
-    Highcharts.setOptions({
-        colors: Highcharts.map(Highcharts.getOptions().colors ?? [], function (color: any) {
-            return {
-                radialGradient: {
-                    cx: 0.5,
-                    cy: 0.3,
-                    r: 0.7,
-                },
-                stops: [
-                    [0, color],
-                    [1, Highcharts.color(color).brighten(-0.3).get('rgb')], // darken
-                ],
-            }
-        }),
-    })
-} catch (e) {
-    console.error('No colors')
-}
+
 export const Spending = (props: Props) => {
     const { spending, title } = props
     const spendingData = Object.entries(spending || {}).map(([category, value]) => ({

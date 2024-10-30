@@ -10,8 +10,30 @@ import './App.css';
 import Transactions from './components/Transactions';
 import Investments from './components/Investments';
 import Accounts from './components/Accounts';
+import Projection from './components/Analysis/Projection'
 import RootLayout from './RootLayout';
 import AnalyzeRecommendation from './components/Analysis/AnalyzeRecommendation'
+import * as Highcharts from 'highcharts'
+
+try {
+    Highcharts.setOptions({
+        colors: Highcharts.map(Highcharts.getOptions().colors ?? [], function (color: any) {
+            return {
+                radialGradient: {
+                    cx: 0.5,
+                    cy: 0.3,
+                    r: 0.7,
+                },
+                stops: [
+                    [0, color],
+                    [1, Highcharts.color(color).brighten(-0.3).get('rgb')], // darken
+                ],
+            }
+        }),
+    })
+} catch (e) {
+    console.error('No colors')
+}
 
 function App() {
   return (
@@ -35,6 +57,16 @@ function App() {
                               <RequireAuth>
                                   <RootLayout>
                                       <Transactions />
+                                  </RootLayout>
+                              </RequireAuth>
+                          }
+                      />
+                      <Route
+                          path="/analyze/:id/"
+                          element={
+                              <RequireAuth>
+                                  <RootLayout>
+                                      <Projection />
                                   </RootLayout>
                               </RequireAuth>
                           }

@@ -60,12 +60,14 @@ export const getAccountRecommendationAsync = createAsyncThunk(
         return { accountRecommendation: res.content }
     }
 )
+export const getAccountBalanceMultipler = (acc: Account) => (acc.type === 'loan' || acc.type === 'credit' ? -1 : 1)
 
-export const selectNetWorth = (state: RootState) =>
-    state.accounts.accounts?.reduce(
-        (val: number, acc) => val + (acc.type === 'loan' ? -1 : 1) * parseFloat(acc.balances?.current || '0'),
+export const reduceAccounts = (accs: Account[]) =>
+    accs.reduce(
+        (val: number, acc) => val + getAccountBalanceMultipler(acc) * parseFloat(acc.balances?.current || '0'),
         0
-    ) ?? 0
+    )
+export const selectNetWorth = (state: RootState) => reduceAccounts(state.accounts.accounts ?? [])
 
 export const accountSlice = createSlice({
     name: 'account',

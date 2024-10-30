@@ -16,7 +16,8 @@ export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
 }
 
 export function calculateAverageSpendingFromMonthlySummarys(
-    spendingSummaries: SpendingSummary[]
+    spendingSummaries: SpendingSummary[],
+    includeAll: boolean = false
 ): Record<string, number> {
     console.log('calculation')
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
@@ -32,10 +33,10 @@ export function calculateAverageSpendingFromMonthlySummarys(
             numberOfDays = daysInMonth[dateOfSummary.getMonth()]
         }
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            console.log('adding', value / numberOfDays, ' to ', category)
             if (
-                category !== HighLevelTransactionCategory.INCOME &&
-                category !== HighLevelTransactionCategory.TRANSFER_IN
+                (category !== HighLevelTransactionCategory.INCOME &&
+                    category !== HighLevelTransactionCategory.TRANSFER_IN) ||
+                includeAll
             )
                 totals[category] = (totals[category] || 0) + value / numberOfDays
         })

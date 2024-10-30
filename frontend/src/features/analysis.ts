@@ -4,11 +4,14 @@ import { RootState } from '../store'
 import { Recommendation } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { post } from 'aws-amplify/api'
+import { AccountBalances } from '../components/Analysis/NetworthChart'
 // Define a type for the slice state
 interface AnalysisState {
     fullPictureRecommendations: Recommendation[]
     loading: boolean
     error: string | undefined
+    projectedAccountBalances: AccountBalances | undefined
+    loadingProjections: boolean
 }
 
 export interface FinancialInputs {
@@ -35,6 +38,8 @@ const initialState: AnalysisState = {
     fullPictureRecommendations: [],
     error: undefined,
     loading: false,
+    projectedAccountBalances: undefined,
+    loadingProjections: false,
 }
 
 export interface GetFullPictureRecommendationInput {
@@ -62,7 +67,9 @@ export const getFinancialProjection = createAsyncThunk<
             },
         },
     }).response
-    return { proejction: body }
+    const data = await body.json()
+
+    return { projection: data }
 })
 
 export const getFullPictureRecommendationAsync = createAsyncThunk<
@@ -112,6 +119,19 @@ export const analysisSlice = createSlice({
         builder.addCase(getFullPictureRecommendationAsync.pending, (state, action) => {
             state.error = undefined
             state.loading = true
+        })
+        builder.addCase(getFinancialProjection.fulfilled, (state, action) => {
+            console.log(action.payload.projection)
+            state.projectedAccountBalances = action.payload.projection || undefined
+            state.loadingProjections = false
+        })
+        builder.addCase(getFinancialProjection.rejected, (state, action) => {
+            state.error = 'Failed to get projections because ' + action.error.message
+            state.loadingProjections = false
+        })
+        builder.addCase(getFinancialProjection.pending, (state, action) => {
+            state.error = undefined
+            state.loadingProjections = true
         })
     },
 })
