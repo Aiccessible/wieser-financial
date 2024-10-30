@@ -38,6 +38,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const loadingProjectionError = useAppSelector((state) => state.analysis.loadingProjectionsError)
     const defaultParams = useDefaultValuesForProjection()
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
+    const recommendations = useAppSelector((state) => state.analysis.fullPictureRecommendations)
 
     // Load accounts
     const getAccounts = useCallback(async () => {
@@ -107,7 +108,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
             !isTransactionsLoading() &&
             !isInvestmentsLoading() &&
             !loadRecommendationsError &&
-            !loadingRecommendations
+            !loadingRecommendations &&
+            !recommendations
         ) {
             dispatch(getFullPictureRecommendationAsync({ id: id || '', client }))
         }
@@ -120,6 +122,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
         loadRecommendations,
         loadRecommendationsError,
         loadingRecommendations,
+        recommendations,
     ])
 
     useEffect(() => {

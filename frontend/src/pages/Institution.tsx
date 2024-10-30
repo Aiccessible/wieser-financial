@@ -76,7 +76,7 @@ export default function Institution() {
                     <Heading className="text-lg mb-4">
                         <CustomTextBox>Key Recommendations</CustomTextBox>
                     </Heading>
-                    {<RecommendationsAccordion id={id || ''} recommendations={recommendations} />}
+                    {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
                     {/* Your recommendation component goes here */}
                     <MonthlySpending width={100} />
                 </div>

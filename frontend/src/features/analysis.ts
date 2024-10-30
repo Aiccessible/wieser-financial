@@ -7,7 +7,7 @@ import { post } from 'aws-amplify/api'
 import { AccountBalances } from '../components/Analysis/NetworthChart'
 // Define a type for the slice state
 interface AnalysisState {
-    fullPictureRecommendations: Recommendation[]
+    fullPictureRecommendations: Recommendation[] | undefined
     loading: boolean
     error: string | undefined
     projectedAccountBalances: AccountBalances | undefined
@@ -36,7 +36,7 @@ export interface FinancialInputs {
 
 // Define the initial state using that type
 const initialState: AnalysisState = {
-    fullPictureRecommendations: [],
+    fullPictureRecommendations: undefined,
     error: undefined,
     loading: false,
     projectedAccountBalances: undefined,
