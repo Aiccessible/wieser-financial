@@ -31,7 +31,7 @@ export default function Institution() {
 
     const netWorth = useAppSelector(selectNetWorth)
 
-    const dispatch = useAppDispatch()
+    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
 
     useDataLoading({
         id: id || '',
