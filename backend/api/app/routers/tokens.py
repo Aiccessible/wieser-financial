@@ -63,13 +63,13 @@ def create_link_token() -> Dict[str, str]:
     tracer.put_annotation(key="UserId", value=user_id)
 
     request = LinkTokenCreateRequest(
-        products=[Products("investments")],
+        products=[Products("transactions")],
         client_name="FinanceGPT",
         country_codes=[CountryCode("US"), CountryCode("CA")],
         language="en",
         webhook=WEBHOOK_URL,
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        optional_products=[ Products("transactions")],
+        optional_products=[Products("investments")],
         investments_auth={
             "masked_number_match_enabled": True,
             "stated_account_number_enabled": True,
@@ -161,7 +161,6 @@ def exchange_token() -> Response:
         mock_write_method,
     )
     encrypted_item = encrypt_item(TableName=TABLE_NAME, Item=item)
-    now = utils.now_iso8601()
 
     items = [
         {
@@ -178,7 +177,6 @@ def exchange_token() -> Response:
                     "pk": f"USER#{user_id}#INSTITUTIONS",
                     "sk": f"INSTITUTION#{institution_id}",
                     "item_id": item_id,
-                    "created_at": utils.now_iso8601()
                 },
                 "ConditionExpression": "attribute_not_exists(pk) AND attribute_not_exists(sk)",
             }
@@ -191,7 +189,6 @@ def exchange_token() -> Response:
                     "sk": f"USER#{user_id}#ITEM#{item_id}",
                     "institution_id": institution_id,
                     "institution_name": institution.get("name"),
-                    "created_at": utils.now_iso8601()
                 },
                 "ConditionExpression": "attribute_not_exists(pk) AND attribute_not_exists(sk)",
             }

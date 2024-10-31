@@ -1,11 +1,14 @@
 import { QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { DataRangeResponse } from '../gpt';
+import { HighLevelTransactionCategory } from '../API';
 export interface EntityQueryParams {
     username: string;
     id: string;
     dateRange: DataRangeResponse | undefined;
+    customDateRange?: [number?, number?] | null | undefined;
     entityName: string;
     pk?: string | undefined;
+    highLevelCategory?: HighLevelTransactionCategory;
 }
 export interface CacheEntityQueryParam {
     id: string;

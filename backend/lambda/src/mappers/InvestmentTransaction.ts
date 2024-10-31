@@ -18,7 +18,7 @@ interface InvestmentTransaction {
 }
 
 // DynamoDB Mapper Function
-function mapDynamoDBToInvestmentTransaction(item: { [key: string]: AttributeValue }): InvestmentTransaction {
+export function mapDynamoDBToInvestmentTransaction(item: { [key: string]: AttributeValue }): InvestmentTransaction {
     return {
         accountId: item.account_id.S!, // DynamoDB string type
         amount: parseFloat(item.amount.N!), // DynamoDB number type

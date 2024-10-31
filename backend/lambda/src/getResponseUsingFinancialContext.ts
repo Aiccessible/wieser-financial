@@ -32,7 +32,10 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     console.info('Get response for', event)
     let neededInfo: { optionsForInformation: InformationOptions[] } = { optionsForInformation: [] }
     let dateRangeResponse: any
-    if (event.arguments.chat.shouldRagFetch) {
+    if (
+        event.arguments.chat.shouldRagFetch &&
+        !(event.arguments.chat.currentDateRange && event.arguments.chat.highLevelCategory)
+    ) {
         const informationNeeded = getNeededInformationFromModel(event.arguments.chat.prompt || '')
         const dateRange = getDateRangeFromModel(event.arguments.chat.prompt || '')
         await Promise.all([informationNeeded, dateRange])
@@ -64,8 +67,12 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
         !neededInfo.optionsForInformation.find((el) => el === InformationOptions.INVESTMENTS)
     ) {
         neededInfo.optionsForInformation.push('INVESTMENTS' as any)
+    } else if (
+        event.arguments.chat.chatFocus === ChatFocus.Transaction &&
+        !neededInfo.optionsForInformation.find((el) => el === InformationOptions.TRANSACTIONS)
+    ) {
+        neededInfo.optionsForInformation.push('TRANSACTIONS' as any)
     }
-
     console.info('Context: ', context)
     console.info('Needed info ', neededInfo)
     console.info('Date range: ', dateRangeResponse)
@@ -82,6 +89,11 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
                         id: event.arguments.chat.accountId || '',
                         dateRange: entityName in dateSupportedFiltering ? dateRangeResponse : undefined,
                         entityName: entityName,
+                        customDateRange:
+                            (event.arguments.chat?.currentDateRange?.map((el) =>
+                                el ? parseInt(el) : undefined
+                            ) as any) ?? undefined,
+                        highLevelCategory: event.arguments.chat.highLevelCategory ?? undefined,
                     })
                 ),
             ]

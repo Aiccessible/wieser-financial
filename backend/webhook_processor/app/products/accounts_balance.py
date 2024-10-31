@@ -7,6 +7,7 @@ from typing import Dict, Any, List
 from aws_lambda_powertools import Logger, Metrics
 from aws_lambda_powertools.metrics import MetricUnit
 import plaid
+from plaid.model.accounts_get_request_options import AccountsGetRequestOptions
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 from plaid.model.account_base import AccountBase
@@ -80,20 +81,19 @@ class AccountsBalance(AbstractProduct):
 
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         params = {
-            "access_token": access_token,
             "secret": secret,
             "client_id": client_id,
-            "options": AccountsGetRequest(min_last_updated_datetime=now),
+            "options": AccountsGetRequestOptions(),
         }
 
-        request = AccountsGetRequest(**params)
+        request = AccountsGetRequest(access_token, **params)
 
         try:
-            response: AccountsGetResponse = self.client.accounts_balance_get(request)
+            response: AccountsGetResponse = self.client.accounts_get(request)
         except plaid.ApiException:
             logger.exception("Failed to call accounts balance get")
             raise
-
+        logger.info(f"Got {response.accounts}")
         accounts: List[AccountBase] = response.accounts
         if accounts:
             messages = []

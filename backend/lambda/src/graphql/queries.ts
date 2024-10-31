@@ -154,3 +154,24 @@ export const getFinancialConversationResponse = /* GraphQL */ `query GetFinancia
   APITypes.GetFinancialConversationResponseQueryVariables,
   APITypes.GetFinancialConversationResponseQuery
 >;
+export const getSpendingSummary = /* GraphQL */ `query GetSpendingSummary(
+  $minDate: Long
+  $maxDate: Long
+  $id: String!
+  $type: SpendingSummaryType
+) {
+  getSpendingSummary(
+    minDate: $minDate
+    maxDate: $maxDate
+    id: $id
+    type: $type
+  ) {
+    sk
+    spending
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetSpendingSummaryQueryVariables,
+  APITypes.GetSpendingSummaryQuery
+>;

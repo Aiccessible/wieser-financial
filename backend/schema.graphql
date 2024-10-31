@@ -59,6 +59,8 @@ input ChatQuery {
     requiresLiveData: Boolean
     chatType: ChatType
     shouldRagFetch: Boolean
+    highLevelCategory: HighLevelTransactionCategory
+    currentDateRange: [Long]
     cacheIdentifiers: [CacheIdentifer!]
 }
 

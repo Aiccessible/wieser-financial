@@ -139,6 +139,8 @@ export type ChatQuery = {
     requiresLiveData?: boolean | null;
     chatType?: ChatType | null;
     shouldRagFetch?: boolean | null;
+    highLevelCategory?: HighLevelTransactionCategory | null;
+    currentDateRange?: Array<string | null> | null;
     cacheIdentifiers?: Array<CacheIdentifer> | null;
 };
 export declare enum ChatFocus {
@@ -184,6 +186,15 @@ export type Transfer = {
 export type ChatResponse = {
     __typename: "ChatResponse";
     response?: string | null;
+};
+export declare enum SpendingSummaryType {
+    MONTHLYSUMMARY = "MONTHLYSUMMARY",
+    DAILYSUMMARY = "DAILYSUMMARY"
+}
+export type SpendingSummary = {
+    __typename: "SpendingSummary";
+    sk?: string | null;
+    spending?: string | null;
 };
 export type CreateChatMutationVariables = {
     chat: ChatInput;
@@ -344,6 +355,19 @@ export type GetFinancialConversationResponseQuery = {
     getFinancialConversationResponse: {
         __typename: "ChatResponse";
         response?: string | null;
+    };
+};
+export type GetSpendingSummaryQueryVariables = {
+    minDate?: string | null;
+    maxDate?: string | null;
+    id: string;
+    type?: SpendingSummaryType | null;
+};
+export type GetSpendingSummaryQuery = {
+    getSpendingSummary: {
+        __typename: "SpendingSummary";
+        sk?: string | null;
+        spending?: string | null;
     };
 };
 export type OnCreateChatSubscriptionVariables = {

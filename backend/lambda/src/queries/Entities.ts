@@ -1,12 +1,15 @@
 import { QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { DataRangeResponse, GptDateResponse } from '../gpt'
+import { HighLevelTransactionCategory } from '../API'
 
 export interface EntityQueryParams {
     username: string
     id: string
     dateRange: DataRangeResponse | undefined
+    customDateRange?: [number?, number?] | null | undefined
     entityName: string
     pk?: string | undefined
+    highLevelCategory?: HighLevelTransactionCategory
 }
 
 export interface CacheEntityQueryParam {
@@ -27,21 +30,47 @@ function mapStartDayToDate(startDay: GptDateResponse): string {
 
 // SECURITY and ACCOUNT dont have date range in key
 export const GetEntities = (params: EntityQueryParams) => {
-    const filter: any = {
+    let filter: any = {
         KeyConditionExpression: 'pk = :pk AND begins_with(sk, :sk)',
         ExpressionAttributeValues: {
             ':pk': { S: params.pk ?? `USER#${params.username}#ITEM#${params.id}` },
             ':sk': { S: `${params.entityName}` },
         },
-        ExpressionAttributeNames: {},
     }
     if (params.dateRange && !params.dateRange.hasNoTimeConstraint) {
+        filter = { ...filter, ExpressionAttributeNames: {} }
         filter['FilterExpression'] = '#date BETWEEN :startDate AND :endDate'
         filter['ExpressionAttributeValues'][':startDate'] = { S: mapStartDayToDate(params.dateRange.startDay) }
         filter['ExpressionAttributeValues'][':endDate'] = { S: mapStartDayToDate(params.dateRange.endDay) }
         filter['ExpressionAttributeNames'] = { '#date': 'date' }
     }
-    console.info(params)
+    if (params.customDateRange) {
+        filter = { ...filter, ExpressionAttributeNames: {} }
+        filter['FilterExpression'] = '#date BETWEEN :startDate AND :endDate'
+        filter['ExpressionAttributeValues'][':startDate'] = {
+            S: params.customDateRange[0] ? new Date(params.customDateRange[0]).toISOString().split('.')[0] : 0,
+        }
+        filter['ExpressionAttributeValues'][':endDate'] = {
+            S: params.customDateRange[1]
+                ? new Date(params.customDateRange[1]).toISOString().split('.')[0]
+                : new Date().toISOString().split('.')[0],
+        }
+        filter['ExpressionAttributeNames'] = { '#date': 'date' }
+    }
+    if (params.highLevelCategory) {
+        if (!filter['FilterExpression']) {
+            filter['FilterExpression'] = '#finance = :primaryCategory'
+        } else {
+            filter['FilterExpression'] = filter['FilterExpression'] + ' AND #finance = :primaryCategory'
+        }
+        filter['ExpressionAttributeValues'][':primaryCategory'] = {
+            S: params.highLevelCategory,
+        }
+        filter['ExpressionAttributeNames'] = {
+            ...(filter['ExpressionAttributeNames'] ?? {}),
+            '#finance': 'personal_finance_category.primary',
+        }
+    }
     return new QueryCommand({
         TableName: process.env.TABLE_NAME,
         ...filter,
