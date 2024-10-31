@@ -5,7 +5,7 @@ import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, Titl
 import RefreshHoldings from './RefreshHoldings'
 import { Holding, Investment as InvestmentType, Security } from '../../src/API'
 import Investment from './Investment'
-import { Loader } from 'lucide-react'
+import Loader from '../components/common/Loader'
 import { Alert, Button } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
 import { useParams } from 'react-router-dom'

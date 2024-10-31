@@ -1,6 +1,7 @@
 'use client'
 import './data-tables-css.css'
 import './satoshi.css'
+import './loader.css'
 import { useState, useEffect } from 'react'
 import Loader from './components/common/Loader'
 

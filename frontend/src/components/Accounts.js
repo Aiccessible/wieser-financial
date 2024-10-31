@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
 import Account from './Account';
-import { Loader } from 'lucide-react';
+import Loader from '../components/common/Loader'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, Title } from '@tremor/react'
 import { useParams } from 'react-router-dom';
 import { CustomTextBox } from './common/CustomTextBox';
@@ -70,7 +70,7 @@ export default function Accounts({ updateAccounts }) {
           <Title>Accounts</Title>
           {linkedAnalysisText && linkedAnalysisText}
           {!linkedAnalysisText && gptAnalysis && <CustomTextBox>{gptAnalysis}</CustomTextBox>}
-          <Table highlightOnHover={true} variation="striped">
+          <Table highlightOnHover={true} >
               <TableHead>
                   <TableRow>
                       <TableHeaderCell>Name</TableHeaderCell>

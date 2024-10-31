@@ -3,7 +3,7 @@ import Institution from './Institution';
 import { CustomTextBox } from './common/CustomTextBox';
 export default function Institutions({ institutions = []}) {
   return (
-      <Table highlightOnHover={true} variation="striped">
+      <Table highlightOnHover={true} >
           <TableHead>
               <TableRow>
                   <TableCell as="th">

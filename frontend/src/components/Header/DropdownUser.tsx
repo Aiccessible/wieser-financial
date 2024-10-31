@@ -41,17 +41,6 @@ const DropdownUser = () => {
                     <span className="block text-xs">Full Stack Developer</span>
                 </span>
 
-                <span className="h-12 w-12 rounded-full">
-                    <img
-                        loading="lazy"
-                        className="rounded-full"
-                        width={112}
-                        height={112}
-                        src={'/images/random.jpg'}
-                        alt="User"
-                    />
-                </span>
-
                 <svg
                     className="hidden fill-current sm:block"
                     width="12"

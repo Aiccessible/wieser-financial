@@ -1,13 +1,17 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { getFinancialConversationResponse } from '../graphql/queries'
-import { ChatFocus, GetFinancialConversationResponseQuery } from '../API'
+import { ChatFocus, GetFinancialConversationResponseQuery, HighLevelTransactionCategory, SpendingSummary } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
+
 // Define a type for the slice state
 interface ChatState {
     chats: string[]
     error: string | undefined
     loadingChat: boolean
+    currentScope: ChatFocus | undefined
+    currentDateRange: [number?, number?] | undefined
+    highLevelSpendingCategory: HighLevelTransactionCategory | undefined
 }
 
 // Define the initial state using that type
@@ -15,18 +19,24 @@ const initialState: ChatState = {
     chats: [],
     error: undefined,
     loadingChat: false,
+    currentScope: undefined,
+    currentDateRange: undefined,
+    highLevelSpendingCategory: undefined,
 }
 
-export const sendChatToLLM = createAsyncThunk<
-    any,
-    { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus; id: string },
-    { state: RootState }
->(
+export interface SendChatToLLMArgs {
+    newChat: string
+    client: { graphql: GraphQLMethod }
+    focus: ChatFocus
+    id: string
+    dontRagFetch?: boolean
+    currentDateRange?: [number?, number?]
+    highLevelSpendingCategory?: HighLevelTransactionCategory | undefined
+}
+
+export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: RootState }>(
     'chat/chat-llm',
-    async (
-        input: { newChat: string; client: { graphql: GraphQLMethod }; focus: ChatFocus; id: string },
-        getThunkApi
-    ) => {
+    async (input: SendChatToLLMArgs, getThunkApi) => {
         try {
             const res = await input.client.graphql({
                 query: getFinancialConversationResponse,
@@ -35,7 +45,9 @@ export const sendChatToLLM = createAsyncThunk<
                         prompt: input.newChat,
                         chatFocus: input.focus,
                         accountId: input.id,
-                        shouldRagFetch: true,
+                        shouldRagFetch: !input.dontRagFetch,
+                        currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
+                        highLevelCategory: input.highLevelSpendingCategory,
                     },
                 },
             })
@@ -62,11 +74,21 @@ export const chatSlice = createSlice({
         setChatError: (state, action) => {
             state.error = action.payload
         },
+        setChatParams: (state, action) => {
+            state.currentDateRange = action.payload.dateRange
+            state.currentScope = action.payload.scope
+            state.highLevelSpendingCategory = action.payload.highLevelTransactionCategory
+        },
+        updateDateRange: (state, action) => {
+            state.currentDateRange = action.payload
+        },
+        setLoadingChat: (state, action) => {
+            state.loadingChat = action.payload
+        },
     },
     extraReducers(builder) {
         builder.addCase(sendChatToLLM.fulfilled, (state, action) => {
             action.payload.chatResponse && state.chats.push(action.payload.chatResponse)
-            state.loadingChat = false
             state.error = action.payload.error
         })
         builder.addCase(sendChatToLLM.rejected, (state, action) => {
@@ -81,7 +103,7 @@ export const chatSlice = createSlice({
     },
 })
 
-export const { setChatError } = chatSlice.actions
+export const { setChatError, setChatParams, updateDateRange, setLoadingChat } = chatSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

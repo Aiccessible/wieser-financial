@@ -1,5 +1,7 @@
 import * as Accordion from '@radix-ui/react-accordion'
-import { ChevronDownIcon, Loader } from 'lucide-react' // Optional: Chevron icon for accordion
+import { ChevronDownIcon } from 'lucide-react' // Optional: Chevron icon for accordion
+import Loader from '../../components/common/Loader'
+
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
 import { CustomTextBox } from './CustomTextBox'

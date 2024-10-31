@@ -159,6 +159,8 @@ export type ChatQuery = {
   requiresLiveData?: boolean | null,
   chatType?: ChatType | null,
   shouldRagFetch?: boolean | null,
+  highLevelCategory?: HighLevelTransactionCategory | null,
+  currentDateRange?: Array< string | null > | null,
   cacheIdentifiers?: Array< CacheIdentifer > | null,
 };
 

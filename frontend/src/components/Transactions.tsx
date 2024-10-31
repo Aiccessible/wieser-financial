@@ -12,7 +12,7 @@ import {
     DateRangePicker,
 } from '@tremor/react'
 import Transaction from './Transaction'
-import { Loader, View } from 'lucide-react'
+import Loader from '../components/common/Loader'
 import { Button } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
 import { useParams } from 'react-router-dom'

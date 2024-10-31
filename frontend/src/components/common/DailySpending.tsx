@@ -21,14 +21,22 @@ export const DailySpending: React.FC<Props> = ({ width }) => {
             : dailySpendsLastXDays?.[0]?.spending
     }, [dateRange, dailySpendsLastXDays])
     console.log(totalSpendingInTimePeriod())
+    const dateOrUndefined = (dailySpendsLastXDays?.[0] as any)?.date
+    const actualRange = dateRange && dateRange?.length === 2 ? dateRange : [dateOrUndefined, dateOrUndefined]
     const date =
         dateRange && dateRange?.length === 2
             ? 'Spending from ' +
               new Date(dateRange?.[0])?.toDateString() +
               ' to ' +
               new Date(dateRange?.[1])?.toDateString()
-            : dailySpendsLastXDays?.[0]
-            ? 'Spending from ' + new Date((dailySpendsLastXDays?.[0] as any).date).toDateString()
+            : dateOrUndefined
+            ? 'Spending from ' + new Date(dateOrUndefined).toDateString()
             : 'No spending found'
-    return <Spending spending={totalSpendingInTimePeriod() as Record<string, number>} title={date} />
+    return (
+        <Spending
+            dateRange={actualRange as any}
+            spending={totalSpendingInTimePeriod() as Record<string, number>}
+            title={date}
+        />
+    )
 }

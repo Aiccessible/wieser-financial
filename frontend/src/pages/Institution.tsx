@@ -74,7 +74,7 @@ export default function Institution() {
                 {/* Right Section (Recommendations Placeholder) */}
                 <div className="bg-gray-900 rounded-lg text-white">
                     <Heading className="text-lg mb-4">
-                        <CustomTextBox>Key Recommendations</CustomTextBox>
+                        <CustomTextBox>Key Insights</CustomTextBox>
                     </Heading>
                     {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
                     {/* Your recommendation component goes here */}

@@ -1,3 +1,5 @@
+import { setChatParams } from '../../../src/features/chat'
+import { useAppDispatch } from '../../../src/hooks'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -7,12 +9,13 @@ const DropdownMessage = (props: { chatbarOpen: boolean; setChatbarOpen: (arg: bo
 
     const trigger = useRef<any>(null)
     const dropdown = useRef<any>(null)
-
+    const dispatch = useAppDispatch()
     // close if the esc key is pressed
     useEffect(() => {
         const keyHandler = ({ keyCode }: KeyboardEvent) => {
             if (!props.chatbarOpen || keyCode !== 27) return
             //setDropdownOpen(false)
+            dispatch(setChatParams({}))
             props.setChatbarOpen(false)
         }
         document.addEventListener('keydown', keyHandler)
@@ -27,6 +30,7 @@ const DropdownMessage = (props: { chatbarOpen: boolean; setChatbarOpen: (arg: bo
                     setNotifying(false)
                     //setDropdownOpen(!dropdownOpen)
                     console.log('setting')
+                    props.chatbarOpen && dispatch(setChatParams({}))
                     props.setChatbarOpen(!props.chatbarOpen)
                 }}
                 className="relative flex h-8.5 w-8.5 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
@@ -70,7 +74,10 @@ const DropdownMessage = (props: { chatbarOpen: boolean; setChatbarOpen: (arg: bo
             <div
                 ref={dropdown}
                 onFocus={() => props.setChatbarOpen(true)}
-                onBlur={() => props.setChatbarOpen(false)}
+                onBlur={() => {
+                    dispatch(setChatParams({}))
+                    props.setChatbarOpen(false)
+                }}
                 className={`absolute -right-16 mt-2.5 flex h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80 ${
                     true === true ? 'hidden' : 'hidden'
                 }`}

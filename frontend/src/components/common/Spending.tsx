@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { CustomTextBox } from './CustomTextBox'
 import { Button, Heading } from '@aws-amplify/ui-react'
-import { useAppSelector } from '../../hooks'
+import { useAppDispatch } from '../../hooks'
 import HighchartsReact from 'highcharts-react-official'
 import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
@@ -10,21 +10,24 @@ import HighchartsExporting from 'highcharts/modules/exporting'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import './graph.css'
-import { SpendingSummary } from '@/src/API'
+import { ChatFocus, SpendingSummary } from '../../../src/API'
+import { setChatParams } from '../../../src/features/chat'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 HighchartsExporting(Highcharts)
 interface Props {
     spending: Record<string, number>
     title: string
+    dateRange: [number?, number?]
 }
 
 export const Spending = (props: Props) => {
-    const { spending, title } = props
+    const { spending, title, dateRange } = props
     const spendingData = Object.entries(spending || {}).map(([category, value]) => ({
         name: category,
         y: value,
     }))
+    const dispatch = useAppDispatch()
     return (
         <HighchartsReact
             highcharts={Highcharts}
@@ -41,11 +44,11 @@ export const Spending = (props: Props) => {
                         align: 'left',
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
+                        pointFormat: '{series.name}: <b>{point.y:.1f}$</b>',
                     },
                     accessibility: {
                         point: {
-                            valueSuffix: '%',
+                            valueSuffix: '$',
                         },
                     },
                     plotOptions: {
@@ -57,9 +60,22 @@ export const Spending = (props: Props) => {
                                 format:
                                     '<span style="font-size: 1.2em"><b>{point.name}</b>' +
                                     '</span><br>' +
-                                    '<span style="opacity: 0.6">{point.percentage:.1f} ' +
-                                    '%</span>',
+                                    '<span style="opacity: 0.6">{point.y:.1f} ' +
+                                    '$</span>',
                                 connectorColor: 'rgba(128,128,128,0.5)',
+                            },
+                            point: {
+                                events: {
+                                    click: (e) => {
+                                        dispatch(
+                                            setChatParams({
+                                                scope: ChatFocus.Transaction,
+                                                highLevelTransactionCategory: e.point.name,
+                                                dateRange: dateRange,
+                                            })
+                                        )
+                                    },
+                                },
                             },
                         },
                     },

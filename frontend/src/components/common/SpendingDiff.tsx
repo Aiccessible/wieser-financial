@@ -2,7 +2,7 @@ import { SpendingSummary } from '@/src/API'
 import { CustomTextBox } from './CustomTextBox'
 import { useCallback } from 'react'
 import { calculateAverageSpendingFromMonthlySummarys, calculateTotalSpending } from './spendingUtils'
-import { Loader } from 'lucide-react'
+import Loader from '../../components/common/Loader'
 import { useAppSelector } from '../../../src/hooks'
 
 export const SpendingDiff = ({
