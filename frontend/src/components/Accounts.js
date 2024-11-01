@@ -10,7 +10,7 @@ import { completeChatFromPrompt, getTechnicalWordsWhereWeCanGoDeeper } from '../
 import makeLinksOfTechnicalPhrases from '../libs/utlis';
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getAccountRecommendationAsync, getAccountsAsync } from '../features/accounts';
-import WelcomePage from '../components/WelcomePage'
+
 const logger = new ConsoleLogger("Accounts");
 
 export default function Accounts({ updateAccounts }) {
@@ -65,7 +65,8 @@ export default function Accounts({ updateAccounts }) {
   useEffect(() => {
     getAccounts();
   }, []);
-
+  const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
+  console.log(areBalancesVisible)
   return (
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-x-scroll">
           <Title>Accounts</Title>
@@ -89,7 +90,7 @@ export default function Accounts({ updateAccounts }) {
                       </TableRow>
                   ) : accounts?.length && (
                       accounts.map((account) => {
-                          return <Account key={account.account_id} account={account} />
+                          return <Account areBalancesVisible={areBalancesVisible} key={account.account_id} account={account} />
                       })
                   )}
               </TableBody>

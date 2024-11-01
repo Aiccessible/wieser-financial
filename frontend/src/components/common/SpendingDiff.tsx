@@ -8,9 +8,11 @@ import { useAppSelector } from '../../../src/hooks'
 export const SpendingDiff = ({
     dailySpending,
     monthlySummaries,
+    balancesVisible,
 }: {
     dailySpending: SpendingSummary
     monthlySummaries: SpendingSummary[]
+    balancesVisible: boolean
 }) => {
     const dateRange = useAppSelector((state) => state.transactions.currentDateRange)
     const dailySpendsLastXDays = useAppSelector((state) => state.transactions.dailySummaries)
@@ -50,12 +52,16 @@ export const SpendingDiff = ({
         <div className="bg-gray-800 p-1 rounded-lg text-white w-full">
             {dailySpending?.spending ? (
                 <>
-                    <CustomTextBox className="text-3xl font-bold mb-2">${totalSpend.toFixed(2)}</CustomTextBox>
-                    <CustomTextBox className={classname}>
-                        {prefix}
-                        {spendPart}
-                        {suffix}
+                    <CustomTextBox className="text-3xl font-bold mb-2">
+                        ${balancesVisible ? totalSpend.toFixed(2) : '***'}
                     </CustomTextBox>
+                    {balancesVisible && (
+                        <CustomTextBox className={classname}>
+                            {prefix}
+                            {spendPart}
+                            {suffix}
+                        </CustomTextBox>
+                    )}
                 </>
             ) : (
                 <Loader />

@@ -16,6 +16,8 @@ import AnalyzeRecommendation from './components/Analysis/AnalyzeRecommendation'
 import * as Highcharts from 'highcharts'
 import useColorMode from './hooks/useColorMode';
 import { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { store } from './store'
 
 try {
     Highcharts.setOptions({
@@ -134,6 +136,7 @@ function App() {
     }, [colorMode])
   return (
       <Authenticator.Provider>
+        <Provider store={store}>
           <BrowserRouter>
               <Routes>
                   <Route path="/" element={<Layout />}>
@@ -211,6 +214,7 @@ function App() {
                   </Route>
               </Routes>
           </BrowserRouter>
+          </Provider>
       </Authenticator.Provider>
   )
 }

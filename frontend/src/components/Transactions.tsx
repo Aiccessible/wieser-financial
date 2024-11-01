@@ -35,6 +35,7 @@ export default function Transactions({ accounts = {} }) {
     const { transactions } = useDataLoading({ id: id || '', client, loadTransactions: true })
     const dailySpendsLastXDays = useAppSelector((state) => state.transactions.dailySummaries)
     const monthlySpending = useAppSelector((state) => state.transactions.monthlySummaries)
+    const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
     const handleLoadMore = async () => {
         try {
             await dispatch(getTransactionsAsync({ id: id || '', client, append: true }))
@@ -52,6 +53,7 @@ export default function Transactions({ accounts = {} }) {
                         <SpendingDiff
                             dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
                             monthlySummaries={monthlySpending ?? []}
+                            balancesVisible={areBalancesVisible}
                         />
                         <DatePickerCustom />
                     </>

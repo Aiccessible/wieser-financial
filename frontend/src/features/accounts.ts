@@ -67,7 +67,8 @@ export const reduceAccounts = (accs: Account[]) =>
         (val: number, acc) => val + getAccountBalanceMultipler(acc) * parseFloat(acc.balances?.current || '0'),
         0
     )
-export const selectNetWorth = (state: RootState) => reduceAccounts(state.accounts.accounts ?? [])
+export const selectNetWorth = (state: RootState) =>
+    !state.auth.balancesVisible ? '***' : reduceAccounts(state.accounts.accounts ?? [])?.toFixed(2)
 
 export const accountSlice = createSlice({
     name: 'account',

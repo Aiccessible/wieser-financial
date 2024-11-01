@@ -5,6 +5,7 @@ import DropdownNotification from './DropdownNotification'
 import DropdownUser from './DropdownUser'
 import { MenuIcon } from 'lucide-react'
 import { useSidebar } from '../Sidebar/use-sidebar'
+import BalanceVisibilitySwitcher from '../../../src/utils/EyeSwitcher'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -68,6 +69,7 @@ const Header = (props: {
 
                 <div className="flex items-center gap-3 2xsm:gap-7">
                     <ul className="flex items-center gap-2 2xsm:gap-4">
+                        <BalanceVisibilitySwitcher />
                         {/* <!-- Dark Mode Toggler --> */}
                         <DarkModeSwitcher />
                         {/* <!-- Dark Mode Toggler --> */}

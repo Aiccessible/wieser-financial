@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { CustomTextBox } from './CustomTextBox'
 import { Button, Heading } from '@aws-amplify/ui-react'
-import { useAppDispatch } from '../../hooks'
+import { useAppDispatch, useAppSelector } from '../../hooks'
 import HighchartsReact from 'highcharts-react-official'
 import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
@@ -26,6 +26,7 @@ export const Spending = (props: Props) => {
         name: category,
         y: value,
     }))
+    const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
     const dispatch = useAppDispatch()
     return (
         <HighchartsReact
@@ -43,7 +44,9 @@ export const Spending = (props: Props) => {
                         align: 'left',
                     },
                     tooltip: {
-                        pointFormat: '{series.name}: <b>{point.y:.1f}$</b>',
+                        pointFormat: areBalancesVisible
+                            ? '{series.name}: <b>{point.y:.1f}$</b>'
+                            : '{series.name}: <b>***$</b>',
                     },
                     accessibility: {
                         point: {
@@ -59,7 +62,9 @@ export const Spending = (props: Props) => {
                                 format:
                                     '<span style="font-size: 1.2em"><b>{point.name}</b>' +
                                     '</span><br>' +
-                                    '<span style="opacity: 0.6">{point.y:.1f} ' +
+                                    (areBalancesVisible
+                                        ? '<span style="opacity: 0.6">{point.y:.1f} '
+                                        : '<span style="opacity: 0.6">*** ') +
                                     '$</span>',
                                 connectorColor: 'rgba(128,128,128,0.5)',
                             },

@@ -17,9 +17,7 @@ import { NetWorthChart } from './NetworthChart'
 const Projection = () => {
     const { id } = useParams()
     const client = generateClient()
-    const { accounts } = useDataLoading({ id: id || '', client, loadTransactions: true })
     const dispatch = useAppDispatch()
-    const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
     const defaultParams = useDefaultValuesForProjection()
     const [inputs, setInputs] = useState(defaultParams)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)

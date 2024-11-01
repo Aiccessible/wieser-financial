@@ -8,6 +8,7 @@ interface AuthState {
     transferToken: string
     loadingTransfer: boolean
     error: string | undefined
+    balancesVisible: boolean
 }
 
 // Define the initial state using that type
@@ -16,6 +17,7 @@ const initialState: AuthState = {
     transferToken: '',
     loadingTransfer: false,
     error: '',
+    balancesVisible: true,
 }
 
 interface MetadataTransferToken {
@@ -71,6 +73,9 @@ export const authSlice = createSlice({
         setAuthError: (state, action) => {
             state.error = action.payload
         },
+        setBalancesVisible: (state, action) => {
+            state.balancesVisible = action.payload
+        },
     },
     extraReducers(builder) {
         builder.addCase(getTransferTokenAsync.fulfilled, (state, action) => {
@@ -89,7 +94,8 @@ export const authSlice = createSlice({
     },
 })
 
-export const { setPublicToken, setTransferToken, setLoadingTransfer, setAuthError } = authSlice.actions
+export const { setPublicToken, setTransferToken, setLoadingTransfer, setAuthError, setBalancesVisible } =
+    authSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

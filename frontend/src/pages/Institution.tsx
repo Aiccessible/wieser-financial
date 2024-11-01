@@ -29,7 +29,6 @@ export default function Institution() {
     const recommendationsLoading = useAppSelector((state) => state.analysis.loading)
     const transferToken = useAppSelector((state) => state.auth.transferToken)
     const authError = useAppSelector((state) => state.auth.error)
-    const accounts = useAppSelector((state) => state.accounts.accounts)
     const netWorth = useAppSelector(selectNetWorth)
     const transactions = useAppSelector((state) => state.transactions.transactions)
     const areTransactionsLoading = useAppSelector((state) => state.transactions.loading)
@@ -66,7 +65,7 @@ export default function Institution() {
                     <Title className="p-2">Net Worth</Title>
                     <Heading level={4} className="text-xl font-semibold mb-4 p-2">
                         <CustomTextBox className="text-4xl font-bold tracking-tight text-white relative">
-                            <CustomTextBox className="relative z-10">{netWorth?.toFixed(2) ?? '...'}$</CustomTextBox>
+                            <CustomTextBox className="relative z-10">{netWorth ?? '...'}$</CustomTextBox>
                         </CustomTextBox>
                     </Heading>
                     {projectedBalances && (
