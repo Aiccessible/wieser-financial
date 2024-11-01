@@ -32,7 +32,7 @@ const Header = (props: {
 
                 <div className="hidden flex-grow sm:block">
                     <form action="https://formbold.com/s/unique_form_id" method="POST">
-                        <div className="relative">
+                        <div className="relative flex">
                             <button className="absolute left-0 top-1/2 -translate-y-1/2">
                                 <svg
                                     className="fill-body hover:fill-primary dark:fill-bodydark dark:hover:fill-primary"
@@ -60,7 +60,7 @@ const Header = (props: {
                             <input
                                 type="text"
                                 placeholder="Ask about your finance, top news affecting you, recommendations"
-                                className="w-full bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:text-white"
+                                className="w-full flex-grow bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:text-white"
                             />
                         </div>
                     </form>
