@@ -76,7 +76,7 @@ export default function Institution() {
                 </div>
 
                 {/* Right Section (Recommendations Placeholder) */}
-                <div className="bg-gray-900 flex-grow rounded-lg text-white">
+                <div className="bg-gray-900 flex-grow overflow-auto rounded-lg text-white">
                     <Heading className="text-lg mb-4">
                         <CustomTextBox>Key Insights</CustomTextBox>
                     </Heading>

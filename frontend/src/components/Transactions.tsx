@@ -47,11 +47,15 @@ export default function Transactions({ accounts = {} }) {
         <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <Title>Transactions</Title>
             <div className="flex justify-between">
-                <SpendingDiff
-                    dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
-                    monthlySummaries={monthlySpending ?? []}
-                />
-                <DatePickerCustom />
+                {dailySpendsLastXDays?.[0] && (
+                    <>
+                        <SpendingDiff
+                            dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
+                            monthlySummaries={monthlySpending ?? []}
+                        />
+                        <DatePickerCustom />
+                    </>
+                )}
             </div>
             <div id="container" className={`max-w-[100%] flex flex-row`}>
                 <MonthlySpending width={50} />
