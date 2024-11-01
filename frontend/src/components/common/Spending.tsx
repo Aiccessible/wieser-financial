@@ -14,7 +14,6 @@ import { ChatFocus, SpendingSummary } from '../../../src/API'
 import { setChatParams } from '../../../src/features/chat'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
-HighchartsExporting(Highcharts)
 interface Props {
     spending: Record<string, number>
     title: string

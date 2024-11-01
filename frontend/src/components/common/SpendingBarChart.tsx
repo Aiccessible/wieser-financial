@@ -10,7 +10,6 @@ import { Button, ButtonGroup } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './CustomTextBox'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
-HighchartsExporting(Highcharts)
 interface Props {
     spending: SpendingSummary[]
     title: string

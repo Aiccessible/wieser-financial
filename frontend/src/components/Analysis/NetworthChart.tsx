@@ -7,7 +7,6 @@ import HighchartsExporting from 'highcharts/modules/exporting'
 
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
-HighchartsExporting(Highcharts)
 
 export interface AccountBalances {
     RRSP: number[]
