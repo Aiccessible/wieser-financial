@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuthenticator, Button, Heading, View } from '@aws-amplify/ui-react'
 
 const DropdownUser = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
-
+    const { route, signOut, user } = useAuthenticator((context) => [context.route, context.signOut, context.user])
     const trigger = useRef<any>(null)
     const dropdown = useRef<any>(null)
 
@@ -37,8 +38,8 @@ const DropdownUser = () => {
                 to="#"
             >
                 <span className="hidden text-right lg:block">
-                    <span className="block text-sm font-medium text-black dark:text-white">Owen Stadlwieser</span>
-                    <span className="block text-xs">Full Stack Developer</span>
+                    <span className="block text-sm font-medium text-black dark:text-white">Financially Wieser</span>
+                    <span className="block text-xs"></span>
                 </span>
 
                 <svg
@@ -140,7 +141,10 @@ const DropdownUser = () => {
                         </Link>
                     </li>
                 </ul>
-                <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+                <button
+                    onClick={() => signOut()}
+                    className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+                >
                     <svg
                         className="fill-current"
                         width="22"

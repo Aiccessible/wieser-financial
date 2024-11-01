@@ -1,7 +1,6 @@
 import * as Accordion from '@radix-ui/react-accordion'
 import { ChevronDownIcon } from 'lucide-react' // Optional: Chevron icon for accordion
 import Loader from '../../components/common/Loader'
-
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
 import { CustomTextBox } from './CustomTextBox'
@@ -56,13 +55,12 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                     >
                         <Accordion.Header className="flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer">
                             <Accordion.Trigger className="flex items-center justify-between w-full text-lg font-semibold text-gray-700">
-                                <Link
-                                    to={`/institution/${id}/analyze/recommendation/${recommendation.title}`}
-                                    className="technical-link hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out"
+                                <CustomTextBox
+                                    className=" hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out"
                                     key={index}
                                 >
                                     {recommendation.title} {recommendation.priority} Priority
-                                </Link>
+                                </CustomTextBox>
                                 <ChevronDownIcon className="w-5 h-5 ml-2 transition-transform duration-300 transform accordion-chevron" />
                             </Accordion.Trigger>
                         </Accordion.Header>

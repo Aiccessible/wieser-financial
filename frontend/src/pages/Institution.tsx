@@ -4,7 +4,6 @@ import { CustomTextBox } from '../components/common/CustomTextBox'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { generateClient } from 'aws-amplify/api'
-import { Loader } from 'lucide-react'
 import RecommendationsAccordion from '../components/common/RecommendationAcordion'
 import { useDataLoading } from '../hooks/useDataLoading'
 import { useEffect } from 'react'
@@ -17,6 +16,7 @@ import { useDefaultValuesForProjection } from '../components/hooks/useDefaultVal
 import { getFinancialProjection } from '../features/analysis'
 import { NetWorthChart } from '../components/Analysis/NetworthChart'
 import WelcomePage from '../components/WelcomePage'
+import Loader from '../components/common/Loader'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -31,7 +31,8 @@ export default function Institution() {
     const authError = useAppSelector((state) => state.auth.error)
     const accounts = useAppSelector((state) => state.accounts.accounts)
     const netWorth = useAppSelector(selectNetWorth)
-
+    const transactions = useAppSelector((state) => state.transactions.transactions)
+    const areTransactionsLoading = useAppSelector((state) => state.transactions.loading)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
 
     useDataLoading({
@@ -43,9 +44,12 @@ export default function Institution() {
         loadRecommendations: true,
         loadProjection: true,
     })
-
+    console.log(transactions?.length, areTransactionsLoading)
     return (
         <Flex direction="column" className="h-100">
+            {!transactions?.length && !areTransactionsLoading && (
+                <Alert variation="warning">Processing Your account data... This may take a few minutes</Alert>
+            )}
             {transferToken && <PlaidLink token={transferToken} onSuccess={() => {}} onExit={() => {}} />}
             {authError && <Alert>{authError}</Alert>}
             <Divider />
@@ -65,10 +69,8 @@ export default function Institution() {
                             <CustomTextBox className="relative z-10">{netWorth?.toFixed(2) ?? '...'}$</CustomTextBox>
                         </CustomTextBox>
                     </Heading>
-                    {projectedBalances ? (
+                    {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
-                    ) : (
-                        <Loader />
                     )}
                     <Accounts updateAccounts={() => {}} />
                 </div>
