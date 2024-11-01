@@ -10,6 +10,7 @@ import { completeChatFromPrompt, getTechnicalWordsWhereWeCanGoDeeper } from '../
 import makeLinksOfTechnicalPhrases from '../libs/utlis';
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getAccountRecommendationAsync, getAccountsAsync } from '../features/accounts';
+import WelcomePage from '../components/WelcomePage'
 const logger = new ConsoleLogger("Accounts");
 
 export default function Accounts({ updateAccounts }) {
@@ -86,14 +87,10 @@ export default function Accounts({ updateAccounts }) {
                               <Loader />
                           </TableCell>
                       </TableRow>
-                  ) : accounts?.length ? (
+                  ) : accounts?.length && (
                       accounts.map((account) => {
                           return <Account key={account.account_id} account={account} />
                       })
-                  ) : (
-                      <TableRow>
-                          <TableCell>No accounts found</TableCell>
-                      </TableRow>
                   )}
               </TableBody>
           </Table>

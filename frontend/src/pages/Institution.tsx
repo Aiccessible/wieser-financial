@@ -16,6 +16,7 @@ import { MonthlySpending } from '../components/common/MonthlySpending'
 import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
 import { getFinancialProjection } from '../features/analysis'
 import { NetWorthChart } from '../components/Analysis/NetworthChart'
+import WelcomePage from '../components/WelcomePage'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -28,7 +29,7 @@ export default function Institution() {
     const recommendationsLoading = useAppSelector((state) => state.analysis.loading)
     const transferToken = useAppSelector((state) => state.auth.transferToken)
     const authError = useAppSelector((state) => state.auth.error)
-
+    const accounts = useAppSelector((state) => state.accounts.accounts)
     const netWorth = useAppSelector(selectNetWorth)
 
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
@@ -42,6 +43,7 @@ export default function Institution() {
         loadRecommendations: true,
         loadProjection: true,
     })
+
     return (
         <Flex direction="column" className="h-100">
             {transferToken && <PlaidLink token={transferToken} onSuccess={() => {}} onExit={() => {}} />}
@@ -64,7 +66,7 @@ export default function Institution() {
                         </CustomTextBox>
                     </Heading>
                     {projectedBalances ? (
-                        <NetWorthChart title="Networth Projection" accountBalances={projectedBalances} />
+                        <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     ) : (
                         <Loader />
                     )}
