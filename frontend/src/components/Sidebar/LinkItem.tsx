@@ -6,14 +6,25 @@ type Props = {
     icon?: React.ReactNode
     title: string
     href: string
+    disabled?: Boolean
 }
 
 const LinkItem = (props: Props) => {
-    const { title } = props
+    const { title, disabled } = props
     const isSidebarOpen = useSidebar((state) => state.isSidebarOpen)
+    const handleClick = (event: any) => {
+        if (disabled) {
+            event.preventDefault()
+        }
+    }
     return (
         <Link
-            className={`group relative flex items-center gap-2.5  rounded-sm px-3 py-2 font-medium text-gray-3  duration-300 ease-in-out  dark:hover:text-white `}
+            onClick={handleClick}
+            className={
+                disabled
+                    ? 'group relative flex items-center gap-2.5  rounded-sm px-3 py-2 font-medium text-gray-3 cursor-not-allowed opacity-50'
+                    : `group relative flex items-center gap-2.5  rounded-sm px-3 py-2 font-medium text-gray-3  duration-300 ease-in-out  dark:hover:text-white `
+            }
             to={props.href}
         >
             <div className="">{props.icon}</div>

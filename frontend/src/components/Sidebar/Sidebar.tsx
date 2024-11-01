@@ -68,6 +68,7 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Dashboard --> */}
                             <li>
                                 <LinkItem
+                                    disabled={!id}
                                     title={(<CustomTextBox>HomePage</CustomTextBox>) as any}
                                     href={id ? `/institution/${id}` : '/institution'}
                                     icon={
@@ -82,6 +83,7 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Calendar --> */}
                             <li>
                                 <LinkItem
+                                    disabled={!id}
                                     title={(<CustomTextBox>Transactions</CustomTextBox>) as any}
                                     href={id ? `/institution/${id}/transactions` : 'transactions'}
                                     icon={
@@ -94,6 +96,7 @@ const Sidebar = ({}: SidebarProps) => {
 
                             <li>
                                 <LinkItem
+                                    disabled={!id}
                                     title={(<CustomTextBox>Investments</CustomTextBox>) as any}
                                     href={id ? `/institution/${id}/investments` : '/investments'}
                                     icon={
@@ -106,6 +109,7 @@ const Sidebar = ({}: SidebarProps) => {
 
                             <li>
                                 <LinkItem
+                                    disabled={!id}
                                     title={(<CustomTextBox>The Lab</CustomTextBox>) as any}
                                     href={id ? `/analyze/${id}` : '/analyze'}
                                     icon={
@@ -121,6 +125,7 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Settings --> */}
                             <li>
                                 <LinkItem
+                                    disabled={true}
                                     title={(<CustomTextBox>Settings</CustomTextBox>) as any}
                                     href="/settings"
                                     icon={
