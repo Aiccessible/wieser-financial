@@ -36,6 +36,14 @@ const useDefaultValuesForProjection = () => {
             })
             .reduce((currVal, val) => currVal + val, 0)
     }, [averageSpending])
+    const transfersOut = useCallback(() => {
+        return Object.keys(averageSpending())
+            .filter((key) => key.startsWith('TRANSFER_OUT'))
+            .map((key) => {
+                return averageSpending()[key] * (12 / numberOfMonthsCompleted)
+            })
+            .reduce((currVal, val) => currVal + val, 0)
+    }, [averageSpending])
     const income = useCallback(() => {
         const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME'))
         const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
@@ -51,7 +59,7 @@ const useDefaultValuesForProjection = () => {
         salary_growth: 5,
         initial_bonus: 0,
         bonus_growth: 0,
-        initial_expenses: totalSpending() - income(),
+        initial_expenses: totalSpending() - income() - transfersOut(),
         expenses_growth: 5,
         investment_yield: 15,
         tax_rate: calculateAverageTaxRate(income(), 'British Columbia'),

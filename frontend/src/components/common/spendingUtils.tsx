@@ -5,7 +5,7 @@ import { useCallback } from 'react'
 const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
 const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
 const transferOutKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_OUT'))
-const nonSpendingKeys = [...incomeKeys, ...transferInKeys, ...transferOutKeys]
+export const nonSpendingKeys = [...incomeKeys, ...transferInKeys, ...transferOutKeys]
 export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
