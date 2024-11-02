@@ -18,6 +18,8 @@ interface TransactionsState {
     currentDateRange: number[] | undefined
 }
 
+const firstOfMonth = new Date()
+firstOfMonth.setDate(1)
 // Define the initial state using that type
 const initialState: TransactionsState = {
     acccountRecommendation: '',
@@ -29,7 +31,7 @@ const initialState: TransactionsState = {
     loadingMonthlySummary: false,
     dailySummaries: undefined,
     monthlySummaries: undefined,
-    currentDateRange: undefined,
+    currentDateRange: [firstOfMonth.getTime(), new Date().getTime()],
 }
 
 export interface GetTransactionInput {

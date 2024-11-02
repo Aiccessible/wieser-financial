@@ -1,13 +1,9 @@
-import React, { useEffect, useRef } from 'react'
-import { CustomTextBox } from './CustomTextBox'
-import { Button, Heading } from '@aws-amplify/ui-react'
+import React from 'react'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import HighchartsReact from 'highcharts-react-official'
 import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
-import HighchartsExporting from 'highcharts/modules/exporting'
-import { renderToStaticMarkup } from 'react-dom/server'
 
 import './graph.css'
 import { ChatFocus, SpendingSummary } from '../../../src/API'
@@ -18,14 +14,27 @@ interface Props {
     spending: Record<string, number>
     title: string
     dateRange: [number?, number?]
+    isIncomeAndTransfers?: boolean
 }
 
 export const Spending = (props: Props) => {
-    const { spending, title, dateRange } = props
-    const spendingData = Object.entries(spending || {}).map(([category, value]) => ({
-        name: category,
-        y: value,
-    }))
+    const { spending, title, dateRange, isIncomeAndTransfers } = props
+    const spendingData = Object.entries(spending || {})
+        .filter(([category, value]) =>
+            isIncomeAndTransfers
+                ? category.startsWith('INCOME') ||
+                  category.startsWith('TRANSFER_IN') ||
+                  category.startsWith('TRANSFER_OUT')
+                : !category.startsWith('INCOME') &&
+                  !category.startsWith('TRANSFER_IN') &&
+                  !category.startsWith('TRANSFER_OUT')
+        )
+        .map(([category, value]) => ({
+            name: category,
+            y: value,
+        }))
+
+    const total = spendingData.reduce((acc, newVal) => acc + newVal.y, 0)
     const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
     const dispatch = useAppDispatch()
     return (
@@ -41,6 +50,10 @@ export const Spending = (props: Props) => {
                     },
                     title: {
                         text: title,
+                        align: 'left',
+                    },
+                    subtitle: {
+                        text: 'Total: ' + total + '$',
                         align: 'left',
                     },
                     tooltip: {

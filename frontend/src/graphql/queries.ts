@@ -175,3 +175,24 @@ export const getSpendingSummary = /* GraphQL */ `query GetSpendingSummary(
   APITypes.GetSpendingSummaryQueryVariables,
   APITypes.GetSpendingSummaryQuery
 >;
+export const getNetWorth = /* GraphQL */ `query GetNetWorth(
+  $minDate: Long
+  $maxDate: Long
+  $id: String!
+  $type: SpendingSummaryType
+) {
+  getNetWorth(minDate: $minDate, maxDate: $maxDate, id: $id, type: $type) {
+    pk
+    sk
+    netWorth
+    tfsaNetWorth
+    rrspNetWorth
+    fhsaNetWorth
+    securityNetWorth
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetNetWorthQueryVariables,
+  APITypes.GetNetWorthQuery
+>;

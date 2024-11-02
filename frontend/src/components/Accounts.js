@@ -69,16 +69,16 @@ export default function Accounts({ updateAccounts }) {
   console.log(areBalancesVisible)
   return (
       <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 overflow-x-scroll">
-          <Title>Accounts</Title>
+          <Title><CustomTextBox>Accounts</CustomTextBox></Title>
           {linkedAnalysisText && linkedAnalysisText}
           {!linkedAnalysisText && gptAnalysis && <CustomTextBox>{gptAnalysis}</CustomTextBox>}
           <Table highlightOnHover={true} >
               <TableHead>
                   <TableRow>
-                      <TableHeaderCell>Name</TableHeaderCell>
-                      <TableHeaderCell>Balances</TableHeaderCell>
-                      <TableHeaderCell>Type</TableHeaderCell>
-                      <TableHeaderCell>Mask</TableHeaderCell>
+                      <TableHeaderCell><CustomTextBox>Name</CustomTextBox></TableHeaderCell>
+                      <TableHeaderCell><CustomTextBox>Balances</CustomTextBox></TableHeaderCell>
+                      <TableHeaderCell><CustomTextBox>Type</CustomTextBox></TableHeaderCell>
+                      <TableHeaderCell><CustomTextBox>Mask</CustomTextBox></TableHeaderCell>
                   </TableRow>
               </TableHead>
               <TableBody>

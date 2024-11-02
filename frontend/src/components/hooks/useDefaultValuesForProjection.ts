@@ -28,14 +28,15 @@ const useDefaultValuesForProjection = () => {
         }
     }, [accounts])
 
-    const income = useCallback(
-        () =>
-            ((averageSpending()[HighLevelTransactionCategory.INCOME] ?? 0) +
-                (averageSpending()[HighLevelTransactionCategory.TRANSFER_IN] ?? 0)) *
-            12,
-        [averageSpending]
-    )
-
+    const income = useCallback(() => {
+        const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME'))
+        const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
+        const totalIncome = [...incomeKeys, ...transferInKeys].reduce((acc, key) => {
+            return acc + (averageSpending()[key] ?? 0)
+        }, 0)
+        return totalIncome * 12
+    }, [averageSpending])
+    console.log(433454, income())
     return {
         initial_salary: income(),
         salary_growth: 5,

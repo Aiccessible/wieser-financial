@@ -5,9 +5,9 @@ import Loader from '../../components/common/Loader'
 import { cn } from '../../libs/utlis'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { Alert, Heading } from '@aws-amplify/ui-react'
-import chat, { sendChatToLLM, setChatParams, setLoadingChat } from '../../features/chat'
+import { sendChatToLLM, setChatParams, setLoadingChat } from '../../features/chat'
 import { generateClient } from 'aws-amplify/api'
-import { Chat, ChatFocus, ChatResponse, HighLevelTransactionCategory } from '../../API'
+import { Chat, ChatFocus, HighLevelTransactionCategory } from '../../API'
 import { onCreateChat } from '../../graphql/subscriptions'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import Markdown from 'react-markdown'
@@ -289,9 +289,72 @@ const QuestionBubbles = ({
 }
 
 const demoQuestions: Record<HighLevelTransactionCategory, string[]> = {
-    [HighLevelTransactionCategory.INCOME]: ['Where did this income come from?', 'How can I increase my income?'],
-    [HighLevelTransactionCategory.TRANSFER_IN]: ['Why did I receive this transfer?', 'Is this a recurring transfer?'],
-    [HighLevelTransactionCategory.TRANSFER_OUT]: ['Why did I make this transfer?', 'How can I reduce transfers out?'],
+    [HighLevelTransactionCategory.INCOME_DIVIDENDS]: [
+        'Where did this income come from?',
+        'How can I increase my income?',
+    ],
+    [HighLevelTransactionCategory.INCOME_INTEREST_EARNED]: [
+        'Where did this income come from?',
+        'How can I increase my income?',
+    ],
+    [HighLevelTransactionCategory.INCOME_OTHER_INCOME]: [
+        'Where did this income come from?',
+        'How can I increase my income?',
+    ],
+    [HighLevelTransactionCategory.INCOME_TAX_REFUND]: [
+        'Where did this income come from?',
+        'How can I increase my income?',
+    ],
+    [HighLevelTransactionCategory.INCOME_UNEMPLOYMENT]: [
+        'Where did this income come from?',
+        'How can I increase my income?',
+    ],
+    [HighLevelTransactionCategory.INCOME_WAGES]: ['Where did this income come from?', 'How can I increase my income?'],
+    [HighLevelTransactionCategory.TRANSFER_IN_ACCOUNT_TRANSFER]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+
+    [HighLevelTransactionCategory.TRANSFER_IN_CASH_ADVANCES_AND_LOANS]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_IN_DEPOSIT]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_IN_OTHER_TRANSFER_IN]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_IN_SAVINGS]: [
+        'Why did I receive this transfer?',
+        'Is this a recurring transfer?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_OUT_ACCOUNT_TRANSFER]: [
+        'Why did I make this transfer?',
+        'How can I reduce transfers out?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]: [
+        'Why did I make this transfer?',
+        'How can I reduce transfers out?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_OUT_OTHER_TRANSFER_OUT]: [
+        'Why did I make this transfer?',
+        'How can I reduce transfers out?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_OUT_SAVINGS]: [
+        'Why did I make this transfer?',
+        'How can I reduce transfers out?',
+    ],
+    [HighLevelTransactionCategory.TRANSFER_OUT_WITHDRAWAL]: [
+        'Why did I make this transfer?',
+        'How can I reduce transfers out?',
+    ],
     [HighLevelTransactionCategory.LOAN_PAYMENTS]: ['What loan was this payment for?', 'How much interest am I paying?'],
     [HighLevelTransactionCategory.BANK_FEES]: ['Why did I incur bank fees?', 'How can I avoid bank fees?'],
     [HighLevelTransactionCategory.ENTERTAINMENT]: [
@@ -331,8 +394,64 @@ const demoQuestions: Record<HighLevelTransactionCategory, string[]> = {
         'Can I reduce transportation costs?',
     ],
     [HighLevelTransactionCategory.TRAVEL]: ['What travel expenses did I incur?', 'How can I save on future travel?'],
-    [HighLevelTransactionCategory.RENT_AND_UTILITIES]: [
+    [HighLevelTransactionCategory.INCOME_RETIREMENT_PENSION]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_CAR_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_CREDIT_CARD_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_MORTGAGE_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.LOAN_PAYMENTS_OTHER_PAYMENT]: [
+        'What loan was this payment for?',
+        'How much interest am I paying?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_GAS_AND_ELECTRICITY]: [
         'What were my rent and utility costs?',
         'Are there ways to save on rent or utilities?',
     ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_INTERNET_AND_CABLE]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_RENT]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_TELEPHONE]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_WATER]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES_OTHER_UTILITIES]: [
+        'What were my rent and utility costs?',
+        'Are there ways to save on rent or utilities?',
+    ],
+    [HighLevelTransactionCategory.INCOME]: [],
+    [HighLevelTransactionCategory.TRANSFER_IN]: [],
+    [HighLevelTransactionCategory.TRANSFER_OUT]: [],
+    [HighLevelTransactionCategory.RENT_AND_UTILITIES]: [],
 }

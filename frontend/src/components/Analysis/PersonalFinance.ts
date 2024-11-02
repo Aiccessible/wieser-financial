@@ -123,7 +123,7 @@ export function calculateAverageTaxRate(income: number, province: keyof typeof p
     const totalTax = federalTax + provincialTax
 
     // Calculate the average tax rate
-    return (totalTax / income) * 100
+    return income ? (totalTax / income) * 100 : 0
 }
 
 export type AccountType = 'TFSA' | 'RRSP' | 'FHSA' | 'Unknown'

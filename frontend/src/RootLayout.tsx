@@ -9,7 +9,6 @@ import Sidebar from './components/Sidebar/Sidebar'
 import Header from './components/Header'
 import ChatBar from './components/Chatbar/Chatbar'
 import { Provider } from 'react-redux'
-import { store } from './store'
 import { useParams } from 'react-router-dom'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                         {/* <!-- ===== Main Content Start ===== --> */}
                         <main>
-                            <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">{children}</div>
+                            <div className="mx-auto max-w-screen-2xl p-4 md:p-4 2xl:p-6">{children}</div>
                         </main>
                         {/* <!-- ===== Main Content End ===== --> */}
                     </div>

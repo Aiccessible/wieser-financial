@@ -17,6 +17,7 @@ import { getFinancialProjection } from '../features/analysis'
 import { NetWorthChart } from '../components/Analysis/NetworthChart'
 import WelcomePage from '../components/WelcomePage'
 import Loader from '../components/common/Loader'
+import Currency from '../components/Currency'
 const logger = new ConsoleLogger('Instituions')
 
 export default function Institution() {
@@ -43,47 +44,73 @@ export default function Institution() {
         loadRecommendations: true,
         loadProjection: true,
     })
-    console.log(transactions?.length, areTransactionsLoading)
+    const { initial_salary, initial_expenses } = useDefaultValuesForProjection()
     return (
-        <Flex direction="column" className="h-100">
+        <Flex direction="column" className="h-100 scroll-auto">
             {!transactions?.length && !areTransactionsLoading && (
                 <Alert variation="warning">Processing Your account data... This may take a few minutes</Alert>
             )}
             {transferToken && <PlaidLink token={transferToken} onSuccess={() => {}} onExit={() => {}} />}
             {authError && <Alert>{authError}</Alert>}
-            <Divider />
-
-            <Flex direction="row">
-                <Heading level={5}>
-                    {(investmentLoading || transactionLoading || accountsLoading || recommendationsLoading) && (
-                        <CustomTextBox>
-                            <Loader />
-                        </CustomTextBox>
-                    )}
-                </Heading>
-                <div className="col-span-2 bg-gray-800 rounded-lg shadow-lg">
-                    <Title className="p-2">Net Worth</Title>
-                    <Heading level={4} className="text-xl font-semibold mb-4 p-2">
-                        <CustomTextBox className="text-4xl font-bold tracking-tight text-white relative">
-                            <CustomTextBox className="relative z-10">{netWorth ?? '...'}$</CustomTextBox>
+            <div className="flex items-center justify-evenly">
+                <div className="flex flex-col">
+                    <Title className="p-1">Net Worth</Title>
+                    <Heading level={4} className="text-xl font-semibold  p-1">
+                        <CustomTextBox className="text-3xl font-bold tracking-tight  relative">
+                            <Currency amount={netWorth}></Currency>
                         </CustomTextBox>
                     </Heading>
+                </div>
+                <div className="flex flex-col">
+                    <Title className="p-1">Estimated Take Home Income</Title>
+                    <Heading level={4} className="text-xl font-semibold  p-1">
+                        <CustomTextBox className="text-xl font-bold tracking-tight  relative">
+                            <Currency amount={initial_salary?.toFixed(2)}></Currency>
+                        </CustomTextBox>
+                    </Heading>
+                </div>
+                <div className="flex flex-col">
+                    <Title className="p-1">Estimated Annual Expenses</Title>
+                    <Heading level={4} className="text-xl font-semibold  p-1">
+                        <CustomTextBox className="text-xl font-bold tracking-tight  relative">
+                            <Currency amount={initial_expenses?.toFixed(2)}></Currency>
+                        </CustomTextBox>
+                    </Heading>
+                </div>
+            </div>
+            <Divider />
+            <div className="flex flex-row justify-between">
+                <div className="flex flex-col">
+                    <div className="flex flex-col">
+                        <Accounts updateAccounts={() => {}} />
+                    </div>
+                </div>
+                <div className="flex flex-col flex-grow p-3">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}
-                    <Accounts updateAccounts={() => {}} />
-                </div>
-
-                {/* Right Section (Recommendations Placeholder) */}
-                <div className="bg-gray-900 flex-grow overflow-auto rounded-lg text-white">
-                    <Heading className="text-lg mb-4">
+                    <Heading className="text-lg mb-1">
                         <CustomTextBox>Key Insights</CustomTextBox>
                     </Heading>
                     {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
-                    {/* Your recommendation component goes here */}
-                    <MonthlySpending width={100} />
                 </div>
-            </Flex>
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+                <div className="col-span-2 bg-gray-800 rounded-lg shadow-lg">
+                    <Heading level={5}>
+                        {(investmentLoading || transactionLoading || accountsLoading || recommendationsLoading) && (
+                            <CustomTextBox>
+                                <Loader />
+                            </CustomTextBox>
+                        )}
+                    </Heading>
+                </div>
+
+                {/* Right Section (Recommendations Placeholder) */}
+                <div className="bg-gray-900 col-span-1 overflow-auto rounded-lg text-white">
+                    {/* Your recommendation component goes here */}
+                </div>
+            </div>
         </Flex>
     )
 }

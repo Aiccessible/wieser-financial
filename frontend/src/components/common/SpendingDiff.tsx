@@ -42,8 +42,8 @@ export const SpendingDiff = ({
     const realAvg = (averageTotalSpend / monthlySummaries.length) * numDays
     const spendPart = `${(totalSpend - realAvg).toFixed(2)} / ${((100 * (totalSpend - realAvg)) / realAvg).toFixed(2)}`
     const prefix =
-        dateRange && dateRange?.length == 2 ? 'Your spending was ' + (totalSpend > realAvg ? 'higher +' : 'lower ') : ''
-    const classname = totalSpend > realAvg ? 'text-red-400' : 'text-green-400'
+        dateRange && dateRange?.length > 0 ? 'Your spending was ' + (totalSpend > realAvg ? 'higher +' : 'lower ') : ''
+    const classname = totalSpend > realAvg ? 'text-red-600' : 'text-green-600'
     const suffix =
         dateRange && dateRange?.length == 2
             ? `% than your average ${numDays.toFixed(0)} day spending`
@@ -64,7 +64,7 @@ export const SpendingDiff = ({
                     )}
                 </>
             ) : (
-                <Loader />
+                <></>
             )}
         </div>
     )

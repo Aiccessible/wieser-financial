@@ -51,12 +51,12 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                     <Accordion.Item
                         key={index}
                         value={`item-${index}`}
-                        className="border text-black dark:text-white rounded-lg"
+                        className=" text-black dark:text-white rounded-lg"
                     >
-                        <Accordion.Header className="flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer">
-                            <Accordion.Trigger className="flex items-center justify-between w-full text-lg font-semibold text-gray-700">
+                        <Accordion.Header className="flex justify-between items-center p-1 bg-gray-100 hover:bg-gray-200 rounded-sm cursor-pointer">
+                            <Accordion.Trigger className="flex items-center justify-between w-full font-semibold text-gray-700">
                                 <CustomTextBox
-                                    className=" hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out"
+                                    className=" hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out text-md"
                                     key={index}
                                 >
                                     {recommendation.title} {recommendation.priority} Priority
@@ -64,7 +64,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                 <ChevronDownIcon className="w-5 h-5 ml-2 transition-transform duration-300 transform accordion-chevron" />
                             </Accordion.Trigger>
                         </Accordion.Header>
-                        <Accordion.Content className="px-4 py-2 text-gray-600 bg-white rounded-b-lg rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+                        <Accordion.Content className="px-4 py-2 text-gray-600 bg-white rounded-b-lg rounded-sm  bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
                             <CustomTextBox className="font-semibold">Explanation:</CustomTextBox>
                             <CustomTextBox className="font-normal text-left">
                                 {recommendation.explanation}
@@ -77,7 +77,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                             {recommendation!.action!.transfers!.map((transfer, index) => (
                                 <div
                                     key={index}
-                                    className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-4"
+                                    className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
                                 >
                                     <div>
                                         <CustomTextBox className="text-sm font-semibold">

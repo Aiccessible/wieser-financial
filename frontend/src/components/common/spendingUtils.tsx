@@ -2,14 +2,13 @@ import { HighLevelTransactionCategory, SpendingSummary } from '../../../src/API'
 import { CustomTextBox } from './CustomTextBox'
 import { useCallback } from 'react'
 
+const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
+const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
+const nonSpendingKeys = [...incomeKeys, ...transferInKeys]
 export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            if (
-                category !== HighLevelTransactionCategory.INCOME &&
-                category !== HighLevelTransactionCategory.TRANSFER_IN
-            )
-                totals[category] = (totals[category] || 0) + value
+            if (!(category in nonSpendingKeys)) totals[category] = (totals[category] || 0) + value
         })
         return totals
     }, {})
@@ -33,11 +32,7 @@ export function calculateAverageSpendingFromMonthlySummarys(
             numberOfDays = daysInMonth[dateOfSummary.getMonth()]
         }
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            if (
-                (category !== HighLevelTransactionCategory.INCOME &&
-                    category !== HighLevelTransactionCategory.TRANSFER_IN) ||
-                includeAll
-            )
+            if (!(category in nonSpendingKeys) || includeAll)
                 totals[category] = (totals[category] || 0) + value / numberOfDays
         })
         return totals
