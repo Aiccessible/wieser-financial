@@ -33,6 +33,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const client = generateClient()
     const [chunks, setChunks] = useState<Record<string, Chat[]>>()
     const [completedChats, setCompletedChats] = useState<any[]>([])
+    const [lastRecievedChat, setLastReceivedChat] = useState(0)
     useEffect(() => {
         chatFocus && setIsSidebarOpen(true)
     }, [chatFocus])
@@ -76,7 +77,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     }, [getSortedChunks])
     const [wordIndex, setWordIndex] = useState(0)
 
-    const typingSpeed = 550
+    const typingSpeed = 300
     useEffect(() => {
         const intervalId = setInterval(() => {
             setWordIndex((wordIndex) => wordIndex + 1)
@@ -103,8 +104,9 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                     next: ({ data }) => {
                         const chunk = data.onCreateChat
                         if (chunk.isLastChunk) {
-                            setLoadingChat(false)
+                            dispatch(setLoadingChat(false))
                         }
+                        setLastReceivedChat(Date.now())
                         setChunks((prevChunks: Record<string, Chat[]> | undefined) => ({
                             ...(prevChunks ?? {}),
                             [chunk?.messageId ?? '']: [...(prevChunks?.[chunk?.messageId ?? ''] ?? []), chunk],
@@ -173,7 +175,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             </div>
         )
     }
-    console.log(currentDateRange)
+    const stillGettingChats = lastRecievedChat > Date.now() - 1000 * 3
     return (
         <aside
             className={cn(
@@ -199,7 +201,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                         />
                     )}
                 </div>
-                {chatFocus && !isChatLoading && (
+                {chatFocus && !stillGettingChats && (
                     <Heading level={6}>
                         <CustomTextBox className="p-4">
                             Chatting about {chatFocus + 's'}{' '}
@@ -227,7 +229,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             </div>
 
             {/* Chat Input */}
-            {highLevelCategory && !isChatLoading && (
+            {highLevelCategory && !stillGettingChats && (
                 <QuestionBubbles
                     handleChatSubmit={sendChat}
                     chatFocus={chatFocus ?? ChatFocus.All}

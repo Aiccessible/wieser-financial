@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getFinancialConversationResponse, getInvestments } from '../graphql/queries'
-import { ChatFocus, ChatType, Investment, Security } from '../API'
+import { CacheType, ChatFocus, ChatType, Investment, Security } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { get, post } from 'aws-amplify/api'
@@ -115,6 +115,7 @@ export const getInvestmentNewsSummary = createAsyncThunk<
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
                 shouldRagFetch: true,
+                cacheIdentifiers: [{ key: input.id + 'SUMMARY', cacheType: CacheType.PortfolioAnalysis }],
             },
         },
     })
@@ -149,10 +150,10 @@ export const getInvestmentNews = createAsyncThunk<
                 prompt:
                     'Provide me the news summary for the investments which I will send in the prompt as well tickers' +
                     idForSecurity,
-                chatFocus: ChatFocus.Investment,
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
                 shouldRagFetch: false,
+                cacheIdentifiers: [{ key: idForSecurity, cacheType: CacheType.StockNews }],
             },
         },
     })
@@ -211,10 +212,10 @@ export const getInvestmentAnalysis = createAsyncThunk<
                     idForSecurity +
                     ' The daily closes of the last two weeks are ' +
                     priceData.map((prive) => prive.toFixed(2)),
-                chatFocus: ChatFocus.Investment,
-                chatType: ChatType.FinancialNewsQuery,
+                chatType: ChatType.FinancialAnalysisQuery,
                 requiresLiveData: true,
                 shouldRagFetch: false,
+                cacheIdentifiers: [{ key: idForSecurity, cacheType: CacheType.StockAnalysis }],
             },
         },
     })
