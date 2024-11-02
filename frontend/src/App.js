@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Institution from './pages/Institution';
 import Layout from './components/Layout';
 import RequireAuth from './RequireAuth';
+import Profile from './components/Profile';
 
 import './App.css';
 import Transactions from './components/Transactions';
@@ -38,6 +39,8 @@ try {
 } catch (e) {
     console.error('No colors')
 }
+
+console.log(process.env.REACT_APP_BACKEND_URL,'1234')
 
 const darkTheme = {
     chart: {
@@ -209,6 +212,16 @@ function App() {
                                   </RootLayout>
                               </RequireAuth>
                           }
+                      />
+                      <Route
+                        path="/profile" 
+                        element={
+                        <RequireAuth>
+                            <RootLayout>
+                                <Profile />
+                            </RootLayout>
+                        </RequireAuth>
+                    }
                       />
                       <Route path="/login" element={<Login />} />
                   </Route>
