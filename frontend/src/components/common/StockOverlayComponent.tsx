@@ -89,7 +89,7 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                             </CustomTextBox>
                         </div>
                     </div>
-                    {stockKnoweldge[getIdFromSecurity(activeStock)]?.priceData?.length && (
+                    {stockKnoweldge[getIdFromSecurity(activeStock)]?.priceData?.length ? (
                         <div className="w-1/2 p-4 border-r dark:border-strokedark">
                             <Heading level={4} className="text-lg font-semibold mb-2">
                                 <CustomTextBox>Pricing</CustomTextBox>
@@ -129,6 +129,8 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                                 </Button>{' '}
                             </Heading>
                         </div>
+                    ) : (
+                        <></>
                     )}
                     {/* Analysis Section */}
                     <div className="w-1/2 p-4">
