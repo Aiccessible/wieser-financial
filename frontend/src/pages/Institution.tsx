@@ -80,12 +80,7 @@ export default function Institution() {
             </div>
             <Divider />
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col">
-                    <div className="flex flex-col">
-                        <Accounts updateAccounts={() => {}} />
-                    </div>
-                </div>
-                <div className="flex flex-col flex-grow p-3">
+                <div className="flex flex-col max-w-1/2 flex-grow w-full p-3">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}
@@ -93,6 +88,11 @@ export default function Institution() {
                         <CustomTextBox>Key Insights</CustomTextBox>
                     </Heading>
                     {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
+                </div>
+                <div className="flex max-w-1/2 flex-grow flex-col">
+                    <div className="flex flex-col">
+                        <Accounts updateAccounts={() => {}} />
+                    </div>
                 </div>
             </div>
             <div className="grid grid-cols-4 gap-4">
