@@ -14,7 +14,8 @@ export interface EntityQueryParams {
 
 export interface CacheEntityQueryParam {
     id: string
-    expiresAt: number
+    expire_at: number
+    sk: string
 }
 
 function mapStartDayToDate(startDay: GptDateResponse): string {
@@ -57,18 +58,20 @@ export const GetEntities = (params: EntityQueryParams) => {
         }
         filter['ExpressionAttributeNames'] = { '#date': 'date' }
     }
+    console.info('FINAL filter', filter)
     if (params.highLevelCategory) {
         if (!filter['FilterExpression']) {
-            filter['FilterExpression'] = '#finance = :primaryCategory'
+            filter['FilterExpression'] = '#keyOne.#finance = :primaryCategory'
         } else {
-            filter['FilterExpression'] = filter['FilterExpression'] + ' AND #finance = :primaryCategory'
+            filter['FilterExpression'] = filter['FilterExpression'] + ' AND #keyOne.#finance = :primaryCategory'
         }
         filter['ExpressionAttributeValues'][':primaryCategory'] = {
             S: params.highLevelCategory,
         }
         filter['ExpressionAttributeNames'] = {
             ...(filter['ExpressionAttributeNames'] ?? {}),
-            '#finance': 'personal_finance_category.primary',
+            '#finance': 'primary',
+            '#keyOne': 'personal_finance_category',
         }
     }
     return new QueryCommand({
@@ -79,18 +82,19 @@ export const GetEntities = (params: EntityQueryParams) => {
 
 export const GetCacheEntity = (params: CacheEntityQueryParam) => {
     const filter: any = {
-        KeyConditionExpression: 'pk = :pk',
+        KeyConditionExpression: 'pk = :pk AND sk = :sk',
         ExpressionAttributeValues: {
             ':pk': { S: `CACHEENTITY#${params.id}` },
+            ':sk': { S: params.sk },
         },
     }
-    if (params.expiresAt) {
-        // Adding the FilterExpression to check if ExpiresAt is less than the provided expiresAt
-        filter['FilterExpression'] = '#expiresAt < :expiresAt'
+    if (params.expire_at) {
+        // Adding the FilterExpression to check if expire_at is less than the provided expire_at
+        filter['FilterExpression'] = '#expiresAt > :expiresAt'
         filter['ExpressionAttributeNames'] = {
-            '#expiresAt': 'ExpiresAt', // Using attribute name mapping for ExpiresAt
+            '#expiresAt': 'expire_at', // Using attribute name mapping for ExpiresAt
         }
-        filter['ExpressionAttributeValues'][':expiresAt'] = { N: params.expiresAt.toString() } // Assuming expiresAt is a number (timestamp)
+        filter['ExpressionAttributeValues'][':expiresAt'] = { N: params.expire_at.toString() } // Assuming expiresAt is a number
     }
 
     console.info(params)
@@ -101,9 +105,10 @@ export const GetCacheEntity = (params: CacheEntityQueryParam) => {
 }
 
 export const PutCacheEntity = (params: CacheEntityQueryParam, data: any) => {
-    const item: any = {
-        pk: `CACHEENTITY#${params.id}`,
-        ExpiresAt: params.expiresAt, // Storing ExpiresAt as a number (timestamp)
+    const item = {
+        pk: { S: `CACHEENTITY#${params.id}` },
+        sk: { S: params.sk },
+        expire_at: { N: params.expire_at.toString() }, // Storing ExpiresAt as a number (timestamp)
         ...data, // Spread any additional data attributes
     }
 

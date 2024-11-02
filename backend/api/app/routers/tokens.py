@@ -64,12 +64,12 @@ def create_link_token() -> Dict[str, str]:
 
     request = LinkTokenCreateRequest(
         products=[Products("transactions")],
-        client_name="FinanceGPT",
-        country_codes=[CountryCode("US"), CountryCode("CA")],
+        client_name="Wieser",
+        country_codes=[CountryCode("CA")],
         language="en",
         webhook=WEBHOOK_URL,
         user=LinkTokenCreateRequestUser(client_user_id=user_id),
-        optional_products=[Products("investments")],
+        required_if_supported_products=[Products("investments")],
         investments_auth={
             "masked_number_match_enabled": True,
             "stated_account_number_enabled": True,
@@ -87,6 +87,37 @@ def create_link_token() -> Dict[str, str]:
 
     return {"link_token": response.link_token}
 
+@router.get("/get_investment_token")
+@tracer.capture_method(capture_response=False)
+def create_link_token() -> Dict[str, str]:
+    user_id: str = utils.authorize_request(router)
+
+    logger.append_keys(user_id=user_id)
+    tracer.put_annotation(key="UserId", value=user_id)
+
+    request = LinkTokenCreateRequest(
+        products=[Products("investments")],
+        client_name="Wieser",
+        country_codes=[CountryCode("CA")],
+        language="en",
+        webhook=WEBHOOK_URL,
+        user=LinkTokenCreateRequestUser(client_user_id=user_id),
+        investments_auth={
+            "masked_number_match_enabled": True,
+            "stated_account_number_enabled": True,
+            "manual_entry_enabled": True
+        }
+    )
+
+    client = utils.get_plaid_client()
+
+    try:
+        response: LinkTokenCreateResponse = client.link_token_create(request)
+    except plaid.ApiException:
+        logger.exception("Unable to create link token")
+        raise InternalServerError("Failed to create link token")
+
+    return {"link_token": response.link_token}
 
 @router.post("/")
 @tracer.capture_method(capture_response=False)
@@ -362,7 +393,7 @@ def create_link_token_for_transfer_ui(transfer_intent_id, client_name, access_to
         },
         client_name=client_name,
         language= "en",
-        country_codes=[CountryCode("US"), CountryCode("CA")],
+        country_codes=[CountryCode("CA")],
         access_token=access_token
     )
 

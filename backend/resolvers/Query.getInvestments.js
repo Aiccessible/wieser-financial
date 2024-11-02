@@ -23,7 +23,6 @@ export function request(ctx) {
       }),
     },
     scanIndexForward: false,
-    limit,
     nextToken,
   };
 }

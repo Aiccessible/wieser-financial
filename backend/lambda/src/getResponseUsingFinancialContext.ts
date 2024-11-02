@@ -19,10 +19,10 @@ const mapOfInformationOptionToKey: Record<string, EntityName> = {
 }
 
 const mapOfCacheTypeToExpiry: Record<CacheType, number> = {
-    [CacheType.InvestmentAnalysis]: 60 * 60 * 1000,
+    [CacheType.InvestmentAnalysis]: 60 * 60 * 1000 * 4,
     [CacheType.PortfolioAnalysis]: 60 * 60 * 1000 * 24,
     [CacheType.StockAnalysis]: 60 * 60 * 1000 * 24,
-    [CacheType.StockNews]: 60 * 60 * 1000,
+    [CacheType.StockNews]: 60 * 60 * 1000 * 4,
 }
 
 export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatResponse> = async (
@@ -49,7 +49,8 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
                 return client.send(
                     GetCacheEntity({
                         id: id.key || '',
-                        expiresAt: mapOfCacheTypeToExpiry[id.cacheType!] + Date.now(),
+                        sk: id.cacheType?.toString() ?? '',
+                        expire_at: Date.now(),
                     })
                 )
             })
@@ -57,7 +58,11 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
         const itemHits = cacheChecks.flatMap((el) => el.Items ?? [])
         if (itemHits.length) {
             return {
-                response: itemHits.map(mapDdbResponseToCacheEntity).join('') || '',
+                response:
+                    itemHits
+                        .map(mapDdbResponseToCacheEntity)
+                        ?.map((el) => el.response)
+                        .join('') || '',
                 __typename: 'ChatResponse',
             }
         }
@@ -134,9 +139,10 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
             PutCacheEntity(
                 {
                     id: id.key || '',
-                    expiresAt: mapOfCacheTypeToExpiry[id.cacheType!] + Date.now(),
+                    expire_at: mapOfCacheTypeToExpiry[id.cacheType!] + Date.now(),
+                    sk: id.cacheType?.toString() ?? '',
                 },
-                {}
+                { response: { S: response } }
             )
         )
     })

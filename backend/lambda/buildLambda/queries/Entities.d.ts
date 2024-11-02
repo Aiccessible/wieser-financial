@@ -12,7 +12,8 @@ export interface EntityQueryParams {
 }
 export interface CacheEntityQueryParam {
     id: string;
-    expiresAt: number;
+    expire_at: number;
+    sk: string;
 }
 export declare const GetEntities: (params: EntityQueryParams) => QueryCommand;
 export declare const GetCacheEntity: (params: CacheEntityQueryParam) => QueryCommand;
