@@ -80,7 +80,7 @@ export default function Institution() {
             </div>
             <Divider />
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col max-w-1/2 flex-grow w-full p-3">
+                <div className="flex flex-col max-w-1/2 flex-grow  p-3">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}

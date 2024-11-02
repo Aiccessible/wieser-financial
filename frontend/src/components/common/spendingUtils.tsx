@@ -16,7 +16,8 @@ export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
 
 export function calculateAverageSpendingFromMonthlySummarys(
     spendingSummaries: SpendingSummary[],
-    includeAll: boolean = false
+    includeAll: boolean = false,
+    isDailyAverage: boolean = true
 ): Record<string, number> {
     console.log('calculation')
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
@@ -33,7 +34,7 @@ export function calculateAverageSpendingFromMonthlySummarys(
         }
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
             if (!(category in nonSpendingKeys) || includeAll)
-                totals[category] = (totals[category] || 0) + value / numberOfDays
+                totals[category] = (totals[category] || 0) + (isDailyAverage ? value / numberOfDays : value)
         })
         return totals
     }, {})

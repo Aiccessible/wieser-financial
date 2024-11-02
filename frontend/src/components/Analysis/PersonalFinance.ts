@@ -1,3 +1,5 @@
+import { Account } from '@/src/API'
+
 interface TaxBracket {
     rate: number
     threshold: number
@@ -128,14 +130,21 @@ export function calculateAverageTaxRate(income: number, province: keyof typeof p
 
 export type AccountType = 'TFSA' | 'RRSP' | 'FHSA' | 'Unknown'
 
-export function identifyAccountType(accountName: string): AccountType {
-    const name = accountName.toLowerCase() // Convert to lowercase for case-insensitive matching
-
-    if (name.includes('tfsa')) {
+export function identifyAccountType(account: Account | undefined): AccountType {
+    if (!account) return 'Unknown'
+    const name = account?.name?.toLowerCase() ?? ''
+    const type = account?.type?.toLowerCase()
+    if (name.includes('tfsa') || type?.includes('tfsa')) {
         return 'TFSA'
-    } else if (name.includes('rrsp') || name.includes('rsp')) {
+    } else if (
+        name.includes('rrsp') ||
+        name.includes('rsp') ||
+        type?.includes('rsp') ||
+        type?.includes('drsp') ||
+        type?.includes('dsp')
+    ) {
         return 'RRSP'
-    } else if (name.includes('fhsa') || name.includes('hsa')) {
+    } else if (name.includes('fhsa') || name.includes('hsa') || type?.includes('fhsa')) {
         return 'FHSA'
     } else {
         return 'Unknown'
