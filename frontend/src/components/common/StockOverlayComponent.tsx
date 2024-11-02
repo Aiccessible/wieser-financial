@@ -74,7 +74,7 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
             </Dialog.Trigger>
 
             <Dialog.Portal>
-                <Dialog.Overlay className="z-998 fixed inset-0 bg-black bg-opacity-50" />
+                <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: 998 }} />
                 <Dialog.Content className="z-999 fixed max-h-[75vh] overflow-y-auto top-1/2 left-1/4 transform -translate-x-1/4 -translate-y-1/2 max-w-7xl w-full bg-white dark:bg-boxdark p-6 rounded-lg shadow-lg flex space-x-4 z-10001">
                     {/* News Section */}
                     <div className="w-1/2 p-4 border-r dark:border-strokedark">
