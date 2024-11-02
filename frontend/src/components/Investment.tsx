@@ -24,10 +24,7 @@ export default function Investment({
         <TableRow>
             <CustomTableCell>
                 <CustomTextBox className="underline mt-2">
-                    <button
-                        className="underline"
-                        onClick={() => dispatch(setActiveStock(getIdFromSecurity(investment?.security)))}
-                    >
+                    <button className="underline" onClick={() => dispatch(setActiveStock(investment?.security))}>
                         {getIdFromSecurity(investment?.security) ?? 'Unknown Security'}
                     </button>
                 </CustomTextBox>

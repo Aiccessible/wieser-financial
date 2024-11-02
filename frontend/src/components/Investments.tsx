@@ -105,7 +105,9 @@ export default function Investments({}: { id: string; accounts: any }) {
                 }
             }
         })
-        return accountAndsecurityIdToEntity
+        return Object.values(accountAndsecurityIdToEntity).sort(
+            (el) => (el.holding?.quantity ?? 0) * (el?.security?.close_price ?? 0)
+        )
     }, [investments])
 
     useEffect(() => {
@@ -142,6 +144,7 @@ export default function Investments({}: { id: string; accounts: any }) {
                 for (let i = 0; i < entities.length; i += batchSize) {
                     const batch = entities.slice(i, i + batchSize)
                     await processBatch(batch)
+                    return
                 }
             }
 
@@ -149,8 +152,7 @@ export default function Investments({}: { id: string; accounts: any }) {
         }
     }, [investments, getIdToSecurityAndHolding])
 
-    const getNetWorth = (entities: Record<string, { security: Security | undefined; holding: Holding }>) => {
-        const holdings = Object.values(entities)
+    const getNetWorth = (holdings: { security: Security | undefined; holding: Holding }[]) => {
         return holdings.reduce((val, holding) => {
             return val + (holding.holding.quantity ?? 0) * (holding.security?.close_price ?? 0)
         }, 0)
@@ -201,11 +203,6 @@ export default function Investments({}: { id: string; accounts: any }) {
                         </TableRow>
                     ) : holdingsAndSecuritiesJoined.length ? (
                         holdingsAndSecuritiesJoined.map((investmentViewModel) => {
-                            console.log(
-                                investmentKnoweldge[getIdFromSecurity(investmentViewModel?.security)],
-                                investmentKnoweldge,
-                                getIdFromSecurity(investmentViewModel?.security)
-                            )
                             return (
                                 <Investment
                                     knoweldge={investmentKnoweldge[getIdFromSecurity(investmentViewModel?.security)]}
@@ -220,13 +217,6 @@ export default function Investments({}: { id: string; accounts: any }) {
                     )}
                 </TableBody>
             </Table>
-            {investments?.length ? (
-                <Button isDisabled={!cursor} onClick={handleLoadMore} size="small">
-                    <CustomTextBox>Load More</CustomTextBox>
-                </Button>
-            ) : (
-                <div />
-            )}
         </div>
     )
 }

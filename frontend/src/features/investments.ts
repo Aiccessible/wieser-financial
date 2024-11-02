@@ -22,7 +22,7 @@ interface InvestmentsState {
     loadingSummary: boolean
     error: string | undefined
     investmentKnoweldge: Record<string, InvestmentKnoweldgeViewModel>
-    activeStock: string | undefined
+    activeStock: Security | undefined
 }
 
 // Define the initial state using that type

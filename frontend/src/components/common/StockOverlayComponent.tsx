@@ -1,10 +1,9 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { CustomTextBox } from './CustomTextBox'
 import { Button, Heading } from '@aws-amplify/ui-react'
-import { useAppSelector } from '../../hooks'
+import { useAppDispatch, useAppSelector } from '../../hooks'
 import Markdown from 'react-markdown'
-import { getIdFromSecurity } from '@/src/libs/utlis'
 import HighchartsReact from 'highcharts-react-official'
 import * as Highcharts from 'highcharts'
 import HighchartsStock from 'highcharts/highstock'
@@ -14,11 +13,16 @@ import AnnotationsAdvanced from 'highcharts/modules/annotations-advanced.js'
 import PriceIndicator from 'highcharts/modules/price-indicator.js'
 import FullScreen from 'highcharts/modules/full-screen.js'
 import StockTools from 'highcharts/modules/stock-tools.js'
-import { Loader } from 'lucide-react'
+import Loader from '../../components/common/Loader'
 import exporting from 'highcharts/modules/exporting'
+import { getInvestmentAnalysis, getInvestmentNews } from '../../../src/features/investments'
+import { generateClient } from 'aws-amplify/api'
+import { useParams } from 'react-router-dom'
+import { Security } from '../../../src/API'
+import { getIdFromSecurity } from '../../../src/libs/utlis'
 
 interface Props {
-    activeStock?: any // Type this based on your actual activeStock structure
+    activeStock?: Security // Type this based on your actual activeStock structure
     onClose: () => void // Function to close the modal
 }
 
@@ -36,6 +40,32 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
     const toggleFullScreen = () => {
         ;(chart.current as any).chart.fullscreen.toggle()
     }
+    const dispatch = useAppDispatch()
+    const client = generateClient()
+    const { id } = useParams()
+    useEffect(() => {
+        const activeKnoweldge = stockKnoweldge[getIdFromSecurity(activeStock)]
+        if (!activeKnoweldge?.news && !activeKnoweldge?.loadingNews) {
+            dispatch(
+                getInvestmentNews({
+                    client: client,
+                    security: activeStock,
+                    id: id || '',
+                })
+            )
+            dispatch(
+                getInvestmentAnalysis({
+                    client: client,
+                    security: activeStock,
+                    id: id || '',
+                })
+            )
+        }
+    }, [])
+    console.log(
+        stockKnoweldge[getIdFromSecurity(activeStock)]?.priceData,
+        stockKnoweldge[getIdFromSecurity(activeStock)]?.loadingAnalysis
+    )
     return (
         <Dialog.Root open={!!activeStock} onOpenChange={(open) => !open && onClose()}>
             <Dialog.Trigger asChild>
@@ -44,21 +74,22 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
             </Dialog.Trigger>
 
             <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 z-10000" />
-                <Dialog.Content className="fixed max-h-[75vh] overflow-y-auto top-1/2 left-1/4 transform -translate-x-1/4 -translate-y-1/2 max-w-7xl w-full bg-white dark:bg-boxdark p-6 rounded-lg shadow-lg flex space-x-4 z-10001">
+                <Dialog.Overlay className="z-998 fixed inset-0 bg-black bg-opacity-50" />
+                <Dialog.Content className="z-999 fixed max-h-[75vh] overflow-y-auto top-1/2 left-1/4 transform -translate-x-1/4 -translate-y-1/2 max-w-7xl w-full bg-white dark:bg-boxdark p-6 rounded-lg shadow-lg flex space-x-4 z-10001">
                     {/* News Section */}
                     <div className="w-1/2 p-4 border-r dark:border-strokedark">
                         <Heading level={4} className="text-lg font-semibold mb-2">
-                            <CustomTextBox>News {stockKnoweldge[activeStock]?.loadingNews ?? <Loader />}</CustomTextBox>
+                            <CustomTextBox>News</CustomTextBox>
                         </Heading>
                         {/* Replace with your actual news content */}
+                        {stockKnoweldge[getIdFromSecurity(activeStock)]?.loadingNews && <Loader />}
                         <div className="text-gray-700 dark:text-gray-300">
                             <CustomTextBox>
-                                <Markdown>{stockKnoweldge[activeStock]?.news}</Markdown>
+                                <Markdown>{stockKnoweldge[getIdFromSecurity(activeStock)]?.news}</Markdown>
                             </CustomTextBox>
                         </div>
                     </div>
-                    {stockKnoweldge[activeStock]?.priceData?.length && (
+                    {stockKnoweldge[getIdFromSecurity(activeStock)]?.priceData?.length && (
                         <div className="w-1/2 p-4 border-r dark:border-strokedark">
                             <Heading level={4} className="text-lg font-semibold mb-2">
                                 <CustomTextBox>Pricing</CustomTextBox>
@@ -68,7 +99,9 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                                     options={
                                         {
                                             xAxis: {
-                                                categories: stockKnoweldge[activeStock]?.priceData.map((_, index) => {
+                                                categories: stockKnoweldge[
+                                                    getIdFromSecurity(activeStock)
+                                                ]?.priceData.map((_, index) => {
                                                     const startDate = new Date()
                                                     startDate.setDate(startDate.getDate() - 14 + index)
                                                     return startDate.toDateString()
@@ -76,7 +109,7 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                                             },
                                             series: [
                                                 {
-                                                    data: stockKnoweldge[activeStock]?.priceData,
+                                                    data: stockKnoweldge[getIdFromSecurity(activeStock)]?.priceData,
                                                     name: 'Price',
                                                 },
                                             ],
@@ -100,14 +133,13 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                     {/* Analysis Section */}
                     <div className="w-1/2 p-4">
                         <Heading level={4} className="text-lg font-semibold mb-2">
-                            <CustomTextBox>
-                                Analysis {stockKnoweldge[activeStock]?.loadingAnalysis ?? <Loader />}
-                            </CustomTextBox>
+                            <CustomTextBox>Analysis</CustomTextBox>
                         </Heading>
                         {/* Replace with your actual analysis content */}
                         <div className="text-gray-700 dark:text-gray-300">
+                            {stockKnoweldge[getIdFromSecurity(activeStock)]?.loadingAnalysis && <Loader />}
                             <CustomTextBox>
-                                <Markdown>{stockKnoweldge[activeStock]?.analysis}</Markdown>
+                                <Markdown>{stockKnoweldge[getIdFromSecurity(activeStock)]?.analysis}</Markdown>
                             </CustomTextBox>
                         </div>
                     </div>

@@ -36,8 +36,8 @@ const ExpandableTextWithModal: React.FC<ExpandableTextWithModalProps> = ({
 
                 {/* Modal Content */}
                 <Dialog.Portal>
-                    <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 " />
-                    <Dialog.Content className="overflow-y-auto max-h-[75vh] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-md w-full bg-white p-6 rounded-lg shadow-xl">
+                    <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50" style={{ zIndex: 998 }} />
+                    <Dialog.Content className="z-999 overflow-y-auto max-h-[75vh] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-md w-full bg-white p-6 rounded-lg shadow-xl">
                         <Dialog.Title className="text-lg font-semibold mb-4">My Investment Report</Dialog.Title>
                         <Dialog.Description className="text-gray-700">{children}</Dialog.Description>
                         <Dialog.Close asChild>
