@@ -12,25 +12,17 @@ export function request(ctx) {
     return {
       operation: 'Query',
       query: {
-        expression: '#pk = :pk',
+        expression: '#pk = :pk and #date BETWEEN :minDate AND :maxDate',
         expressionNames: {
           '#pk': 'pk',
-          '#date': 'date',
+          '#date': 'sk',
         },
         expressionValues: util.dynamodb.toMapValues({
           ':pk': `USER#${username}#ITEM#${id}#${type}`,
-        }),
-      },
-      filter: {
-        expression: '#date BETWEEN :minDate AND :maxDate',
-        expressionNames: {
-          '#date': 'date',
-        },
-        expressionValues: util.dynamodb.toMapValues({
           ':minDate': minDate,
           ':maxDate': maxDate,
         }),
-        },
+      },
       scanIndexForward: false,
     };
 }
@@ -47,9 +39,9 @@ export function response(ctx) {
     return util.appendError(error.message, error.type, result);
   }
 
-  const { items: spending = [] } = result;
+  const { items: networths = [] } = result;
 
   return {
-    spending,
+    networths,
   };
 }

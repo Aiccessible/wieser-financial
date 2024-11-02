@@ -1,4 +1,4 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb'
 import { GetEntities, GetItems, GetUser } from './queries/Entities'
 import { decryptItemsInBatches } from './queries/Encryption'
 import { mapDdbResponseToItem } from './mappers/Item'
@@ -40,8 +40,12 @@ function aggregateSpendingByCategory(transactions: Transaction[]): AggregatedSpe
             const dateKey = date.toISOString().split('T')[0] // Format date as YYYY-MM-DD
 
             // Only consider transactions that are spending, not income or transfers
-            const category: HighLevelTransactionCategory =
-                (transaction.personal_finance_category?.primary as any).S ?? ''
+            let category: HighLevelTransactionCategory
+            if ((transaction.personal_finance_category?.detailed as any).S in HighLevelTransactionCategory) {
+                category = (transaction.personal_finance_category?.detailed as any).S ?? ''
+            } else {
+                category = (transaction.personal_finance_category?.primary as any).S ?? ''
+            }
             if (category) {
                 // Initialize daily spending map for the date if not present
                 if (!dailySpendingMap[dateKey]) {
