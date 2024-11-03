@@ -9,13 +9,12 @@ import { updateDateRange } from '../../../src/features/chat'
 export function DatePickerCustom() {
     const dateRange = useAppSelector((state) => state.transactions.currentDateRange)
     const dispatch = useAppDispatch()
-    const { id } = useParams()
     const client = generateClient()
     useEffect(() => {
         console.log(dateRange)
         if (dateRange?.[0] && dateRange?.[1]) {
             console.log('dispatching')
-            dispatch(getYesterdaySummaryAsyncThunk({ id: id || '', client, append: false }))
+            dispatch(getYesterdaySummaryAsyncThunk({ client, append: false }))
         }
     }, [dateRange])
     return (

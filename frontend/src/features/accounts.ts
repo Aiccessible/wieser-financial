@@ -1,7 +1,6 @@
 import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getAccounts } from '../graphql/queries'
 import { Account } from '../API'
-import { completeChatFromPrompt } from '../libs/gpt'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 // Define a type for the slice state
@@ -46,20 +45,6 @@ const getStorageKey = (id: string) => {
     return `accountrecommendation-${id}-${currentDate}`
 }
 
-export const getAccountRecommendationAsync = createAsyncThunk(
-    'account/get-recommendation',
-    async (input: GetAccountRecommendation, getThunkApi: GetThunkAPI<any>) => {
-        if (localStorage.getItem(getStorageKey(input.id))) {
-            return { accountRecommendation: localStorage.getItem(getStorageKey(input.id)) }
-        }
-        const res = await completeChatFromPrompt(
-            'Recommend the user to change their distribution of funds based on the following allocations, example recommendations include: opening new accounts which have tax benefits, closing accounts, moving money between accounts to pay debt etc... \n Accounts:' +
-                JSON.stringify((getThunkApi.getState() as any).accounts.accounts)
-        )
-        localStorage.setItem(getStorageKey(input.id), res.content || '')
-        return { accountRecommendation: res.content }
-    }
-)
 export const getAccountBalanceMultipler = (acc: Account) => (acc.type === 'loan' || acc.type === 'credit' ? -1 : 1)
 
 export const reduceAccounts = (accs: Account[]) =>
@@ -77,27 +62,15 @@ export const accountSlice = createSlice({
         builder.addCase(getAccountsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
             state.error = action.payload.errors ? action.payload.errors?.toString() : undefined
-            state.accounts = action.payload.accounts ?? []
+            state.accounts = [...(state.accounts ?? ([] as any)), ...(action.payload.accounts ?? [])]
             state.loading = false
         })
         builder.addCase(getAccountsAsync.rejected, (state, action) => {
             state.error = 'Failed to fetch accounts because ' + action.error.message
-            state.accounts = (action.payload as any)?.accounts ?? []
+            state.accounts = [...(state.accounts ?? []), ...((action.payload as any)?.accounts ?? [])]
             state.loading = false
         })
         builder.addCase(getAccountsAsync.pending, (state, action) => {
-            state.error = undefined
-            state.loading = true
-        })
-        builder.addCase(getAccountRecommendationAsync.fulfilled, (state, action) => {
-            state.acccountRecommendation = action.payload.accountRecommendation || ''
-            state.loading = false
-        })
-        builder.addCase(getAccountRecommendationAsync.rejected, (state, action) => {
-            state.error = 'Failed to get recommendations because ' + action.error.message
-            state.loading = false
-        })
-        builder.addCase(getAccountRecommendationAsync.pending, (state, action) => {
             state.error = undefined
             state.loading = true
         })

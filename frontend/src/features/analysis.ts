@@ -45,12 +45,10 @@ const initialState: AnalysisState = {
 }
 
 export interface GetFullPictureRecommendationInput {
-    id: string
     client: { graphql: GraphQLMethod }
 }
 
 export interface GetFinancialProjectionInput {
-    id: string
     client: { graphql: GraphQLMethod }
     input: FinancialInputs
 }
@@ -79,7 +77,7 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
     GetFullPictureRecommendationInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-analysis', async (input: GetFullPictureRecommendationInput, getThunkApi) => {
-    const storedItem = localStorage.getItem(getStorageKey(input.id))
+    const storedItem = localStorage.getItem(getStorageKey('full-picture-recommendation'))
     if (storedItem) {
         console.log(storedItem, storedItem || '', JSON.parse(storedItem || ''))
         return {
@@ -95,7 +93,7 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             JSON.stringify(getThunkApi.getState().transactions.transactions),
         input.client
     )
-    localStorage.setItem(getStorageKey(input.id), JSON.stringify(res))
+    localStorage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(res))
     return { fullPictureRecommendations: res }
 })
 

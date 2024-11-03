@@ -34,7 +34,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const [chunks, setChunks] = useState<Record<string, Chat[]>>()
     const [completedChats, setCompletedChats] = useState<any[]>([])
     const [lastRecievedChat, setLastReceivedChat] = useState(0)
-
+    const ids = useAppSelector((state) => state.idsSlice.institutions?.map((el) => el.item_id))
     const chatContainerRef = useRef(null)
 
     useEffect(() => {
@@ -146,7 +146,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                 newChat: input,
                 client,
                 focus,
-                id,
+                ids: ids ?? [],
                 highLevelSpendingCategory: highLevelCategory,
                 currentDateRange,
             })

@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '../../../src/hooks'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { calculateAverageSpendingFromMonthlySummarys, daysInMonth } from '../common/spendingUtils'
 import { calculateAverageTaxRate, identifyAccountType } from '../Analysis/PersonalFinance'
 import { reduceAccounts } from '../../../src/features/accounts'
@@ -8,7 +8,7 @@ import { HighLevelTransactionCategory } from '../../../src/API'
 const useDefaultValuesForProjection = () => {
     const accounts = useAppSelector((state) => state.accounts.accounts)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
-    const averageSpending = useCallback(
+    const averageSpending = useMemo(
         () => calculateAverageSpendingFromMonthlySummarys(monthlySpendings ?? [], true, false),
         [monthlySpendings]
     )
@@ -30,39 +30,38 @@ const useDefaultValuesForProjection = () => {
     const numberOfMonthsCompleted =
         (monthlySpendings?.length ?? 1) + new Date().getDate() / daysInMonth[new Date().getMonth()]
     const totalSpending = useCallback(() => {
-        return Object.values(averageSpending())
+        return Object.values(averageSpending)
             .map((val) => {
                 return val * (12 / numberOfMonthsCompleted)
             })
             .reduce((currVal, val) => currVal + val, 0)
     }, [averageSpending])
     const transfersOut = useCallback(() => {
-        return Object.keys(averageSpending())
+        return Object.keys(averageSpending)
             .filter((key) => key.startsWith('TRANSFER_OUT'))
             .map((key) => {
-                return averageSpending()[key] * (12 / numberOfMonthsCompleted)
+                return averageSpending[key] * (12 / numberOfMonthsCompleted)
             })
             .reduce((currVal, val) => currVal + val, 0)
     }, [averageSpending])
-    const income = useCallback(() => {
+    const income = useMemo(() => {
         const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME'))
         const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
         const totalIncome = [...incomeKeys, ...transferInKeys].reduce((acc, key) => {
-            return acc + (averageSpending()[key] ?? 0)
+            return acc + (averageSpending[key] ?? 0)
         }, 0)
-        console.log(totalIncome, '435454', numberOfMonthsCompleted)
         return totalIncome * (12 / numberOfMonthsCompleted)
     }, [averageSpending])
-    console.log(433454, income())
+    console.log(433454, income)
     return {
-        initial_salary: income(),
+        initial_salary: income,
         salary_growth: 5,
         initial_bonus: 0,
         bonus_growth: 0,
-        initial_expenses: totalSpending() - income() - transfersOut(),
+        initial_expenses: totalSpending() - income - transfersOut(),
         expenses_growth: 5,
         investment_yield: 15,
-        tax_rate: calculateAverageTaxRate(income(), 'British Columbia'),
+        tax_rate: calculateAverageTaxRate(income, 'British Columbia'),
         years: 12,
         initial_rrsp_balance: accountBalances().rsp,
         initial_fhsa_balance: accountBalances().fhsa,

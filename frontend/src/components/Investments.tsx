@@ -22,6 +22,7 @@ import Markdown from 'react-markdown'
 import ExpandableTextWithModal from './ExpandableTextWithModal'
 import StockOverlayComponent from './common/StockOverlayComponent'
 import { getIdFromSecurity } from '../libs/utlis'
+import { useDataLoading } from '../hooks/useDataLoading'
 const ID_SEPERATOR = '-'
 const logger = new ConsoleLogger('Holdings')
 
@@ -56,6 +57,14 @@ const NewsSection = ({ news }: { news: string | undefined }) => {
     )
 }
 
+export const callFunctionsForEachId = async (func: any, ids: string[]) => {
+    await Promise.all(
+        ids.map((id) => {
+            return func(id)
+        })
+    )
+}
+
 export default function Investments({}: { id: string; accounts: any }) {
     const loading = useAppSelector((state) => state.investments.loading)
 
@@ -63,15 +72,19 @@ export default function Investments({}: { id: string; accounts: any }) {
     const { id } = useParams()
     const investments = useAppSelector((state) => state.investments.investments)
     const investmentSummary = useAppSelector((state) => state.investments.investmentSummary)
-    const cursor = useAppSelector((state) => state.investments.cursor)
     const error = useAppSelector((state) => state.investments.error)
     const investmentKnoweldge = useAppSelector((state) => state.investments.investmentKnoweldge)
     const activeStock = useAppSelector((state) => state.investments.activeStock)
+    const ids = useAppSelector((state) => state.idsSlice.institutions)
+    useDataLoading({
+        id: '',
+        client: client,
+    })
     const dispatch = useAppDispatch()
     useEffect(() => {
         const asyncFetch = async () => {
             if (!investmentSummary && investments) {
-                dispatch(getInvestmentNewsSummary({ client, id: id || '' }))
+                getInvestmentNewsSummary({ client, ids: ids?.map((institution) => institution.item_id) ?? [] })
             }
         }
         asyncFetch()
@@ -81,14 +94,6 @@ export default function Investments({}: { id: string; accounts: any }) {
             await dispatch(getInvestementsAsync({ client, id: id || '', append: false }))
         } catch (err) {
             logger.error('unable to get transactions', err)
-        }
-    }
-
-    const handleLoadMore = async () => {
-        try {
-            await dispatch(getInvestementsAsync({ client, id: id || '', append: true }))
-        } catch (err) {
-            logger.error('unable to get holdings', err)
         }
     }
 
@@ -126,14 +131,12 @@ export default function Investments({}: { id: string; accounts: any }) {
                                 getInvestmentAnalysis({
                                     security: el?.security,
                                     client,
-                                    id: id || '',
                                 })
                             )
                             await dispatch(
                                 getInvestmentNews({
                                     security: el?.security,
                                     client,
-                                    id: id || '',
                                 })
                             )
                         })
@@ -159,8 +162,8 @@ export default function Investments({}: { id: string; accounts: any }) {
     }
 
     useEffect(() => {
-        getInvestments()
-    }, [])
+        ids && getInvestments()
+    }, [ids])
     const holdingsAndSecuritiesJoined = Object.values(getIdToSecurityAndHolding()).filter((entity) => entity.security)
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">

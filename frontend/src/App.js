@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Authenticator } from "@aws-amplify/ui-react";
 import Protected from './pages/Protected';
 import Login from './pages/Login';
@@ -139,94 +139,96 @@ function App() {
     }, [colorMode])
   return (
       <Authenticator.Provider>
-        <Provider store={store}>
-          <BrowserRouter>
-              <Routes>
-                  <Route path="/" element={<Layout />}>
-                      <Route
-                          index
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Protected />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path="/institution/:id/transactions"
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Transactions />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path="/analyze/:id/"
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Projection />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path="/institution/:id/investments"
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Investments />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path="/institution/:id/accounts"
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Accounts updateAccounts={() => {}} />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path="/institution/:id"
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <Institution />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                          path={`/institution/:id/analyze/recommendation/:name`}
-                          element={
-                              <RequireAuth>
-                                  <RootLayout>
-                                      <AnalyzeRecommendation />
-                                  </RootLayout>
-                              </RequireAuth>
-                          }
-                      />
-                      <Route
-                        path="/profile" 
-                        element={
-                        <RequireAuth>
-                            <RootLayout>
-                                <Profile />
-                            </RootLayout>
-                        </RequireAuth>
-                    }
-                      />
-                      <Route path="/login" element={<Login />} />
-                  </Route>
-              </Routes>
-          </BrowserRouter>
+          <Provider store={store}>
+              <BrowserRouter>
+                  <Routes>
+                      <Route path="/" element={<Layout />}>
+                          <Route index element={<Navigate to="/institution/v0/transactions" replace />} />
+                          <Route
+                              path="/institutions"
+                              index
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Protected />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/institution/:id/transactions"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Transactions />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/analyze/:id/"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Projection />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/institution/:id/investments"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Investments />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/institution/:id/accounts"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Accounts updateAccounts={() => {}} />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/institution/:id"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Institution />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path={`/institution/:id/analyze/recommendation/:name`}
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <AnalyzeRecommendation />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route
+                              path="/profile"
+                              element={
+                                  <RequireAuth>
+                                      <RootLayout>
+                                          <Profile />
+                                      </RootLayout>
+                                  </RequireAuth>
+                              }
+                          />
+                          <Route path="/login" element={<Login />} />
+                      </Route>
+                  </Routes>
+              </BrowserRouter>
           </Provider>
       </Authenticator.Provider>
   )

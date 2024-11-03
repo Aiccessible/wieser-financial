@@ -45,13 +45,12 @@ export interface GetInvestmentInput {
 
 export interface GetInvestmentNewsSummaryInput {
     client: { graphql: GraphQLMethod }
-    id: string
+    ids: string[]
 }
 
 export interface GetInvestmentNewsInput {
     client: { graphql: GraphQLMethod }
     security: Security | undefined | null
-    id: string
 }
 
 export interface GetInvestmentRecommendation {
@@ -101,26 +100,27 @@ export const getInvestmentNewsSummary = createAsyncThunk<
     GetInvestmentNewsSummaryInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-news-summary', async (input: GetInvestmentNewsSummaryInput, getThunk) => {
-    if (localStorage.getItem(getStorageKey(input.id))) {
-        return { investmentSummary: localStorage.getItem(getStorageKey(input.id)) }
+    const key = input.ids.join(',')
+    if (localStorage.getItem(getStorageKey(key))) {
+        return { investmentSummary: localStorage.getItem(getStorageKey(key)) }
     }
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
             chat: {
-                accountId: input.id ?? '',
+                accountIds: input.ids,
                 prompt: 'Provide me the news summary for the investments which I will send in the prompt as well',
                 chatFocus: ChatFocus.Investment,
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
                 shouldRagFetch: true,
-                cacheIdentifiers: [{ key: input.id + 'SUMMARY', cacheType: CacheType.PortfolioAnalysis }],
-            },
+                cacheIdentifiers: [{ key: input.ids.join(',') + 'SUMMARY', cacheType: CacheType.PortfolioAnalysis }],
+            } as any,
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getStorageKey(input.id), res.data?.getFinancialConversationResponse?.response)
+        localStorage.setItem(getStorageKey(key), res.data?.getFinancialConversationResponse?.response)
     const errors = res.errors
     if (errors && errors.length > 0) {
         return { errors, investmentSummary: res.data?.getFinancialConversationResponse?.response }
@@ -146,7 +146,6 @@ export const getInvestmentNews = createAsyncThunk<
         query: getFinancialConversationResponse,
         variables: {
             chat: {
-                accountId: input.id ?? '',
                 prompt:
                     'Provide me the news summary for the investments which I will send in the prompt as well tickers' +
                     idForSecurity,
@@ -206,7 +205,6 @@ export const getInvestmentAnalysis = createAsyncThunk<
         query: getFinancialConversationResponse,
         variables: {
             chat: {
-                accountId: input.id ?? '',
                 prompt:
                     'Provide me the technical analysis for the investments which I will send in the prompt as well tickers ' +
                     idForSecurity +

@@ -40,6 +40,11 @@ export interface GetTransactionInput {
     append: boolean
 }
 
+export interface GetSummaryInput {
+    client: { graphql: GraphQLMethod }
+    append: boolean
+}
+
 export interface GetTransactionRecommendation {
     id: string
 }
@@ -70,9 +75,9 @@ export const getTransactionsAsync = createAsyncThunk(
 
 export const getYesterdaySummaryAsyncThunk = createAsyncThunk<
     any, // Return type
-    GetTransactionInput, // Input type
+    GetSummaryInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
->('transaction/get-transactions-summary-daily', async (input: GetTransactionInput, getThunk) => {
+>('transaction/get-transactions-summary-daily', async (input: GetSummaryInput, getThunk) => {
     let endDate
     let startDate
     if (getThunk.getState().transactions.currentDateRange) {
@@ -88,10 +93,10 @@ export const getYesterdaySummaryAsyncThunk = createAsyncThunk<
     const res = await input.client.graphql({
         query: getSpendingSummary,
         variables: {
-            id: input.id,
             minDate: startDate as any,
             maxDate: endDate as any,
             type: SpendingSummaryType.DAILYSUMMARY,
+            id: 'v0',
         },
     })
     return processSummaryResult(res)
@@ -113,7 +118,7 @@ const processSummaryResult = (res: any) => {
 
 export const getMonthlySummariesAsyncThunk = createAsyncThunk(
     'transaction/get-transactions-summary-monthly',
-    async (input: GetTransactionInput, getThunk: any) => {
+    async (input: GetSummaryInput, getThunk: any) => {
         console.log('here')
         const endDate = new Date() // Current date
         const startDate = new Date()
@@ -122,10 +127,10 @@ export const getMonthlySummariesAsyncThunk = createAsyncThunk(
         const res = await input.client.graphql({
             query: getSpendingSummary,
             variables: {
-                id: input.id,
                 minDate: startDate.getTime() as any,
                 maxDate: endDate.getTime() as any,
                 type: SpendingSummaryType.MONTHLYSUMMARY,
+                id: 'v0',
             },
         })
         console.log('h232')

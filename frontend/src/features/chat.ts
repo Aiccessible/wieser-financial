@@ -28,7 +28,7 @@ export interface SendChatToLLMArgs {
     newChat: string
     client: { graphql: GraphQLMethod }
     focus: ChatFocus
-    id: string
+    ids: string[]
     dontRagFetch?: boolean
     currentDateRange?: [number?, number?]
     highLevelSpendingCategory?: HighLevelTransactionCategory | undefined
@@ -44,11 +44,11 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                     chat: {
                         prompt: input.newChat,
                         chatFocus: input.focus,
-                        accountId: input.id,
+                        accountIds: input.ids,
                         shouldRagFetch: !input.dontRagFetch,
                         currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
                         highLevelCategory: input.highLevelSpendingCategory,
-                    },
+                    } as any,
                 },
             })
             const errors = res.errors

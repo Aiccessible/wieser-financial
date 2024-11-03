@@ -24,6 +24,7 @@ export default function Protected() {
       const res = await client.graphql({
         query: GetItems
       });
+      const ids = res.data.getItems.items.map((item) => item.item_id)
       logger.info(res);
       setLoading(false)
       setItems(res.data.getItems.items);

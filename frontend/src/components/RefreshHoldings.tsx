@@ -4,9 +4,10 @@ import { ConsoleLogger } from 'aws-amplify/utils'
 import { Button } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
 import PlaidLink from './PlaidLink'
-import { useAppDispatch } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../hooks'
 import { getInvestementsAsync } from '../features/investments'
 import { useParams } from 'react-router-dom'
+import { callFunctionsForEachId } from './Investments'
 
 const logger = new ConsoleLogger('Refresh')
 
@@ -16,31 +17,35 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const [loading, setLoading] = useState(false)
     const [loadingToken, setLoadingToken] = useState(false)
     const [token, setToken] = useState('')
+    const ids = useAppSelector((state) => state.idsSlice.institutions?.map((institution) => institution.item_id))
+
     const refresh = async () => {
-        setLoading(true)
-        try {
-            const { body } = await post({
-                apiName,
-                path: `/v1/items/${item_id}/refresh/holdings`,
-            }).response
-            //const data = await body.json()
-            console.log('eee')
-            // const { body } = await get({
-            //     apiName,
-            //     path: `/v1/stock/${'TSLA'}/closing-prices`,
-            //     options: {
-            //         body: {
-            //             start_date: '2024-01-01',
-            //             end_date: '2024-05-09',
-            //         },
-            //     },
-            // }).response
-            //const data = await body.json()
-            //logger.debug(`POST /v1/items/${item_id}/refresh/holdings response:`, data)
-            setLoading(false)
-        } catch (err) {
-            setLoading(false)
-            logger.error('unable to refresh item', err)
+        for (item_id in ids) {
+            setLoading(true)
+            try {
+                const { body } = await post({
+                    apiName,
+                    path: `/v1/items/${item_id}/refresh/holdings`,
+                }).response
+                //const data = await body.json()
+                console.log('eee')
+                // const { body } = await get({
+                //     apiName,
+                //     path: `/v1/stock/${'TSLA'}/closing-prices`,
+                //     options: {
+                //         body: {
+                //             start_date: '2024-01-01',
+                //             end_date: '2024-05-09',
+                //         },
+                //     },
+                // }).response
+                //const data = await body.json()
+                //logger.debug(`POST /v1/items/${item_id}/refresh/holdings response:`, data)
+                setLoading(false)
+            } catch (err) {
+                setLoading(false)
+                logger.error('unable to refresh item', err)
+            }
         }
     }
 
@@ -75,9 +80,14 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
+
     const onSuccess = () => {
-        dispatch(getInvestementsAsync({ id: id || '', client: client, append: false }))
+        callFunctionsForEachId(
+            (id: string) => dispatch(getInvestementsAsync({ id: id || '', client: client, append: false })),
+            ids ?? [id ?? '']
+        )
     }
+
     return (
         <div className="flex flex-col">
             <Button className="m4" isLoading={loading} onClick={refresh} size="small">

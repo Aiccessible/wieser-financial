@@ -10,6 +10,8 @@ import { getAccountsAsync } from '../features/accounts'
 import { getFinancialProjection, getFullPictureRecommendationAsync } from '../features/analysis'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
+import { callFunctionsForEachId } from '../components/Investments'
+import { getIdsAsync } from '../features/items'
 const logger = new ConsoleLogger('DataLoading')
 interface DataLoadingInput {
     id: string
@@ -39,15 +41,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const defaultParams = useDefaultValuesForProjection()
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
     const recommendations = useAppSelector((state) => state.analysis.fullPictureRecommendations)
-
-    // Load accounts
-    const getAccounts = useCallback(async () => {
-        try {
-            dispatch(getAccountsAsync({ client, id: id || '' }))
-        } catch (err) {
-            logger.error('unable to get accounts', err)
-        }
-    }, [id])
+    const institutions = useAppSelector((state) => state.idsSlice.institutions)
 
     // Load investments
     const getInvestments = useCallback(async () => {
@@ -61,8 +55,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
     // Load transactions
     const getTransactions = useCallback(async () => {
         try {
-            dispatch(getYesterdaySummaryAsyncThunk({ id: id || '', client, append: false }))
-            dispatch(getMonthlySummariesAsyncThunk({ id: id || '', client, append: false }))
+            dispatch(getYesterdaySummaryAsyncThunk({ client, append: false }))
+            dispatch(getMonthlySummariesAsyncThunk({ client, append: false }))
             await dispatch(getTransactionsAsync({ id: id || '', client, append: !transactionCursor }))
         } catch (err) {
             logger.error('unable to get transactions', err)
@@ -81,10 +75,17 @@ export const useDataLoading = (input: DataLoadingInput) => {
 
     // Load accounts on mount if not already loaded
     useEffect(() => {
-        if (!accounts) {
-            loadAccounts && getAccounts()
+        if (institutions?.length && loadAccounts) {
+            try {
+                callFunctionsForEachId(
+                    (id: string) => dispatch(getAccountsAsync({ client, id: id || '' })),
+                    institutions?.map((el) => el.item_id)
+                )
+            } catch (err) {
+                logger.error('unable to get accounts', err)
+            }
         }
-    }, [accounts, getAccounts, loadAccounts])
+    }, [loadAccounts, institutions?.length])
 
     // Load investments based on loading state
     useEffect(() => {
@@ -111,7 +112,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
             !loadingRecommendations &&
             !recommendations
         ) {
-            dispatch(getFullPictureRecommendationAsync({ id: id || '', client }))
+            dispatch(getFullPictureRecommendationAsync({ client }))
         }
     }, [
         accounts,
@@ -135,10 +136,12 @@ export const useDataLoading = (input: DataLoadingInput) => {
             !loadingProjectionError &&
             loadProjection
         ) {
-            dispatch(getFinancialProjection({ input: defaultParams, client, id: id || '' }))
+            dispatch(getFinancialProjection({ input: defaultParams, client }))
         }
     }, [defaultParams, monthlySummaries, accounts, projectedBalances, loadingBalances, loadingProjectionError])
-
+    useEffect(() => {
+        !institutions?.length && dispatch(getIdsAsync({ client }))
+    }, [institutions])
     return {
         accounts,
         investments,

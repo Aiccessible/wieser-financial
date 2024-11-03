@@ -42,7 +42,6 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
     }
     const dispatch = useAppDispatch()
     const client = generateClient()
-    const { id } = useParams()
     useEffect(() => {
         const activeKnoweldge = stockKnoweldge[getIdFromSecurity(activeStock)]
         if (!activeKnoweldge?.news && !activeKnoweldge?.loadingNews) {
@@ -50,14 +49,12 @@ const StockOverlayComponent: React.FC<Props> = ({ activeStock, onClose }) => {
                 getInvestmentNews({
                     client: client,
                     security: activeStock,
-                    id: id || '',
                 })
             )
             dispatch(
                 getInvestmentAnalysis({
                     client: client,
                     security: activeStock,
-                    id: id || '',
                 })
             )
         }

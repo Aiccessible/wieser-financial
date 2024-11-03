@@ -41,7 +41,6 @@ const Projection = () => {
         dispatch(
             getFinancialProjection({
                 client,
-                id: id || '',
                 input: {
                     ...inputs,
                 },
