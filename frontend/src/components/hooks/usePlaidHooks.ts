@@ -8,7 +8,7 @@ import PlaidLink from '../../components/PlaidLink'
 const apiName = 'plaidapi'
 const logger = new ConsoleLogger('Plaid')
 
-export const usePlaidHooks = ({ getItems }: { getItems: () => any }) => {
+export const usePlaidHooks = ({ getItems, getPath = '/v1/tokens' }: { getItems: () => any; getPath: string }) => {
     const [connecting, setConnecting] = useState(false)
     const [token, setToken] = useState(null)
     const appDispatch = useAppDispatch()
@@ -18,7 +18,7 @@ export const usePlaidHooks = ({ getItems }: { getItems: () => any }) => {
         try {
             const { body } = await get({
                 apiName,
-                path: '/v1/tokens',
+                path: getPath,
             }).response
             const data = await body.json()
             logger.debug('GET /v1/tokens response:', data)
