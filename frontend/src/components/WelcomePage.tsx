@@ -5,7 +5,7 @@ import Markdown from 'react-markdown'
 import Plaid from '../components/Plaid'
 const WelcomePage = ({ setIsDone }: { setIsDone: (arg: boolean) => void }) => {
     const [wordIndex, setWordIndex] = useState(0)
-    const typingSpeed = 300
+    const typingSpeed = 150
     useEffect(() => {
         const intervalId = setInterval(() => {
             setWordIndex((wordIndex) => {

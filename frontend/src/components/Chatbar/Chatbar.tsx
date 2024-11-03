@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MessageCircleIcon } from 'lucide-react'
 import Loader from '../../components/common/Loader'
@@ -34,6 +34,9 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const [chunks, setChunks] = useState<Record<string, Chat[]>>()
     const [completedChats, setCompletedChats] = useState<any[]>([])
     const [lastRecievedChat, setLastReceivedChat] = useState(0)
+
+    const chatContainerRef = useRef(null)
+
     useEffect(() => {
         chatFocus && setIsSidebarOpen(true)
     }, [chatFocus])
@@ -41,12 +44,12 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         const keys = Object.keys(chunks || {})
         const activeKeys: string[] = []
         keys.forEach((key) => {
-            if (completedChats?.find((chat) => chat.messageId === key)) {
+            if (!isChatLoading && completedChats?.find((chat) => chat.messageId === key)) {
                 activeKeys.push(key)
             }
         })
         return activeKeys
-    }, [completedChats, chunks, setChunks])
+    }, [completedChats, chunks, setChunks, isChatLoading])
 
     const getSortedChunks = useMemo(() => {
         const mostRecentMessage = Object.keys(chunks || {})
@@ -77,14 +80,27 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     }, [getSortedChunks])
     const [wordIndex, setWordIndex] = useState(0)
 
-    const typingSpeed = 300
+    const typingSpeed = 150
+
     useEffect(() => {
         const intervalId = setInterval(() => {
-            setWordIndex((wordIndex) => wordIndex + 1)
+            const splitResponse = getChunksAsValidJson?.response?.split(' ')
+            setWordIndex((wordIndex) => {
+                if (splitResponse?.length && wordIndex < splitResponse?.length) {
+                    if (chatContainerRef.current) {
+                        console.log('scrolling')
+                        const ref = chatContainerRef.current as any
+                        console.log(ref)
+                        ref.scrollIntoView({ behavior: 'smooth' })
+                    }
+                    return wordIndex + 1
+                }
+                return wordIndex
+            })
         }, typingSpeed)
 
         return () => clearInterval(intervalId) // Cleanup if component unmounts
-    }, [typingSpeed])
+    }, [typingSpeed, getChunksAsValidJson])
 
     useEffect(() => {
         const createSub = async () => {
@@ -107,10 +123,15 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                             dispatch(setLoadingChat(false))
                         }
                         setLastReceivedChat(Date.now())
-                        setChunks((prevChunks: Record<string, Chat[]> | undefined) => ({
-                            ...(prevChunks ?? {}),
-                            [chunk?.messageId ?? '']: [...(prevChunks?.[chunk?.messageId ?? ''] ?? []), chunk],
-                        }))
+                        setChunks((prevChunks: Record<string, Chat[]> | undefined) => {
+                            if (!prevChunks?.[chunk?.messageId ?? '']) {
+                                setWordIndex(0)
+                            }
+                            return {
+                                ...(prevChunks ?? {}),
+                                [chunk?.messageId ?? '']: [...(prevChunks?.[chunk?.messageId ?? ''] ?? []), chunk],
+                            }
+                        })
                     },
                     error: (error) => console.warn(error),
                 })
@@ -131,8 +152,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             })
         )
         setInputValue('') // Clear input after submission
-        setWordIndex(0)
     }
+
     const handleChatSubmit = (e: React.FormEvent) => {
         setChunks({})
         e.preventDefault()
@@ -175,7 +196,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             </div>
         )
     }
-    const stillGettingChats = lastRecievedChat > Date.now() - 1000 * 3
+    const stillGettingChats = lastRecievedChat > Date.now() - 1000 * 4
     return (
         <aside
             className={cn(
@@ -226,6 +247,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
             {/* Chats */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
                 {getChunksAsValidJson && renderPremiumChat(getChunksAsValidJson)}
+                <div style={{ float: 'left', clear: 'both' }} ref={chatContainerRef}></div>
             </div>
 
             {/* Chat Input */}
@@ -234,6 +256,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                     handleChatSubmit={sendChat}
                     chatFocus={chatFocus ?? ChatFocus.All}
                     category={highLevelCategory}
+                    disabled={stillGettingChats}
                 />
             )}
             <form onSubmit={handleChatSubmit} className="flex items-center p-4 border-t border-gray-600 bg-gray-800">
@@ -246,6 +269,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                 />
                 <button
                     type="submit"
+                    disabled={stillGettingChats}
                     className="ml-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
                 >
                     Send
@@ -268,15 +292,18 @@ const QuestionBubbles = ({
     category,
     handleChatSubmit,
     chatFocus,
+    disabled,
 }: {
     category: HighLevelTransactionCategory
     handleChatSubmit: (val: string, focus: ChatFocus) => void
     chatFocus: ChatFocus
+    disabled: boolean
 }) => {
     return (
         <div className="flex flex-wrap gap-2 p-4">
             {demoQuestions[category].map((question, index) => (
                 <button
+                    disabled={disabled}
                     key={index}
                     className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition"
                     onClick={() => handleChatSubmit(question, chatFocus)}
