@@ -21,7 +21,6 @@ export const DailySpending: React.FC<Props> = ({ width, isIncomeAndTransfers }) 
             ? calculateTotalSpending(dailySpendsLastXDays ?? [])
             : dailySpendsLastXDays?.[0]?.spending
     }, [dateRange, dailySpendsLastXDays])
-    console.log(totalSpendingInTimePeriod())
     const dateOrUndefined = (dailySpendsLastXDays?.[0] as any)?.date
     const actualRange = dateRange && dateRange?.length === 2 ? dateRange : [dateOrUndefined, dateOrUndefined]
     const keyword = isIncomeAndTransfers ? 'Income and transfers' : 'Spending'
