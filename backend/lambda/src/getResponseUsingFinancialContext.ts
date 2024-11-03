@@ -83,27 +83,31 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     console.info('Date range: ', dateRangeResponse)
     const user = (event.identity as AppSyncIdentityCognito)?.username
     let tupleOfTypeToElements: [InformationOptions, QueryCommandOutput][]
-    tupleOfTypeToElements = await Promise.all(
-        neededInfo.optionsForInformation.map(async (option) => {
+    tupleOfTypeToElements = (await Promise.all(
+        neededInfo.optionsForInformation.flatMap(async (option) => {
             const entityName = mapOfInformationOptionToKey[option].toString()
-            return [
-                option,
-                await client.send(
-                    GetEntities({
-                        username: user || '',
-                        id: event.arguments.chat.accountId || '',
-                        dateRange: entityName in dateSupportedFiltering ? dateRangeResponse : undefined,
-                        entityName: entityName,
-                        customDateRange:
-                            (event.arguments.chat?.currentDateRange?.map((el) =>
-                                el ? parseInt(el) : undefined
-                            ) as any) ?? undefined,
-                        highLevelCategory: event.arguments.chat.highLevelCategory ?? undefined,
-                    })
-                ),
-            ]
+            return (
+                event.arguments.chat.accountIds?.map(async (accountId) => {
+                    return [
+                        option,
+                        await client.send(
+                            GetEntities({
+                                username: user || '',
+                                id: accountId || '',
+                                dateRange: entityName in dateSupportedFiltering ? dateRangeResponse : undefined,
+                                entityName: entityName,
+                                customDateRange:
+                                    (event.arguments.chat?.currentDateRange?.map((el) =>
+                                        el ? parseInt(el) : undefined
+                                    ) as any) ?? undefined,
+                                highLevelCategory: event.arguments.chat.highLevelCategory ?? undefined,
+                            })
+                        ),
+                    ]
+                }) ?? [option, undefined]
+            )
         })
-    )
+    )) as any as [InformationOptions, QueryCommandOutput][]
 
     /** Get the contextual data */
     const ddbResponses = await Promise.all(

@@ -69,9 +69,6 @@ export type PersonalFinanceCategory = {
     primary?: HighLevelTransactionCategory | null;
 };
 export declare enum HighLevelTransactionCategory {
-    INCOME = "INCOME",
-    TRANSFER_IN = "TRANSFER_IN",
-    TRANSFER_OUT = "TRANSFER_OUT",
     LOAN_PAYMENTS = "LOAN_PAYMENTS",
     BANK_FEES = "BANK_FEES",
     ENTERTAINMENT = "ENTERTAINMENT",
@@ -84,7 +81,41 @@ export declare enum HighLevelTransactionCategory {
     GOVERNMENT_AND_NON_PROFIT = "GOVERNMENT_AND_NON_PROFIT",
     TRANSPORTATION = "TRANSPORTATION",
     TRAVEL = "TRAVEL",
-    RENT_AND_UTILITIES = "RENT_AND_UTILITIES"
+    INCOME = "INCOME",
+    TRANSFER_IN = "TRANSFER_IN",
+    INCOME_WAGES = "INCOME_WAGES",
+    TRANSFER_OUT = "TRANSFER_OUT",
+    RENT_AND_UTILITIES = "RENT_AND_UTILITIES",
+    INCOME_OTHER_INCOME = "INCOME_OTHER_INCOME",
+    INCOME_UNEMPLOYMENT = "INCOME_UNEMPLOYMENT",
+    INCOME_TAX_REFUND = "INCOME_TAX_REFUND",
+    INCOME_RETIREMENT_PENSION = "INCOME_RETIREMENT_PENSION",
+    INCOME_INTEREST_EARNED = "INCOME_INTEREST_EARNED",
+    INCOME_DIVIDENDS = "INCOME_DIVIDENDS",
+    TRANSFER_IN_CASH_ADVANCES_AND_LOANS = "TRANSFER_IN_CASH_ADVANCES_AND_LOANS",
+    TRANSFER_IN_DEPOSIT = "TRANSFER_IN_DEPOSIT",
+    TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS",
+    TRANSFER_IN_SAVINGS = "TRANSFER_IN_SAVINGS",
+    TRANSFER_IN_ACCOUNT_TRANSFER = "TRANSFER_IN_ACCOUNT_TRANSFER",
+    TRANSFER_IN_OTHER_TRANSFER_IN = "TRANSFER_IN_OTHER_TRANSFER_IN",
+    TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS",
+    TRANSFER_OUT_SAVINGS = "TRANSFER_OUT_SAVINGS",
+    TRANSFER_OUT_WITHDRAWAL = "TRANSFER_OUT_WITHDRAWAL",
+    TRANSFER_OUT_ACCOUNT_TRANSFER = "TRANSFER_OUT_ACCOUNT_TRANSFER",
+    TRANSFER_OUT_OTHER_TRANSFER_OUT = "TRANSFER_OUT_OTHER_TRANSFER_OUT",
+    LOAN_PAYMENTS_CAR_PAYMENT = "LOAN_PAYMENTS_CAR_PAYMENT",
+    LOAN_PAYMENTS_CREDIT_CARD_PAYMENT = "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+    LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT = "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
+    LOAN_PAYMENTS_MORTGAGE_PAYMENT = "LOAN_PAYMENTS_MORTGAGE_PAYMENT",
+    LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT = "LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT",
+    LOAN_PAYMENTS_OTHER_PAYMENT = "LOAN_PAYMENTS_OTHER_PAYMENT",
+    RENT_AND_UTILITIES_GAS_AND_ELECTRICITY = "RENT_AND_UTILITIES_GAS_AND_ELECTRICITY",
+    RENT_AND_UTILITIES_INTERNET_AND_CABLE = "RENT_AND_UTILITIES_INTERNET_AND_CABLE",
+    RENT_AND_UTILITIES_RENT = "RENT_AND_UTILITIES_RENT",
+    RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT = "RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT",
+    RENT_AND_UTILITIES_TELEPHONE = "RENT_AND_UTILITIES_TELEPHONE",
+    RENT_AND_UTILITIES_WATER = "RENT_AND_UTILITIES_WATER",
+    RENT_AND_UTILITIES_OTHER_UTILITIES = "RENT_AND_UTILITIES_OTHER_UTILITIES"
 }
 export type PaginatedInvestments = {
     __typename: "PaginatedInvestments";
@@ -135,7 +166,7 @@ export type Security = {
 export type ChatQuery = {
     prompt?: string | null;
     chatFocus?: ChatFocus | null;
-    accountId?: string | null;
+    accountIds?: Array<string> | null;
     requiresLiveData?: boolean | null;
     chatType?: ChatType | null;
     shouldRagFetch?: boolean | null;
@@ -195,6 +226,16 @@ export type SpendingSummary = {
     __typename: "SpendingSummary";
     sk?: string | null;
     spending?: string | null;
+};
+export type NetWorth = {
+    __typename: "NetWorth";
+    pk?: string | null;
+    sk?: string | null;
+    netWorth?: string | null;
+    tfsaNetWorth?: string | null;
+    rrspNetWorth?: string | null;
+    fhsaNetWorth?: string | null;
+    securityNetWorth?: string | null;
 };
 export type CreateChatMutationVariables = {
     chat: ChatInput;
@@ -368,6 +409,24 @@ export type GetSpendingSummaryQuery = {
         __typename: "SpendingSummary";
         sk?: string | null;
         spending?: string | null;
+    };
+};
+export type GetNetWorthQueryVariables = {
+    minDate?: string | null;
+    maxDate?: string | null;
+    id: string;
+    type?: SpendingSummaryType | null;
+};
+export type GetNetWorthQuery = {
+    getNetWorth: {
+        __typename: "NetWorth";
+        pk?: string | null;
+        sk?: string | null;
+        netWorth?: string | null;
+        tfsaNetWorth?: string | null;
+        rrspNetWorth?: string | null;
+        fhsaNetWorth?: string | null;
+        securityNetWorth?: string | null;
     };
 };
 export type OnCreateChatSubscriptionVariables = {

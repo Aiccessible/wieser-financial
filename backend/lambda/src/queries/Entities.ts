@@ -10,6 +10,8 @@ export interface EntityQueryParams {
     entityName: string
     pk?: string | undefined
     highLevelCategory?: HighLevelTransactionCategory
+    getAllTransactionsForUser?: boolean
+    getAllSecuritiesForUser?: boolean
 }
 
 export interface CacheEntityQueryParam {
@@ -29,6 +31,7 @@ function mapStartDayToDate(startDay: GptDateResponse): string {
     return `${year}-${formattedMonth}-${formattedDay}`
 }
 
+export const detailedCategories = ['TRANSFER_IN', 'TRANSFER_OUT', 'LOAN_PAYMENTS', 'RENT_AND_UTILITIES']
 // SECURITY and ACCOUNT dont have date range in key
 export const GetEntities = (params: EntityQueryParams) => {
     let filter: any = {
@@ -37,6 +40,26 @@ export const GetEntities = (params: EntityQueryParams) => {
             ':pk': { S: params.pk ?? `USER#${params.username}#ITEM#${params.id}` },
             ':sk': { S: `${params.entityName}` },
         },
+    }
+    if (params.getAllTransactionsForUser) {
+        filter = {
+            KeyConditionExpression: 'gsi1pk = :gsi1pk AND begins_with(gsi1sk, :gsi1sk)',
+            ExpressionAttributeValues: {
+                ':gsi1pk': { S: params.pk ?? `USER#${params.username}#TRANSACTIONS` },
+                ':gsi1sk': { S: `${params.entityName}` },
+            },
+            IndexName: 'GSI1',
+        }
+    }
+    if (params.getAllSecuritiesForUser) {
+        filter = {
+            KeyConditionExpression: 'gsi1pk = :gsi1pk AND begins_with(gsi1sk, :gsi1sk)',
+            ExpressionAttributeValues: {
+                ':gsi1pk': { S: params.pk ?? `USER#${params.username}#SECURITY` },
+                ':gsi1sk': { S: `${params.entityName}` },
+            },
+            IndexName: 'GSI1',
+        }
     }
     if (params.dateRange && !params.dateRange.hasNoTimeConstraint) {
         filter = { ...filter, ExpressionAttributeNames: {} }
@@ -60,6 +83,9 @@ export const GetEntities = (params: EntityQueryParams) => {
     }
     console.info('FINAL filter', filter)
     if (params.highLevelCategory) {
+        const isDetailedCategory = detailedCategories
+            .map((category) => params.highLevelCategory?.includes(category))
+            .includes(true)
         if (!filter['FilterExpression']) {
             filter['FilterExpression'] = '#keyOne.#finance = :primaryCategory'
         } else {
@@ -70,7 +96,7 @@ export const GetEntities = (params: EntityQueryParams) => {
         }
         filter['ExpressionAttributeNames'] = {
             ...(filter['ExpressionAttributeNames'] ?? {}),
-            '#finance': 'primary',
+            '#finance': isDetailedCategory ? 'detailed' : 'primary',
             '#keyOne': 'personal_finance_category',
         }
     }

@@ -38,42 +38,67 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
 }
 
 async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
-    const userBatches = chunkArray(decryptedUserItemRecord, 100)
-    const now = new Date() // Get the current date and time
+    const recordsWithGroupKey = decryptedUserItemRecord.map((el) => ({
+        ...el,
+        groupKey: el.pk?.replace(/#ITEM#\w+/, ''),
+    }))
+    const groupedByGroupKey = recordsWithGroupKey.reduce<Record<string, Item[]>>((acc, item) => {
+        const key = item.groupKey || 'undefined'
+        if (!acc[key]) {
+            acc[key] = []
+        }
+        acc[key].push(item)
+        return acc
+    }, {})
 
-    for (const batch of userBatches) {
-        await Promise.all(
-            batch.map(async (item) => {
-                const startDay = getEarliestFirstOfMonthWithin90Days(new Date(item?.created_at ?? 0))
-                console.info(startDay)
-                const encryptedTransactions = await client.send(
-                    GetEntities({
-                        pk: item.pk ?? '',
-                        dateRange: {
-                            hasNoTimeConstraint: true,
-                        } as any,
-                        username: '',
-                        id: '',
-                        entityName: 'SECURITY',
-                    })
-                )
+    // Step 3: Get an array of groups (each group is an array of items with the same groupKey)
+    const groupedArrays = Object.values(groupedByGroupKey)
+
+    // Step 4: Chunk the groups into batches of 100
+    const groupBatches = chunkArray(groupedArrays, 100)
+
+    // Step 5: Process each batch of 100 groups
+    for (const batch of groupBatches) {
+        for (const items of batch) {
+            try {
+                let encryptedTransactions = []
+                for (let i = 0; i < items.length; i++) {
+                    console.info('Sending', items[i])
+                    const res = await client.send(
+                        GetEntities({
+                            pk: items[i].pk ?? '',
+                            dateRange: {
+                                hasNoTimeConstraint: true,
+                            } as any,
+                            username: '',
+                            id: '',
+                            entityName: 'SECURITY',
+                        })
+                    )
+                    encryptedTransactions.push(...(res?.Items ?? []))
+                }
 
                 const decrypedSecurities = await mapSecuritiesToJoinedData(
-                    await decryptItemsInBatches(encryptedTransactions.Items ?? [])
+                    await decryptItemsInBatches(encryptedTransactions ?? [])
                 )
-                const encryptedAccounts = await client.send(
-                    GetEntities({
-                        pk: item.pk ?? '',
-                        dateRange: {
-                            hasNoTimeConstraint: true,
-                        } as any,
-                        username: '',
-                        id: '',
-                        entityName: 'ACCOUNT',
-                    })
+                const encryptedAccounts = await Promise.all(
+                    items.flatMap(
+                        async (item) =>
+                            await client.send(
+                                GetEntities({
+                                    pk: item.pk ?? '',
+                                    dateRange: {
+                                        hasNoTimeConstraint: true,
+                                    } as any,
+                                    username: '',
+                                    id: '',
+                                    entityName: 'ACCOUNT',
+                                })
+                            )
+                    )
                 )
 
-                const decrypedAccounts = encryptedAccounts.Items?.map(mapDynamoDBToAccount) ?? []
+                const decrypedAccounts = encryptedAccounts.flatMap((el) => el.Items?.map(mapDynamoDBToAccount) ?? [])
                 const netWorth = reduceAccounts(decrypedAccounts)
                 const securitySnapshot = Object.values(decrypedSecurities)
                 const securityNetWorth = getNetWorth(securitySnapshot)
@@ -89,7 +114,11 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                 const command = new PutItemCommand({
                     TableName: process.env.TABLE_NAME,
                     Item: {
-                        pk: { S: item.pk ? item.pk + '#NETWORTHDAILYSNAPSHOT' : '' },
+                        pk: {
+                            S: (items[0] as any)?.groupKey
+                                ? (items[0] as any)?.groupKey + '#NETWORTHDAILYSNAPSHOT'
+                                : '',
+                        },
                         sk: { S: new Date().toDateString() },
                         netWorth: { N: netWorth.toFixed(2) },
                         tfsaNetWorth: { N: tfsaNetWorth.toFixed(2) },
@@ -98,9 +127,12 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                         securityNetWorth: { N: securityNetWorth.toFixed(2) },
                     },
                 })
-                return client.send(command)
-            })
-        )
+                await client.send(command)
+            } catch (e) {
+                console.error(e)
+                return undefined
+            }
+        }
     }
 }
 

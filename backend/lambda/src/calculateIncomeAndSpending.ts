@@ -112,7 +112,7 @@ function groupTransactionsByMonth(transactions: Transaction[]): MonthlySpendingA
 
     return monthlyAggregates
 }
-function getEarliestFirstOfMonthWithin90Days(createdAt: Date) {
+function getEarliestFirstOfMonthWithin90Days() {
     return new Date(new Date().getTime() - 1000 * 3600 * 24 * 365)
 }
 
@@ -129,8 +129,11 @@ export const calculateIncomeAndSpending = async () => {
             console.info('Processing', item)
             return item.pk && item.created_at
         })
+    const ids = decryptedUserItemRecord.map((user) => user.pk?.replace(/#ITEM#\w+/, '') + '#TRANSACTIONS')
+    const distinctUsers = [...new Set(ids)]
+
     /** Go through users and aggregate transactions */
-    await processUsersInBatches(decryptedUserItemRecord)
+    await processUsersInBatches(distinctUsers as string[])
 }
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -141,18 +144,18 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     return chunks
 }
 
-async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
+async function processUsersInBatches(decryptedUserItemRecord: string[]) {
     const userBatches = chunkArray(decryptedUserItemRecord, 100)
     const now = new Date() // Get the current date and time
 
     for (const batch of userBatches) {
         await Promise.all(
             batch.map(async (item) => {
-                const startDay = getEarliestFirstOfMonthWithin90Days(new Date(item?.created_at ?? 0))
+                const startDay = getEarliestFirstOfMonthWithin90Days()
                 console.info(startDay)
                 const encryptedTransactions = await client.send(
                     GetEntities({
-                        pk: item.pk ?? '',
+                        pk: item ?? '',
                         dateRange: {
                             startDay: {
                                 day: startDay.getDate() + 1,
@@ -169,17 +172,19 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                         username: '',
                         id: '',
                         entityName: 'TRANSACTION',
+                        getAllTransactionsForUser: true,
                     })
                 )
 
                 const decryptedTransactions = (await decryptItemsInBatches(encryptedTransactions.Items ?? [])).map(
                     mapDynamoDBToTransaction
                 )
+
                 console.info(decryptedTransactions)
                 const aggregates = groupTransactionsByMonth(decryptedTransactions)
 
                 await uploadSpendingSummaries(
-                    item.pk ?? '',
+                    item ?? '',
                     Object.entries(aggregates).flatMap((el) => el[1].daily_spending),
                     aggregates
                 )
