@@ -17,15 +17,15 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const [loading, setLoading] = useState(false)
     const [loadingToken, setLoadingToken] = useState(false)
     const [token, setToken] = useState('')
-    const ids = useAppSelector((state) => state.idsSlice.institutions?.map((institution) => institution.item_id))
+    const ids = useAppSelector((state) => state.idsSlice.institutions)
 
     const refresh = async () => {
-        for (item_id in ids) {
+        ids?.map(async (id) => {
             setLoading(true)
             try {
                 const { body } = await post({
                     apiName,
-                    path: `/v1/items/${item_id}/refresh/holdings`,
+                    path: `/v1/items/${id.item_id}/refresh/holdings`,
                 }).response
                 //const data = await body.json()
                 console.log('eee')
@@ -46,7 +46,7 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
                 setLoading(false)
                 logger.error('unable to refresh item', err)
             }
-        }
+        })
     }
 
     const linkInvestment = async () => {
@@ -82,10 +82,7 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
     const dispatch = useAppDispatch()
 
     const onSuccess = () => {
-        callFunctionsForEachId(
-            (id: string) => dispatch(getInvestementsAsync({ id: id || '', client: client, append: false })),
-            ids ?? [id ?? '']
-        )
+        getInvestementsAsync({ id: id || '', client: client, append: false })
     }
 
     return (
