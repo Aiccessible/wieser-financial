@@ -34,7 +34,8 @@ export default function Institution() {
     const transactions = useAppSelector((state) => state.transactions.transactions)
     const areTransactionsLoading = useAppSelector((state) => state.transactions.loading)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
-
+    const netWorths = useAppSelector((state) => state.netWorthSlice.networths)
+    console.info(netWorths)
     useDataLoading({
         id: id || '',
         client: client,
@@ -43,6 +44,7 @@ export default function Institution() {
         loadTransactions: true,
         loadRecommendations: true,
         loadProjection: true,
+        loadNetworths: true,
     })
     const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
     return (

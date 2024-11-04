@@ -186,7 +186,7 @@ export type Security = {
 export type ChatQuery = {
   prompt?: string | null,
   chatFocus?: ChatFocus | null,
-  accountId?: string | null,
+  accountIds?: Array< string > | null,
   requiresLiveData?: boolean | null,
   chatType?: ChatType | null,
   shouldRagFetch?: boolean | null,
@@ -262,6 +262,13 @@ export type SpendingSummary = {
   // Date in string format (e.g., "YYYY-MM-DD")
   spending?: string | null,
 };
+
+export enum NetWorthSummaryType {
+  NETWORTHDAILYSNAPSHOT = "NETWORTHDAILYSNAPSHOT",
+  NETWORTHWEEKLYSNAPSHOT = "NETWORTHWEEKLYSNAPSHOT",
+  NETWORTHMONTHLYSNAPSHOT = "NETWORTHMONTHLYSNAPSHOT",
+}
+
 
 export type NetWorth = {
   __typename: "NetWorth",
@@ -470,11 +477,11 @@ export type GetNetWorthQueryVariables = {
   minDate?: string | null,
   maxDate?: string | null,
   id: string,
-  type?: SpendingSummaryType | null,
+  type?: NetWorthSummaryType | null,
 };
 
 export type GetNetWorthQuery = {
-  getNetWorth:  {
+  getNetWorth:  Array< {
     __typename: "NetWorth",
     pk?: string | null,
     sk?: string | null,
@@ -483,7 +490,7 @@ export type GetNetWorthQuery = {
     rrspNetWorth?: string | null,
     fhsaNetWorth?: string | null,
     securityNetWorth?: string | null,
-  },
+  } | null >,
 };
 
 export type OnCreateChatSubscriptionVariables = {

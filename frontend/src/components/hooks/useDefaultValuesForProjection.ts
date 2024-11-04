@@ -52,13 +52,13 @@ const useDefaultValuesForProjection = ({}: any) => {
         console.log(433454, income)
         return {
             initial_salary: income(),
-            salary_growth: 5,
+            salary_growth: 5 / 100,
             initial_bonus: 0,
             bonus_growth: 0,
             initial_expenses: totalSpending - income() - transfersOut,
-            expenses_growth: 5,
-            investment_yield: 15,
-            tax_rate: calculateAverageTaxRate(income(), 'British Columbia'),
+            expenses_growth: 5 / 100,
+            investment_yield: 15 / 100,
+            tax_rate: calculateAverageTaxRate(income(), 'British Columbia') / 100,
             years: 12,
             initial_rrsp_balance: accountBalances().rsp,
             initial_fhsa_balance: accountBalances().fhsa,

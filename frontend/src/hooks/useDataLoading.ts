@@ -13,6 +13,7 @@ import { ConsoleLogger } from 'aws-amplify/utils'
 import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
 import { callFunctionsForEachId } from '../components/Investments'
 import { getIdsAsync } from '../features/items'
+import { getNetworths } from '../features/networth'
 const logger = new ConsoleLogger('DataLoading')
 interface DataLoadingInput {
     id: string
@@ -22,6 +23,7 @@ interface DataLoadingInput {
     loadTransactions?: boolean
     loadRecommendations?: boolean
     loadProjection?: boolean
+    loadNetworths?: boolean
 }
 export const useDataLoading = (input: DataLoadingInput) => {
     const { id, client, loadAccounts, loadInvestments, loadTransactions, loadRecommendations, loadProjection } = input
@@ -40,7 +42,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const loadingBalances = useAppSelector((state) => state.analysis.loadingProjections)
     const loadingProjectionError = useAppSelector((state) => state.analysis.loadingProjectionsError)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
-    const estimatedSavings = useAppSelector(selectRegisteredSavingsPerAccounts)
+    const netWorths = useAppSelector((state) => state.netWorthSlice.networths)
+    const isNetWorthsLoading = useAppSelector((state) => state.netWorthSlice.loading)
     const defaultParams = useDefaultValuesForProjection({
         accounts: accounts ?? [],
         monthlySpendings: monthlySpendings ?? [],
@@ -107,6 +110,10 @@ export const useDataLoading = (input: DataLoadingInput) => {
             getTransactions()
         }
     }, [isTransactionsLoading, loadTransactions, transactionsLoading])
+
+    useEffect(() => {
+        !isNetWorthsLoading && !netWorths?.length && dispatch(getNetworths({ id, client }))
+    }, [isNetWorthsLoading, netWorths?.length])
 
     // Trigger recommendations once everything else is loaded
     useEffect(() => {
