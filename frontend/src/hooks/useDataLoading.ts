@@ -5,6 +5,7 @@ import {
     getTransactionsAsync,
     getYesterdaySummaryAsyncThunk,
     getMonthlySummariesAsyncThunk,
+    selectRegisteredSavingsPerAccounts,
 } from '../features/transactions'
 import { getAccountsAsync } from '../features/accounts'
 import { getFinancialProjection, getFullPictureRecommendationAsync } from '../features/analysis'
@@ -38,7 +39,13 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const monthlySummaries = useAppSelector((state) => state.transactions.monthlySummaries)
     const loadingBalances = useAppSelector((state) => state.analysis.loadingProjections)
     const loadingProjectionError = useAppSelector((state) => state.analysis.loadingProjectionsError)
-    const defaultParams = useDefaultValuesForProjection()
+    const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
+    const estimatedSavings = useAppSelector(selectRegisteredSavingsPerAccounts)
+    const defaultParams = useDefaultValuesForProjection({
+        accounts: accounts ?? [],
+        monthlySpendings: monthlySpendings ?? [],
+        estimatedSavings: {} as any,
+    })
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
     const recommendations = useAppSelector((state) => state.analysis.fullPictureRecommendations)
     const institutions = useAppSelector((state) => state.idsSlice.institutions)
@@ -75,7 +82,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
 
     // Load accounts on mount if not already loaded
     useEffect(() => {
-        if (institutions?.length && loadAccounts) {
+        if (institutions?.length && loadAccounts && !accounts?.length) {
             try {
                 callFunctionsForEachId(
                     (id: string) => dispatch(getAccountsAsync({ client, id: id || '' })),
@@ -85,7 +92,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
                 logger.error('unable to get accounts', err)
             }
         }
-    }, [loadAccounts, institutions?.length])
+    }, [loadAccounts, institutions?.length, accounts?.length])
 
     // Load investments based on loading state
     useEffect(() => {

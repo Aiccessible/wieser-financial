@@ -44,7 +44,7 @@ export default function Institution() {
         loadRecommendations: true,
         loadProjection: true,
     })
-    const { initial_salary, initial_expenses } = useDefaultValuesForProjection()
+    const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
     return (
         <Flex direction="column" className="h-100 scroll-auto">
             {!transactions?.length && !areTransactionsLoading && (

@@ -1,9 +1,14 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
 import { getSpendingSummary, getTransactions } from '../graphql/queries'
-import { SpendingSummary, SpendingSummaryType, Transaction } from '../API'
+import { Account, HighLevelTransactionCategory, SpendingSummary, SpendingSummaryType, Transaction } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { stat } from 'fs'
 import { RootState } from '../store'
+import {
+    calculateAverageSpendingFromMonthlySummarys,
+    calculateTotalSpendingInCategories,
+} from '../components/common/spendingUtils'
+import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 // Define a type for the slice state
 interface TransactionsState {
     acccountRecommendation: string
@@ -201,3 +206,73 @@ export const { removeError, setCurrentDateRange } = transactionSlice.actions
 // Other code such as selectors can use the imported `RootState` type
 
 export default transactionSlice.reducer
+const selectMonthlySummaries = (state: RootState) => state.transactions.monthlySummaries ?? []
+
+export const selectRegisteredSavingsThisYear = createSelector([selectMonthlySummaries], (monthlySummaries) =>
+    calculateTotalSpendingInCategories(
+        monthlySummaries?.filter((el) => new Date((el as any).date).getFullYear() === new Date().getFullYear()) ?? [],
+        [HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]
+    )
+)
+
+export interface EstimatedRegisteredSavings {
+    tfsa: number
+    rrsp: number
+    fhsa: number
+}
+
+const maxFhsa2024 = 8000
+const maxTfsa2024 = 7000
+
+const selectAccounts = (state: RootState) => state.accounts.accounts ?? []
+
+export const selectRegisteredSavingsPerAccounts = createSelector(
+    [selectAccounts, selectRegisteredSavingsThisYear],
+    (accounts, registeredSavings) => {
+        const rsp = accounts?.find((account: Account) => identifyAccountType(account) === 'RRSP')
+        const tfsa = accounts?.find((account: Account) => identifyAccountType(account) === 'TFSA')
+        const fhsa = accounts?.find((account: Account) => identifyAccountType(account) === 'FHSA')
+        let estimatedTfsa = 0
+        let estimatedRsp = 0
+        let estimatedFhsa = 0
+        if (
+            tfsa &&
+            registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS] > maxTfsa2024
+        ) {
+            estimatedTfsa = maxTfsa2024
+            registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS] -=
+                estimatedTfsa
+        } else if (tfsa) {
+            estimatedTfsa = registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]
+            return {
+                estimatedTfsa,
+                estimatedRsp,
+                estimatedFhsa,
+            }
+        }
+
+        if (
+            fhsa &&
+            registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS] > maxFhsa2024
+        ) {
+            estimatedFhsa = maxFhsa2024
+            registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS] -= maxFhsa2024
+        } else if (fhsa) {
+            estimatedFhsa = registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]
+            return {
+                estimatedTfsa,
+                estimatedRsp,
+                estimatedFhsa,
+            }
+        }
+
+        if (rsp) {
+            estimatedRsp = registeredSavings[HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]
+            return {
+                estimatedTfsa,
+                estimatedRsp,
+                estimatedFhsa,
+            }
+        }
+    }
+)

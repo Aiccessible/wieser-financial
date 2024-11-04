@@ -3,6 +3,7 @@ import { getAccounts } from '../graphql/queries'
 import { Account } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
+import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 // Define a type for the slice state
 interface AccountsState {
     acccountRecommendation: string
@@ -76,6 +77,18 @@ export const accountSlice = createSlice({
         })
     },
 })
+
+export const selectSpecialAccounts = (state: RootState) => {
+    const accounts = state.accounts.accounts
+    const rsp = accounts?.filter((account) => identifyAccountType(account) === 'RRSP') ?? []
+    const tfsa = accounts?.filter((account) => identifyAccountType(account) === 'TFSA') ?? []
+    const fhsa = accounts?.filter((account) => identifyAccountType(account) === 'FHSA') ?? []
+    return {
+        rsp,
+        tfsa,
+        fhsa,
+    }
+}
 
 export const { removeError } = accountSlice.actions
 

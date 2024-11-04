@@ -11,6 +11,19 @@ export const nonSpendingKeys = [
     ...transferOutKeys,
     HighLevelTransactionCategory.LOAN_PAYMENTS_CREDIT_CARD_PAYMENT,
 ]
+
+export function calculateTotalSpendingInCategories(
+    spendingSummaries: SpendingSummary[],
+    categories: HighLevelTransactionCategory[]
+) {
+    return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
+        Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
+            if (category in categories) totals[category] = (totals[category] || 0) + value
+        })
+        return totals
+    }, {})
+}
+
 export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {

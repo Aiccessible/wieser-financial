@@ -13,12 +13,27 @@ import { reduceAccounts } from '../../../src/features/accounts'
 import * as Accordion from '@radix-ui/react-accordion'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { NetWorthChart } from './NetworthChart'
+import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
 
 const Projection = () => {
     const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
-    const defaultParams = useDefaultValuesForProjection()
+    const accounts = useAppSelector((state) => state.accounts.accounts)
+    const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
+    const estimatedSavings = useAppSelector(selectRegisteredSavingsPerAccounts)
+    useDataLoading({
+        loadTransactions: true,
+        loadAccounts: true,
+        loadProjection: true,
+        id: 'v0',
+        client: client,
+    })
+    const defaultParams = useDefaultValuesForProjection({
+        accounts: accounts,
+        monthlySpendings: monthlySpendings,
+        estimatedSavings,
+    })
     const [inputs, setInputs] = useState(defaultParams)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
 
@@ -36,7 +51,6 @@ const Projection = () => {
             [name]: parseFloat(value),
         }))
     }
-
     const getProjection = () => {
         dispatch(
             getFinancialProjection({
@@ -184,11 +198,14 @@ const Projection = () => {
                                     <CustomTextBox>Accounts</CustomTextBox>
                                 </Accordion.Trigger>
                             </Accordion.Header>
-                            <Accordion.Content className="px-4 py-2 space-y-4">
+                            <Accordion.Content className="px-4 py-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {[
                                     'initial_rrsp_balance',
+                                    'initial_rrsp_room',
                                     'initial_fhsa_balance',
+                                    'initial_fhsa_room',
                                     'initial_tfsa_balance',
+                                    'initial_tfsa_room',
                                     'initial_brokerage_balance',
                                 ].map((field) => (
                                     <div key={field}>
