@@ -112,8 +112,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
     }, [isTransactionsLoading, loadTransactions, transactionsLoading])
 
     useEffect(() => {
-        !isNetWorthsLoading && !netWorths?.length && dispatch(getNetworths({ id, client }))
-    }, [isNetWorthsLoading, netWorths?.length])
+        !netWorths?.length && dispatch(getNetworths({ id, client }))
+    }, [netWorths?.length])
 
     // Trigger recommendations once everything else is loaded
     useEffect(() => {

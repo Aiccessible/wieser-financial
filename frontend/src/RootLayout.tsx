@@ -43,12 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         {/* <!-- ===== Header End ===== --> */}
 
                         {/* <!-- ===== Main Content Start ===== --> */}
-                        <main>
-                            <div className="mx-auto max-w-screen-2xl p-4 md:p-4 2xl:p-6">{children}</div>
+                        <main className="h-[calc(100vh-6rem)]">
+                            <div className="mx-auto max-w-screen-2xl p-4 md:p-4 2xl:p-6 h-full">{children}</div>
                         </main>
                         {/* <!-- ===== Main Content End ===== --> */}
                     </div>
-                    <ChatBar id={id || ''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
 
                     {/* <!-- ===== Content Area End ===== --> */}
                 </div>

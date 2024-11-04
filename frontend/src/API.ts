@@ -263,13 +263,6 @@ export type SpendingSummary = {
   spending?: string | null,
 };
 
-export enum NetWorthSummaryType {
-  NETWORTHDAILYSNAPSHOT = "NETWORTHDAILYSNAPSHOT",
-  NETWORTHWEEKLYSNAPSHOT = "NETWORTHWEEKLYSNAPSHOT",
-  NETWORTHMONTHLYSNAPSHOT = "NETWORTHMONTHLYSNAPSHOT",
-}
-
-
 export type NetWorth = {
   __typename: "NetWorth",
   pk?: string | null,
@@ -477,11 +470,11 @@ export type GetNetWorthQueryVariables = {
   minDate?: string | null,
   maxDate?: string | null,
   id: string,
-  type?: NetWorthSummaryType | null,
+  type?: SpendingSummaryType | null,
 };
 
 export type GetNetWorthQuery = {
-  getNetWorth:  Array< {
+  getNetWorth:  {
     __typename: "NetWorth",
     pk?: string | null,
     sk?: string | null,
@@ -490,7 +483,7 @@ export type GetNetWorthQuery = {
     rrspNetWorth?: string | null,
     fhsaNetWorth?: string | null,
     securityNetWorth?: string | null,
-  } | null >,
+  },
 };
 
 export type OnCreateChatSubscriptionVariables = {

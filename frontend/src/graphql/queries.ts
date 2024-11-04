@@ -179,7 +179,7 @@ export const getNetWorth = /* GraphQL */ `query GetNetWorth(
   $minDate: Long
   $maxDate: Long
   $id: String!
-  $type: NetWorthSummaryType
+  $type: SpendingSummaryType
 ) {
   getNetWorth(minDate: $minDate, maxDate: $maxDate, id: $id, type: $type) {
     pk

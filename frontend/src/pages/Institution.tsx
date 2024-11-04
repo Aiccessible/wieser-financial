@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { Alert, Button, Divider, Flex, Heading } from '@aws-amplify/ui-react'
+import { Alert, Divider, Flex, Heading } from '@aws-amplify/ui-react'
 import { CustomTextBox } from '../components/common/CustomTextBox'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { useAppDispatch, useAppSelector } from '../hooks'
@@ -11,14 +11,63 @@ import PlaidLink from '../components/PlaidLink'
 import { selectNetWorth } from '../features/accounts'
 import Accounts from '../components/Accounts'
 import { Title } from '@tremor/react'
-import { MonthlySpending } from '../components/common/MonthlySpending'
 import { useDefaultValuesForProjection } from '../components/hooks/useDefaultValuesForProjection'
-import { getFinancialProjection } from '../features/analysis'
 import { NetWorthChart } from '../components/Analysis/NetworthChart'
-import WelcomePage from '../components/WelcomePage'
 import Loader from '../components/common/Loader'
 import Currency from '../components/Currency'
+import * as Accordion from '@radix-ui/react-accordion'
+import { RefreshCwIcon } from 'lucide-react'
+
 const logger = new ConsoleLogger('Instituions')
+
+interface FinancialAccordionProps {
+    netWorth: string
+    initial_salary: string
+    initial_expenses: string
+}
+
+const FinancialAccordion: React.FC<FinancialAccordionProps> = ({ netWorth, initial_salary, initial_expenses }) => {
+    return (
+        <Accordion.Root type="single" collapsible className="w-full">
+            {/* Net Worth Section */}
+            <Accordion.Item value="item-1">
+                <Accordion.Header>
+                    <Accordion.Trigger className="flex items-center justify-between w-full px-4  text-lg font-medium bg-gray-800 text-white rounded-t-md">
+                        Net Worth
+                    </Accordion.Trigger>
+                </Accordion.Header>
+                <Accordion.Content className="px-4  bg-gray-900 text-white">
+                    <div className="flex items-center justify-evenly">
+                        <div className="flex flex-col">
+                            <Title className="p-1">Net Worth</Title>
+                            <Heading level={4} className="text-xl font-semibold  p-1">
+                                <CustomTextBox className="text-3xl font-bold tracking-tight  relative">
+                                    <Currency amount={netWorth}></Currency>
+                                </CustomTextBox>
+                            </Heading>
+                        </div>
+                        <div className="flex flex-col">
+                            <Title className="p-1">Estimated Take Home Income</Title>
+                            <Heading level={4} className="text-xl font-semibold  p-1">
+                                <CustomTextBox className="text-xl font-bold tracking-tight  relative">
+                                    <Currency amount={initial_salary}></Currency>
+                                </CustomTextBox>
+                            </Heading>
+                        </div>
+                        <div className="flex flex-col">
+                            <Title className="p-1">Estimated Annual Expenses</Title>
+                            <Heading level={4} className="text-xl font-semibold  p-1">
+                                <CustomTextBox className="text-xl font-bold tracking-tight  relative">
+                                    <Currency amount={initial_expenses}></Currency>
+                                </CustomTextBox>
+                            </Heading>
+                        </div>
+                    </div>
+                </Accordion.Content>
+            </Accordion.Item>
+        </Accordion.Root>
+    )
+}
 
 export default function Institution() {
     const { id } = useParams()
@@ -48,52 +97,37 @@ export default function Institution() {
     })
     const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
     return (
-        <Flex direction="column" className="h-100 scroll-auto">
+        <Flex direction="column" className="h-full">
             {!transactions?.length && !areTransactionsLoading && (
                 <Alert variation="warning">Processing Your account data... This may take a few minutes</Alert>
             )}
             {transferToken && <PlaidLink token={transferToken} onSuccess={() => {}} onExit={() => {}} />}
             {authError && <Alert>{authError}</Alert>}
-            <div className="flex items-center justify-evenly">
-                <div className="flex flex-col">
-                    <Title className="p-1">Net Worth</Title>
-                    <Heading level={4} className="text-xl font-semibold  p-1">
-                        <CustomTextBox className="text-3xl font-bold tracking-tight  relative">
-                            <Currency amount={netWorth}></Currency>
-                        </CustomTextBox>
-                    </Heading>
-                </div>
-                <div className="flex flex-col">
-                    <Title className="p-1">Estimated Take Home Income</Title>
-                    <Heading level={4} className="text-xl font-semibold  p-1">
-                        <CustomTextBox className="text-xl font-bold tracking-tight  relative">
-                            <Currency amount={initial_salary?.toFixed(2)}></Currency>
-                        </CustomTextBox>
-                    </Heading>
-                </div>
-                <div className="flex flex-col">
-                    <Title className="p-1">Estimated Annual Expenses</Title>
-                    <Heading level={4} className="text-xl font-semibold  p-1">
-                        <CustomTextBox className="text-xl font-bold tracking-tight  relative">
-                            <Currency amount={initial_expenses?.toFixed(2)}></Currency>
-                        </CustomTextBox>
-                    </Heading>
-                </div>
+            <div className="flex flex-col">
+                <FinancialAccordion
+                    netWorth={netWorth}
+                    initial_salary={initial_salary?.toFixed(2)}
+                    initial_expenses={initial_expenses?.toFixed(2)}
+                />
+
+                <Divider />
             </div>
-            <Divider />
             <div className="flex flex-row justify-between">
                 <div className="flex flex-col max-w-1/2 flex-grow  p-3">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}
-                    <Heading className="text-lg mb-1">
-                        <CustomTextBox>Key Insights</CustomTextBox>
-                    </Heading>
-                    {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
+
+                    <Accounts updateAccounts={() => {}} />
                 </div>
-                <div className="flex max-w-1/2 flex-grow flex-col">
-                    <div className="flex flex-col">
-                        <Accounts updateAccounts={() => {}} />
+                <div className="flex w-1/2 flex-grow flex-col">
+                    <Heading level={6} className="text-2xl mb-1">
+                        <CustomTextBox className="flex flex-row items-center ">
+                            Key Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />
+                        </CustomTextBox>
+                    </Heading>
+                    <div className="flex flex-col  scroll-auto">
+                        {<RecommendationsAccordion id={id || ''} recommendations={recommendations ?? []} />}
                     </div>
                 </div>
             </div>

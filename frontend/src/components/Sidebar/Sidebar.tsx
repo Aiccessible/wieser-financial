@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import {
     MenuIcon,
     ShoppingBag,
@@ -16,13 +16,20 @@ import LinkItem from './LinkItem'
 import ExpandMenu from './ExpandMenu'
 import { CustomTextBox } from '../common/CustomTextBox'
 
+const iconClass = 'bg-black rounded-full text-white p-1 h-7 w-7 hover:text-white'
 interface SidebarProps {}
 
+const SidebarTitle = (isActive: boolean, title: string) =>
+    !isActive ? ((<CustomTextBox>{title}</CustomTextBox>) as any) : ((<p className="text-black">{title}</p>) as any)
 const Sidebar = ({}: SidebarProps) => {
     const pathname = ''
     const { isSidebarOpen, toggleSidebar } = useSidebar((state) => state)
     const { id } = useParams()
-
+    const location = useLocation() // Get the current location
+    const checkIsActive = (path: string) => {
+        return location.pathname === path
+    }
+    console.info(checkIsActive(`/institution/${id}/transactions`))
     return (
         <aside
             className={cn(
@@ -37,14 +44,14 @@ const Sidebar = ({}: SidebarProps) => {
                 <Link className="flex items-center" to="/">
                     <img
                         loading="lazy"
-                        className="h-6 w-6 rounded-md"
-                        width={400}
-                        height={400}
+                        className="h-10 w-10 rounded-md"
+                        width={800}
+                        height={800}
                         src={'/images/logo/logo-icon.png'}
                         alt="Logo"
                     />
                     {isSidebarOpen && (
-                        <h1 className=" ml-2 text-xl font-semibold text-white">
+                        <h1 className=" ml-2 text-4xl font-semibold text-white">
                             <CustomTextBox>Wieser</CustomTextBox>
                         </h1>
                     )}
@@ -66,14 +73,14 @@ const Sidebar = ({}: SidebarProps) => {
                             })}
                         >
                             {/* <!-- Menu Item Dashboard --> */}
-                            <li>
+                            <li className={checkIsActive(`/institution/${id}`) ? 'bg-primary rounded-3xl ' : ''}>
                                 <LinkItem
                                     disabled={!id}
-                                    title={(<CustomTextBox>HomePage</CustomTextBox>) as any}
+                                    title={SidebarTitle(checkIsActive(`/institution/${id}`), 'Homepage')}
                                     href={id ? `/institution/${id}` : '/institution'}
                                     icon={
                                         <CustomTextBox>
-                                            <HomeIcon className="  h-6 w-6 hover:text-white" />
+                                            <HomeIcon className={iconClass} />
                                         </CustomTextBox>
                                     }
                                 ></LinkItem>
@@ -81,40 +88,51 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Dashboard --> */}
 
                             {/* <!-- Menu Item Calendar --> */}
-                            <li>
+                            <li
+                                className={
+                                    checkIsActive(`/institution/${id}/transactions`) ? 'bg-primary rounded-3xl ' : ''
+                                }
+                            >
                                 <LinkItem
                                     disabled={!id}
-                                    title={(<CustomTextBox>Transactions</CustomTextBox>) as any}
+                                    title={SidebarTitle(
+                                        checkIsActive(`/institution/${id}/transactions`),
+                                        'Transactions'
+                                    )}
                                     href={id ? `/institution/${id}/transactions` : 'transactions'}
                                     icon={
                                         <CustomTextBox>
-                                            <ActivityIcon className="h-6 w-6" />
+                                            <ActivityIcon className={iconClass} />
                                         </CustomTextBox>
                                     }
                                 ></LinkItem>
                             </li>
 
-                            <li>
+                            <li
+                                className={
+                                    checkIsActive(`/institution/${id}/investments`) ? 'bg-primary rounded-3xl ' : ''
+                                }
+                            >
                                 <LinkItem
                                     disabled={!id}
-                                    title={(<CustomTextBox>Investments</CustomTextBox>) as any}
+                                    title={SidebarTitle(checkIsActive(`/institution/${id}/investments`), 'Investments')}
                                     href={id ? `/institution/${id}/investments` : '/investments'}
                                     icon={
                                         <CustomTextBox>
-                                            <BarChart2 className="h-6 w-6" />
+                                            <BarChart2 className={iconClass} />
                                         </CustomTextBox>
                                     }
                                 ></LinkItem>
                             </li>
 
-                            <li>
+                            <li className={checkIsActive(`/analyze/${id}`) ? 'bg-primary rounded-3xl ' : ''}>
                                 <LinkItem
                                     disabled={!id}
-                                    title={(<CustomTextBox>The Lab</CustomTextBox>) as any}
+                                    title={SidebarTitle(checkIsActive(`/analyze/${id}`), 'The Lab')}
                                     href={id ? `/analyze/${id}` : '/analyze'}
                                     icon={
                                         <CustomTextBox>
-                                            <BrainCircuitIcon className="h-6 w-6" />
+                                            <BrainCircuitIcon className={iconClass} />
                                         </CustomTextBox>
                                     }
                                 ></LinkItem>
@@ -123,18 +141,6 @@ const Sidebar = ({}: SidebarProps) => {
                             {/* <!-- Menu Item Tables --> */}
 
                             {/* <!-- Menu Item Settings --> */}
-                            <li>
-                                <LinkItem
-                                    disabled={true}
-                                    title={(<CustomTextBox>Settings</CustomTextBox>) as any}
-                                    href="/settings"
-                                    icon={
-                                        <CustomTextBox>
-                                            <Settings className="h-6 w-6" />
-                                        </CustomTextBox>
-                                    }
-                                ></LinkItem>
-                            </li>
 
                             {/* <!-- Menu Item Auth Pages --> */}
                         </ul>

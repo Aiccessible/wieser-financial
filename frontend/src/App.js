@@ -44,7 +44,7 @@ console.log(process.env.REACT_APP_BACKEND_URL,'1234')
 
 const darkTheme = {
     chart: {
-        backgroundColor: '#1e1e1e',
+        backgroundColor: '#122011',
         style: {
             fontFamily: 'sans-serif',
         },

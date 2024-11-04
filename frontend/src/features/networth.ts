@@ -1,6 +1,6 @@
 import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getAccounts, getNetWorth } from '../graphql/queries'
-import { Account, NetWorth, NetWorthSummaryType, SpendingSummaryType } from '../API'
+import { Account, NetWorth, SpendingSummaryType } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { identifyAccountType } from '../components/Analysis/PersonalFinance'
@@ -29,21 +29,36 @@ export interface GetAccountRecommendation {
     id: string
 }
 
+const numToDateString = (x: number) => {
+    return new Date(x).toISOString().split('T')[0]
+}
+
+export const selectMostRecentNetWorth = (state: RootState): NetWorth => {
+    return (
+        state.netWorthSlice.networths?.length &&
+        state.netWorthSlice.networths?.reduce((maxSnapshot: any, networth) => {
+            const currentSkDate = new Date(networth?.sk ?? 0)
+            const maxSkDate = new Date(maxSnapshot?.sk ?? 0)
+            return currentSkDate > maxSkDate ? networth : maxSnapshot
+        }, null)
+    )
+}
 export const getNetworths = createAsyncThunk('networth/get-net-worths', async (input: GetNetworthsInput) => {
     let endDate
     let startDate
     endDate = new Date()
     startDate = new Date()
     startDate.setDate(endDate.getDate() - 14)
+    endDate.setDate(endDate.getDate() + 1)
     startDate = startDate.getTime()
     endDate = endDate.getTime()
     const res = await input.client.graphql({
         query: getNetWorth,
         variables: {
             id: input.id,
-            ...(input.minDate ? { minDate: input.minDate.toString() } : {}),
-            ...(input.maxDate ? { maxDate: input.maxDate.toString() } : {}),
-            type: NetWorthSummaryType.NETWORTHDAILYSNAPSHOT,
+            ...(input.minDate ? { minDate: numToDateString(input.minDate) } : { minDate: numToDateString(startDate) }),
+            ...(input.maxDate ? { maxDate: numToDateString(input.maxDate) } : { maxDate: numToDateString(endDate) }),
+            type: 'NETWORTHDAILYSNAPSHOT' as any,
         },
     })
     const errors = res.errors

@@ -49,7 +49,6 @@ const useDefaultValuesForProjection = ({}: any) => {
             }, 0)
             return totalIncome * (12 / numberOfMonthsCompleted)
         }
-        console.log(433454, income)
         return {
             initial_salary: income(),
             salary_growth: 5 / 100,
