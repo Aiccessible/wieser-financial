@@ -139,7 +139,6 @@ export const getMonthlySummariesAsyncThunk = createAsyncThunk(
             },
         })
         console.log('h232')
-        console.error(res.data?.getSpendingSummary?.spending ?? '', 'geree', res.errors)
         return processSummaryResult(res)
     }
 )

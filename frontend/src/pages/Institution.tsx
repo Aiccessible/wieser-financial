@@ -94,6 +94,7 @@ export default function Institution() {
         loadRecommendations: true,
         loadProjection: true,
         loadNetworths: true,
+        loadTopStockAnalysis: true,
     })
     const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
     return (

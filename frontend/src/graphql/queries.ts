@@ -175,13 +175,13 @@ export const getSpendingSummary = /* GraphQL */ `query GetSpendingSummary(
   APITypes.GetSpendingSummaryQueryVariables,
   APITypes.GetSpendingSummaryQuery
 >;
-export const getNetWorth = /* GraphQL */ `query GetNetWorth(
-  $minDate: Long
-  $maxDate: Long
+export const getNetWorths = /* GraphQL */ `query GetNetWorths(
+  $minDate: String
+  $maxDate: String
   $id: String!
-  $type: SpendingSummaryType
+  $type: NetWorthSummaryType
 ) {
-  getNetWorth(minDate: $minDate, maxDate: $maxDate, id: $id, type: $type) {
+  getNetWorths(minDate: $minDate, maxDate: $maxDate, id: $id, type: $type) {
     pk
     sk
     netWorth
@@ -189,10 +189,11 @@ export const getNetWorth = /* GraphQL */ `query GetNetWorth(
     rrspNetWorth
     fhsaNetWorth
     securityNetWorth
+    balances
     __typename
   }
 }
 ` as GeneratedQuery<
-  APITypes.GetNetWorthQueryVariables,
-  APITypes.GetNetWorthQuery
+  APITypes.GetNetWorthsQueryVariables,
+  APITypes.GetNetWorthsQuery
 >;

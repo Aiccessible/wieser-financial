@@ -1,5 +1,5 @@
 import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { getAccounts, getNetWorth } from '../graphql/queries'
+import { getAccounts, getNetWorths as getNetWorthsQuery } from '../graphql/queries'
 import { Account, NetWorth, SpendingSummaryType } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
@@ -53,7 +53,7 @@ export const getNetworths = createAsyncThunk('networth/get-net-worths', async (i
     startDate = startDate.getTime()
     endDate = endDate.getTime()
     const res = await input.client.graphql({
-        query: getNetWorth,
+        query: getNetWorthsQuery,
         variables: {
             id: input.id,
             ...(input.minDate ? { minDate: numToDateString(input.minDate) } : { minDate: numToDateString(startDate) }),
@@ -63,9 +63,9 @@ export const getNetworths = createAsyncThunk('networth/get-net-worths', async (i
     })
     const errors = res.errors
     if (errors && errors.length > 0) {
-        return { errors, netWorths: res.data.getNetWorth }
+        return { errors, netWorths: res.data.getNetWorths }
     }
-    return { netWorths: res.data.getNetWorth }
+    return { netWorths: res.data.getNetWorths }
 })
 export const netWorthsSlice = createSlice({
     name: 'networth',

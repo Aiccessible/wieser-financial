@@ -1,10 +1,11 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
 import { getFinancialConversationResponse, getInvestments } from '../graphql/queries'
-import { CacheType, ChatFocus, ChatType, Investment, Security } from '../API'
+import { CacheType, ChatFocus, ChatType, Holding, Investment, Security } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
-import { get, post } from 'aws-amplify/api'
+import { post } from 'aws-amplify/api'
 import { getIdFromSecurity } from '../libs/utlis'
+import { Investment as InvestmentType } from '../API'
 // Define a type for the slice state
 
 export interface InvestmentKnoweldgeViewModel {
@@ -13,6 +14,13 @@ export interface InvestmentKnoweldgeViewModel {
     loadingAnalysis: boolean
     loadingNews: boolean
     priceData: number[]
+    loadingStockPrices: boolean
+}
+
+interface StockPriceData {
+    price: number[]
+    loading: boolean
+    security: Security | undefined
 }
 interface InvestmentsState {
     investments: Investment[] | undefined
@@ -23,6 +31,8 @@ interface InvestmentsState {
     error: string | undefined
     investmentKnoweldge: Record<string, InvestmentKnoweldgeViewModel>
     activeStock: Security | undefined
+    stockPriceData: Record<string, StockPriceData> | undefined
+    loadingStockPrices: boolean
 }
 
 // Define the initial state using that type
@@ -35,6 +45,8 @@ const initialState: InvestmentsState = {
     investmentSummary: undefined,
     investmentKnoweldge: {},
     activeStock: undefined,
+    stockPriceData: undefined,
+    loadingStockPrices: false,
 }
 
 export interface GetInvestmentInput {
@@ -48,9 +60,20 @@ export interface GetInvestmentNewsSummaryInput {
     ids: string[]
 }
 
+export enum AnalysisType {
+    WEEKLY,
+    DAILY,
+}
+
 export interface GetInvestmentNewsInput {
     client: { graphql: GraphQLMethod }
     security: Security | undefined | null
+    analysisType?: AnalysisType
+}
+
+export interface GetInvestmentPrices {
+    client: { graphql: GraphQLMethod }
+    securities: (Security | undefined | null)[]
 }
 
 export interface GetInvestmentRecommendation {
@@ -62,10 +85,9 @@ export const getInvestementsAsync = createAsyncThunk<
     GetInvestmentInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investments', async (input: GetInvestmentInput, getThunk) => {
-    console.log(getThunk.getState())
     const res = await input.client.graphql({
         query: getInvestments,
-        variables: { id: input.id, cursor: getThunk.getState().investments.cursor },
+        variables: { id: input.id, cursor: getThunk.getState()?.investments?.cursor },
     })
     const errors = res.errors
     if (errors && errors.length > 0) {
@@ -73,7 +95,10 @@ export const getInvestementsAsync = createAsyncThunk<
     }
     return {
         investments: input.append
-            ? [...(getThunk.getState() as any).investments.investments, ...res.data.getInvestments.transactions]
+            ? [
+                  ...((getThunk.getState() as any)?.investments?.investments ?? []),
+                  ...res.data.getInvestments.transactions,
+              ]
             : res.data.getInvestments.transactions,
         cursor: res.data.getInvestments.cursor,
         loading: false,
@@ -169,18 +194,96 @@ export const getInvestmentNews = createAsyncThunk<
     }
 })
 
+export const getInvestmentStockPrices = createAsyncThunk<
+    any, // Return type
+    GetInvestmentPrices, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('investment/get-investment-prices', async (input: GetInvestmentPrices, getThunk) => {
+    const endDate = new Date() // Current date
+    const startDate = new Date()
+    startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
+    console.log('tyrying', input.securities)
+    function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+        const chunks: T[][] = []
+        for (let i = 0; i < array.length; i += chunkSize) {
+            chunks.push(array.slice(i, i + chunkSize))
+        }
+        return chunks
+    }
+
+    const batchedObjects = await Promise.all(
+        chunkArray(input.securities.slice(0, 20), 5).map(async (securityBatch) => {
+            return await Promise.all(
+                securityBatch.map(async (security) => {
+                    let priceData: number[] = []
+                    const idForSecurity = security ? getIdFromSecurity(security) : ''
+
+                    try {
+                        if (security?.ticker_symbol) {
+                            const { body } = await post({
+                                apiName: 'plaidapi',
+                                path: `/v1/stock/${security?.ticker_symbol}/closing-prices`,
+                                options: {
+                                    body: {
+                                        start_date: startDate.toISOString().split('T')[0], // Format as "YYYY-MM-DD"
+                                        end_date: endDate.toISOString().split('T')[0],
+                                    },
+                                },
+                            }).response
+                            console.log(await body.json())
+                            priceData = (await body.json()) as number[]
+                        }
+                        return { [idForSecurity]: { price: priceData, security } }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                })
+            )
+        })
+    )
+
+    // Flatten the array of batches into a single array of objects
+    const objects = batchedObjects.flat()
+
+    return {
+        loading: false,
+        objects,
+    }
+})
+
+export const stockPromptBuilder = (priceData: number[], idForSecurity: string, analysisType?: AnalysisType) => {
+    if (!analysisType || (analysisType as any) === AnalysisType.WEEKLY) {
+        return (
+            'Provide me the technical analysis for the investments which I will send in the prompt as well tickers ' +
+            idForSecurity +
+            ' The daily closes of the last two weeks are ' +
+            priceData!.map((prive) => prive.toFixed(2))
+        )
+    } else if (analysisType === AnalysisType.DAILY) {
+        console.info(priceData)
+        return (
+            'This is my biggest moving stock in today, can you explain why is moving so much' +
+            idForSecurity +
+            ' The daily closes the last 3 days are ' +
+            priceData!.slice(0, 3).map((prive) => prive.toFixed(2))
+        )
+    }
+}
+
 export const getInvestmentAnalysis = createAsyncThunk<
     any, // Return type
     GetInvestmentNewsInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-analysis', async (input: GetInvestmentNewsInput, getThunk) => {
-    let priceData: number[] = []
+    console.info(getThunk.getState().investments.stockPriceData, 'prive data')
+    let priceData =
+        getThunk.getState().investments.stockPriceData?.[getIdFromSecurity(input?.security ?? undefined)]?.price ?? []
     const endDate = new Date() // Current date
     const startDate = new Date()
     startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
-    const idForSecurity = input?.security ? getIdFromSecurity(input?.security) : ''
+    const idForSecurity = input?.security ? getIdFromSecurity(input?.security) + (input.analysisType ?? '') : ''
     try {
-        if (input.security?.ticker_symbol) {
+        if (input.security?.ticker_symbol && !priceData) {
             const { body } = await post({
                 apiName: 'plaidapi',
                 path: `/v1/stock/${input.security?.ticker_symbol}/closing-prices`,
@@ -197,19 +300,23 @@ export const getInvestmentAnalysis = createAsyncThunk<
     } catch (e) {
         console.log(e)
     }
-    if (localStorage.getItem(getAnalysisKey(idForSecurity))) {
-        return { value: localStorage.getItem(getAnalysisKey(idForSecurity)), key: idForSecurity, priceData }
+    if (false) {
+        return {
+            value: localStorage.getItem(getAnalysisKey(idForSecurity)),
+            key: idForSecurity,
+            priceData,
+        }
     }
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
             chat: {
-                prompt:
-                    'Provide me the technical analysis for the investments which I will send in the prompt as well tickers ' +
-                    idForSecurity +
-                    ' The daily closes of the last two weeks are ' +
-                    priceData.map((prive) => prive.toFixed(2)),
+                prompt: stockPromptBuilder(
+                    priceData,
+                    getIdFromSecurity(input.security ?? undefined),
+                    input.analysisType
+                ),
                 chatType: ChatType.FinancialAnalysisQuery,
                 requiresLiveData: true,
                 shouldRagFetch: false,
@@ -331,9 +438,71 @@ export const investmentSlice = createSlice({
             }
             state.investmentKnoweldge[id].loadingAnalysis = true
         })
+        builder.addCase(getInvestmentStockPrices.fulfilled, (state, action) => {
+            state.error = action.payload.errors ? action.payload.errors : undefined
+            state.stockPriceData = action.payload?.objects ?? []
+        })
+        builder.addCase(getInvestmentStockPrices.rejected, (state, action) => {
+            state.error = 'Failed to summarize investments ' + action.error.message
+            state.stockPriceData = (action.payload as any)?.objects ?? []
+        })
+        builder.addCase(getInvestmentStockPrices.pending, (state, action) => {
+            if (!state.stockPriceData) {
+                state.stockPriceData = {}
+            }
+            state.loadingStockPrices = true
+            action.meta.arg.securities.forEach((security) => {
+                const id = security ? getIdFromSecurity(security) : ''
+                state.stockPriceData![id] = { loading: true, price: [], security: undefined }
+            })
+            state.error = undefined
+        })
     },
 })
 
+const ID_SEPERATOR = '-'
+
+export const getId = (el: InvestmentType) => el.account_id + ID_SEPERATOR + el.security_id
+
+export const selectInvestmentsMap = createSelector(
+    [(state: RootState) => state.investments.investments],
+    (investments) => {
+        console.info('invest', investments)
+        const accountAndsecurityIdToEntity: Record<string, { security: Security | undefined; holding: Holding }> = {}
+        investments?.forEach((el) => {
+            if (el.plaid_type === 'Holding') {
+                accountAndsecurityIdToEntity[getId(el)] = {
+                    security: investments?.find(
+                        (sec) => sec.plaid_type === 'Security' && sec.security_id === el.security_id
+                    ) as Security | undefined,
+                    holding: el as Holding,
+                }
+            }
+        })
+        return accountAndsecurityIdToEntity
+    }
+)
+
+export const selectStockPriceData = (state: RootState) => state.investments.stockPriceData
+export const selectTopMovingStocks = createSelector([selectStockPriceData], (stockPrices) => {
+    const prices = Object.entries(stockPrices ?? {})
+    const securities = prices.map((item) => {
+        return getIdFromSecurity(Object.values(item[1] ?? {})?.[0]?.security ?? {})
+    })
+    const uniqueArray = Array.from(new Set(securities))
+    console.info(uniqueArray)
+    const resolvedArray = uniqueArray.map((id) =>
+        prices.find((el) => getIdFromSecurity(Object.values(el[1] ?? {})?.[0]?.security ?? {}) === id)
+    )
+    resolvedArray
+        ?.filter((a) => a?.[1]?.price)
+        .sort(
+            (a, b) => a?.[1].price[0] ?? 0 - (a?.[1]?.price[1] ?? 0) - (b?.[1]?.price[0] ?? 0 - (b?.[1]?.price[1] ?? 0))
+        )
+    const topPrices = resolvedArray.slice(0, 3)
+    console.info('here', topPrices)
+    return topPrices
+})
 export const { removeError, setActiveStock } = investmentSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type

@@ -1,6 +1,13 @@
 import { useCallback, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { getInvestementsAsync } from '../features/investments'
+import {
+    AnalysisType,
+    getInvestementsAsync,
+    getInvestmentAnalysis,
+    getInvestmentStockPrices,
+    selectInvestmentsMap,
+    selectTopMovingStocks,
+} from '../features/investments'
 import {
     getTransactionsAsync,
     getYesterdaySummaryAsyncThunk,
@@ -24,9 +31,19 @@ interface DataLoadingInput {
     loadRecommendations?: boolean
     loadProjection?: boolean
     loadNetworths?: boolean
+    loadTopStockAnalysis?: boolean
 }
 export const useDataLoading = (input: DataLoadingInput) => {
-    const { id, client, loadAccounts, loadInvestments, loadTransactions, loadRecommendations, loadProjection } = input
+    const {
+        id,
+        client,
+        loadAccounts,
+        loadInvestments,
+        loadTransactions,
+        loadRecommendations,
+        loadProjection,
+        loadTopStockAnalysis,
+    } = input
     const dispatch = useAppDispatch()
 
     // Selectors for state data
@@ -43,7 +60,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const loadingProjectionError = useAppSelector((state) => state.analysis.loadingProjectionsError)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
     const netWorths = useAppSelector((state) => state.netWorthSlice.networths)
-    const isNetWorthsLoading = useAppSelector((state) => state.netWorthSlice.loading)
+    const stockPrices = useAppSelector((state) => state.investments.stockPriceData)
     const defaultParams = useDefaultValuesForProjection({
         accounts: accounts ?? [],
         monthlySpendings: monthlySpendings ?? [],
@@ -52,7 +69,8 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
     const recommendations = useAppSelector((state) => state.analysis.fullPictureRecommendations)
     const institutions = useAppSelector((state) => state.idsSlice.institutions)
-
+    const investmentMap = useAppSelector(selectInvestmentsMap)
+    const topMovingStocks = useAppSelector(selectTopMovingStocks)
     // Load investments
     const getInvestments = useCallback(async () => {
         try {
@@ -114,6 +132,28 @@ export const useDataLoading = (input: DataLoadingInput) => {
     useEffect(() => {
         !netWorths?.length && dispatch(getNetworths({ id, client }))
     }, [netWorths?.length])
+
+    useEffect(() => {
+        const joinedData = Object.values(investmentMap ?? {})
+        if (joinedData?.length && loadTopStockAnalysis) {
+            console.info('calling get stock', investmentMap, joinedData)
+            dispatch(getInvestmentStockPrices({ client, securities: joinedData.map((el) => el.security) }))
+        }
+    }, [investmentMap, loadTopStockAnalysis, getInvestmentStockPrices])
+
+    useEffect(() => {
+        if (topMovingStocks && loadTopStockAnalysis) {
+            topMovingStocks.map((stock) => {
+                dispatch(
+                    getInvestmentAnalysis({
+                        client,
+                        security: Object.values(stock?.[1] ?? {})[0]?.security,
+                        analysisType: AnalysisType.DAILY,
+                    })
+                )
+            })
+        }
+    }, [topMovingStocks, loadTopStockAnalysis])
 
     // Trigger recommendations once everything else is loaded
     useEffect(() => {

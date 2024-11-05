@@ -79,7 +79,6 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
 >('analysis/get-analysis', async (input: GetFullPictureRecommendationInput, getThunkApi) => {
     const storedItem = localStorage.getItem(getStorageKey('full-picture-recommendation'))
     if (storedItem) {
-        console.log(storedItem, storedItem || '', JSON.parse(storedItem || ''))
         return {
             fullPictureRecommendations: JSON.parse(storedItem || ''),
         }
