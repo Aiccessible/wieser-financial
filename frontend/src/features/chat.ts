@@ -6,12 +6,14 @@ import { GraphQLMethod } from '@aws-amplify/api-graphql'
 
 // Define a type for the slice state
 interface ChatState {
-    chats: string[]
+    chats: { role: string; message: string }[]
     error: string | undefined
     loadingChat: boolean
     currentScope: ChatFocus | undefined
     currentDateRange: [number?, number?] | undefined
     highLevelSpendingCategory: HighLevelTransactionCategory | undefined
+    newChat: string
+    chatOpen: boolean
 }
 
 // Define the initial state using that type
@@ -22,6 +24,8 @@ const initialState: ChatState = {
     currentScope: undefined,
     currentDateRange: undefined,
     highLevelSpendingCategory: undefined,
+    newChat: '',
+    chatOpen: false,
 }
 
 export interface SendChatToLLMArgs {
@@ -85,10 +89,19 @@ export const chatSlice = createSlice({
         setLoadingChat: (state, action) => {
             state.loadingChat = action.payload
         },
+        setNewChatVal: (state, action) => {
+            state.newChat = action.payload
+        },
+        setIsChatOpen: (state, action) => {
+            state.chatOpen = action.payload
+        },
+        pushChatToLLM: (state, action) => {
+            state.chats.push({ role: 'Assistant', message: action.payload })
+        },
     },
     extraReducers(builder) {
         builder.addCase(sendChatToLLM.fulfilled, (state, action) => {
-            action.payload.chatResponse && state.chats.push(action.payload.chatResponse)
+            action.payload.chatResponse && state.chats.push({ role: 'Assistant', message: action.payload.chatResponse })
             state.error = action.payload.error
         })
         builder.addCase(sendChatToLLM.rejected, (state, action) => {
@@ -96,14 +109,23 @@ export const chatSlice = createSlice({
             state.loadingChat = false
         })
         builder.addCase(sendChatToLLM.pending, (state, action) => {
-            state.chats.push(action.meta.arg?.newChat)
+            state.chats.push({ role: 'User', message: action.meta.arg?.newChat })
             state.error = undefined
             state.loadingChat = true
+            state.newChat = ''
         })
     },
 })
 
-export const { setChatError, setChatParams, updateDateRange, setLoadingChat } = chatSlice.actions
+export const {
+    setChatError,
+    setChatParams,
+    updateDateRange,
+    setLoadingChat,
+    setNewChatVal,
+    setIsChatOpen,
+    pushChatToLLM,
+} = chatSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

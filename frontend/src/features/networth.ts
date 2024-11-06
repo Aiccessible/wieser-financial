@@ -34,12 +34,15 @@ const numToDateString = (x: number) => {
 }
 
 export const selectMostRecentNetWorth = (state: RootState): NetWorth => {
+    const now = new Date()
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
     return (
         state.netWorthSlice.networths?.length &&
         state.netWorthSlice.networths?.reduce((maxSnapshot: any, networth) => {
             const currentSkDate = new Date(networth?.sk ?? 0)
             const maxSkDate = new Date(maxSnapshot?.sk ?? 0)
-            return currentSkDate > maxSkDate ? networth : maxSnapshot
+            return currentSkDate > maxSkDate && currentSkDate < midnight ? networth : maxSnapshot
         }, null)
     )
 }

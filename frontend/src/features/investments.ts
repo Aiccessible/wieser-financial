@@ -17,11 +17,13 @@ export interface InvestmentKnoweldgeViewModel {
     loadingStockPrices: boolean
 }
 
-interface StockPriceData {
+export interface StockPriceData {
     price: number[]
     loading: boolean
     security: Security | undefined
+    holding: Holding | undefined
 }
+
 interface InvestmentsState {
     investments: Investment[] | undefined
     investmentSummary: string | undefined
@@ -73,7 +75,10 @@ export interface GetInvestmentNewsInput {
 
 export interface GetInvestmentPrices {
     client: { graphql: GraphQLMethod }
-    securities: (Security | undefined | null)[]
+    securities: {
+        security: Security | undefined
+        holding: Holding
+    }[]
 }
 
 export interface GetInvestmentRecommendation {
@@ -202,7 +207,6 @@ export const getInvestmentStockPrices = createAsyncThunk<
     const endDate = new Date() // Current date
     const startDate = new Date()
     startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
-    console.log('tyrying', input.securities)
     function chunkArray<T>(array: T[], chunkSize: number): T[][] {
         const chunks: T[][] = []
         for (let i = 0; i < array.length; i += chunkSize) {
@@ -214,7 +218,8 @@ export const getInvestmentStockPrices = createAsyncThunk<
     const batchedObjects = await Promise.all(
         chunkArray(input.securities.slice(0, 20), 5).map(async (securityBatch) => {
             return await Promise.all(
-                securityBatch.map(async (security) => {
+                securityBatch.map(async (joinedData) => {
+                    const { security, holding } = joinedData
                     let priceData: number[] = []
                     const idForSecurity = security ? getIdFromSecurity(security) : ''
 
@@ -233,7 +238,7 @@ export const getInvestmentStockPrices = createAsyncThunk<
                             console.log(await body.json())
                             priceData = (await body.json()) as number[]
                         }
-                        return { [idForSecurity]: { price: priceData, security } }
+                        return { [idForSecurity]: { price: priceData, security, holding } }
                     } catch (e) {
                         console.log(e)
                     }
@@ -260,7 +265,6 @@ export const stockPromptBuilder = (priceData: number[], idForSecurity: string, a
             priceData!.map((prive) => prive.toFixed(2))
         )
     } else if (analysisType === AnalysisType.DAILY) {
-        console.info(priceData)
         return (
             'This is my biggest moving stock in today, can you explain why is moving so much' +
             idForSecurity +
@@ -276,8 +280,10 @@ export const getInvestmentAnalysis = createAsyncThunk<
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-analysis', async (input: GetInvestmentNewsInput, getThunk) => {
     console.info(getThunk.getState().investments.stockPriceData, 'prive data')
-    let priceData =
-        getThunk.getState().investments.stockPriceData?.[getIdFromSecurity(input?.security ?? undefined)]?.price ?? []
+    const arrayOfRecords = getThunk.getState().investments.stockPriceData as any as Record<string, StockPriceData>[]
+    const keyLookingFor = getIdFromSecurity(input?.security ?? undefined)
+    let priceData = Object.values(arrayOfRecords?.find((el) => Object.keys(el)[0] === keyLookingFor) ?? {})?.[0]?.price
+    console.log(priceData, 234)
     const endDate = new Date() // Current date
     const startDate = new Date()
     startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
@@ -300,7 +306,7 @@ export const getInvestmentAnalysis = createAsyncThunk<
     } catch (e) {
         console.log(e)
     }
-    if (false) {
+    if (localStorage.getItem(getAnalysisKey(idForSecurity))) {
         return {
             value: localStorage.getItem(getAnalysisKey(idForSecurity)),
             key: idForSecurity,
@@ -308,6 +314,7 @@ export const getInvestmentAnalysis = createAsyncThunk<
         }
     }
     // TODO: Either add streaming ability or turn it off
+    console.log(priceData, 897)
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
@@ -441,6 +448,7 @@ export const investmentSlice = createSlice({
         builder.addCase(getInvestmentStockPrices.fulfilled, (state, action) => {
             state.error = action.payload.errors ? action.payload.errors : undefined
             state.stockPriceData = action.payload?.objects ?? []
+            state.loadingStockPrices = false
         })
         builder.addCase(getInvestmentStockPrices.rejected, (state, action) => {
             state.error = 'Failed to summarize investments ' + action.error.message
@@ -452,8 +460,8 @@ export const investmentSlice = createSlice({
             }
             state.loadingStockPrices = true
             action.meta.arg.securities.forEach((security) => {
-                const id = security ? getIdFromSecurity(security) : ''
-                state.stockPriceData![id] = { loading: true, price: [], security: undefined }
+                const id = security ? getIdFromSecurity(security?.security) : ''
+                state.stockPriceData![id] = { loading: true, price: [], security: undefined, holding: undefined }
             })
             state.error = undefined
         })
@@ -501,7 +509,7 @@ export const selectTopMovingStocks = createSelector([selectStockPriceData], (sto
         )
     const topPrices = resolvedArray.slice(0, 3)
     console.info('here', topPrices)
-    return topPrices
+    return resolvedArray
 })
 export const { removeError, setActiveStock } = investmentSlice.actions
 

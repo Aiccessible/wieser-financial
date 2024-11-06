@@ -15,7 +15,7 @@ const ScoreIndicator = ({ score, label, color }: { score: number; label: string;
 
 const ScoreIndicators = () => {
     return (
-        <div className="flex flex-grow items-center justify-evenly gap-2 bg-gray-900">
+        <div className="flex px-10 items-center justify-evenly gap-2 bg-gray-900">
             <ScoreIndicator score={96} label="Overall" color="border-highlight text-highlight" />
             <ScoreIndicator score={98} label="Income" color="border-highlight text-highlight" />
             <ScoreIndicator score={62} label="Spending" color="border-orange-500 text-orange-500" />

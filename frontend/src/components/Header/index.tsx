@@ -7,6 +7,10 @@ import { MenuIcon } from 'lucide-react'
 import { useSidebar } from '../Sidebar/use-sidebar'
 import BalanceVisibilitySwitcher from '../../../src/utils/EyeSwitcher'
 import ScoreIndicators from '../Scores'
+import { useAppDispatch, useAppSelector } from '../../../src/hooks'
+import { sendChatToLLM, setIsChatOpen, setNewChatVal } from '../../../src/features/chat'
+import { generateClient } from 'aws-amplify/api'
+import { ChatFocus } from '../../../src/API'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -15,6 +19,10 @@ const Header = (props: {
     setChatbarOpen: (arg0: boolean) => void
 }) => {
     const { toggleSidebar, isSidebarOpen } = useSidebar((state) => state)
+    const newChat = useAppSelector((state) => state.chat.newChat)
+    const dispatch = useAppDispatch()
+    const client = generateClient()
+    const accounts = useAppSelector((state) => state.accounts.accounts)
     return (
         <header
             style={{ zIndex: 800 }}
@@ -36,12 +44,30 @@ const Header = (props: {
                 </div>
 
                 <div className="hidden flex-grow flex-col sm:block">
-                    <form action="https://formbold.com/s/unique_form_id" method="POST">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault()
+                            dispatch(setIsChatOpen(true))
+                            dispatch(
+                                sendChatToLLM({
+                                    newChat: newChat,
+                                    client,
+                                    focus: ChatFocus.All,
+                                    ids: accounts?.map((el) => el.account_id) ?? [],
+                                    highLevelSpendingCategory: undefined,
+                                    currentDateRange: undefined,
+                                })
+                            )
+                        }}
+                        method="POST"
+                    >
                         <div className="relative flex">
                             <input
                                 type="text"
                                 placeholder="Chat with Wieser"
                                 className="w-full flex-grow bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl"
+                                value={newChat}
+                                onChange={(e) => dispatch(setNewChatVal(e.currentTarget.value))}
                             />
                             <ScoreIndicators />
                         </div>

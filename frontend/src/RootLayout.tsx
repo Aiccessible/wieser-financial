@@ -10,10 +10,15 @@ import Header from './components/Header'
 import ChatBar from './components/Chatbar/Chatbar'
 import { Provider } from 'react-redux'
 import { useParams } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from './hooks'
+import { setIsChatOpen } from './features/chat'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const [chatbarOpen, setChatbarOpen] = useState(false)
+    const chatbarOpen = useAppSelector((state) => state.chat.chatOpen)
+    const dispatch = useAppDispatch()
+    const setChatbarOpen = (val: boolean) => dispatch(setIsChatOpen(val))
+
     const { id } = useParams()
     const [loading, setLoading] = useState<boolean>(true)
 
@@ -48,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         </main>
                         {/* <!-- ===== Main Content End ===== --> */}
                     </div>
+                    <ChatBar id={''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
 
                     {/* <!-- ===== Content Area End ===== --> */}
                 </div>

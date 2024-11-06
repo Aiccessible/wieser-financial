@@ -95,7 +95,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                                 recommendation!.action!.description || ''
                                             )
                                         }
-                                        className="bg-primary text-black font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0"
+                                        className="bg-primary text-black font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0"
                                     >
                                         Confirm Transfers
                                     </button>

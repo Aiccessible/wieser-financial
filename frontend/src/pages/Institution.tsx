@@ -17,6 +17,8 @@ import Loader from '../components/common/Loader'
 import Currency from '../components/Currency'
 import * as Accordion from '@radix-ui/react-accordion'
 import { RefreshCwIcon } from 'lucide-react'
+import { selectTopMovingStocks } from '../features/investments'
+import StockSummary from '../components/StockSummary'
 
 const logger = new ConsoleLogger('Instituions')
 
@@ -84,6 +86,7 @@ export default function Institution() {
     const areTransactionsLoading = useAppSelector((state) => state.transactions.loading)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
     const netWorths = useAppSelector((state) => state.netWorthSlice.networths)
+    const topMovingStocks = useAppSelector(selectTopMovingStocks)
     console.info(netWorths)
     useDataLoading({
         id: id || '',
@@ -114,14 +117,16 @@ export default function Institution() {
                 <Divider />
             </div>
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col max-w-1/2 flex-grow  p-3">
+                <div className="flex flex-col max-w-2/3 flex-grow  p-3">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}
-
-                    <Accounts updateAccounts={() => {}} />
+                    <div className="flex">
+                        <Accounts updateAccounts={() => {}} />
+                        <StockSummary />
+                    </div>
                 </div>
-                <div className="flex w-1/2 flex-grow flex-col">
+                <div className="flex w-1/3 flex-grow flex-col">
                     <Heading level={6} className="text-2xl mb-1">
                         <CustomTextBox className="flex flex-row items-center ">
                             Key Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />

@@ -135,15 +135,14 @@ export const useDataLoading = (input: DataLoadingInput) => {
 
     useEffect(() => {
         const joinedData = Object.values(investmentMap ?? {})
-        if (joinedData?.length && loadTopStockAnalysis) {
-            console.info('calling get stock', investmentMap, joinedData)
-            dispatch(getInvestmentStockPrices({ client, securities: joinedData.map((el) => el.security) }))
+        if (joinedData?.length && loadTopStockAnalysis && !stockPrices) {
+            dispatch(getInvestmentStockPrices({ client, securities: joinedData }))
         }
-    }, [investmentMap, loadTopStockAnalysis, getInvestmentStockPrices])
+    }, [investmentMap, loadTopStockAnalysis, getInvestmentStockPrices, stockPrices])
 
     useEffect(() => {
         if (topMovingStocks && loadTopStockAnalysis) {
-            topMovingStocks.map((stock) => {
+            topMovingStocks.slice(0, 3).map((stock) => {
                 dispatch(
                     getInvestmentAnalysis({
                         client,

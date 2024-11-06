@@ -16,7 +16,7 @@ export default function Accounts({ updateAccounts }) {
   
   const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
   return (
-      <div className="flex w-1/2 flex-grow flex-col">
+      <div className="flex w-1/2 flex-grow flex-col max-h-[35vh] overflow-auto hide-scrollbar">
           <Heading level={6} className="text-2xl mb-1">
               <CustomTextBox className="flex flex-row items-center ">Account Summaries</CustomTextBox>
           </Heading>

@@ -35,7 +35,7 @@ const Sidebar = ({}: SidebarProps) => {
             className={cn(
                 `absolute left-0 top-0 z-997 flex h-screen w-20 flex-col overflow-y-hidden duration-300 ease-linear  dark:bg-boxdark lg:static lg:translate-x-0 border-right-2 border-black rounded-lg shadow-lg`,
                 {
-                    'w-70': isSidebarOpen,
+                    'w-60': isSidebarOpen,
                 }
             )}
         >

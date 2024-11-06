@@ -63,7 +63,10 @@ export const accountSlice = createSlice({
         builder.addCase(getAccountsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
             state.error = action.payload.errors ? action.payload.errors?.toString() : undefined
-            state.accounts = [...(state.accounts ?? ([] as any)), ...(action.payload.accounts ?? [])]
+            state.accounts = [...(state.accounts ?? ([] as any)), ...(action.payload.accounts ?? [])].sort(
+                (a1: Account, a2: Account) =>
+                    parseFloat(a2?.balances?.current ?? '0') - parseFloat(a1?.balances?.current ?? '0')
+            )
             state.loading = false
         })
         builder.addCase(getAccountsAsync.rejected, (state, action) => {
