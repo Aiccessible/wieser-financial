@@ -41,23 +41,10 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         return chunksOfConcern?.map((chunks) => chunks.message).join('')
     }, [chunks])
 
-    const getChunksAsValidJson = useMemo(() => {
-        console.info(getSortedChunks)
-
-        try {
-            let updatedStr = getSortedChunks?.replace('{"response":"', '') ?? ''
-            console.info(updatedStr, getSortedChunks)
-            let result = updatedStr.split('"')[0]
-            return { response: result, role: 'Assistant' }
-        } catch (e) {
-            return {}
-        }
-    }, [getSortedChunks])
     const [wordIndex, setWordIndex] = useState(0)
 
     const typingSpeed = 150
 
-    console.info(getChunksAsValidJson)
     useEffect(() => {
         const createSub = async () => {
             console.log(await fetchAuthSession())
@@ -77,6 +64,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                         const chunk = data.onCreateChat
                         if (chunk.isLastChunk) {
                             dispatch(setLoadingChat(false))
+                            setChunks([])
+                            return
                         }
                         setLastReceivedChat(Date.now())
                         setChunks((prevState: Chat[] | undefined) => {
@@ -131,6 +120,11 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
         leave: { opacity: 0, y: 10 },
         config: config.wobbly,
     })
+    const messages = [
+        ...chats,
+        ...(getSortedChunks?.split('\n**')?.map((el: string) => ({ message: el, role: 'Assistant' })) ?? ([] as any)),
+    ]
+    console.info(messages)
     return (
         <Dialog.Root open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
             <Dialog.Portal>
@@ -150,8 +144,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                                     className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden"
                                     style={styles}
                                 >
-                                    <div className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden">
-                                        <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700">
+                                    <div className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden hide-scrollbar">
+                                        <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-900 hide-scrollbar border-b border-gray-300 dark:border-gray-700">
                                             <Dialog.Close onClick={() => setIsSidebarOpen(false)} asChild>
                                                 <button className="text-red-500 hover:text-red-700 text-4xl">
                                                     <X size={36} />
@@ -159,14 +153,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                                             </Dialog.Close>
                                         </div>
 
-                                        <div className="p-4 space-y-3 h-[65vh] overflow-y-auto bg-gray-100 dark:bg-gray-900">
-                                            {[
-                                                ...chats,
-                                                getChunksAsValidJson?.response
-                                                    ?.split('\n\n')
-                                                    ?.map((el: string) => ({ message: el, role: 'Assistant' })) ??
-                                                    ({} as any),
-                                            ]
+                                        <div className="p-4 space-y-3 hide-scrollbar h-[65vh] overflow-y-auto bg-gray-100 dark:bg-gray-900">
+                                            {messages
                                                 .filter((msg) => msg)
                                                 .map((msg, index) => (
                                                     <div
