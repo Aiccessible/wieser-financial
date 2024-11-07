@@ -18,7 +18,7 @@ export function request(ctx) {
           '#date': 'date',
         },
         expressionValues: util.dynamodb.toMapValues({
-          ':pk': `USER#${username}#ITEM#${id}#${type}`,
+          ':pk': `USER#${username}#TRANSACTIONS#${type}`,
         }),
       },
       filter: {

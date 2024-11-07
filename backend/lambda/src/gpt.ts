@@ -1,13 +1,11 @@
 import OpenAI from 'openai'
-import { any, z } from 'zod'
+import { z } from 'zod'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { AssistantToolChoice } from 'openai/resources/beta/threads/threads'
-import { stat } from 'fs'
 import { ChatFocus, ChatInput, ChatType } from './API'
 import { createChat } from './graphql/mutations'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import * as aws4 from 'aws4'
-import { SignatureV4 } from '@aws-sdk/signature-v4'
 import { newsPrompt, technicalPrompt } from './stockPrompts'
 const appsyncUrl = process.env.APPSYNC_URL as string
 const apiKey = process.env.APPSYNC_API_KEY as string
@@ -49,12 +47,6 @@ const Recommendations = z.object({
 
 const PremiumChatResponse = z.object({
     response: z.string(),
-    graphs: z.object({
-        pieChart: z.string(),
-        barChart: z.string(),
-        histogram: z.string(),
-        timePlot: z.string(),
-    }),
 })
 
 export interface Transfer {
@@ -140,9 +132,11 @@ export const completeChatFromPrompt = async (
             ? newsPrompt
             : chatType === ChatType.FinancialAnalysisQuery
             ? technicalPrompt
+            : chatType === ChatType.TransactionRecommendation
+            ? `You are a personal spending assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide spending recommendations which are highly useful.`
             : `You are a personal ${
                   type && type !== ChatFocus.All ? type : 'Finance'
-              } assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You plot data to beautiful svgs when it is helpful.`
+              } assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. `
     const model =
         chatType === ChatType.FinancialNewsQuery || chatType === ChatType.FinancialAnalysisQuery
             ? 'llama-3.1-sonar-large-128k-online'
@@ -158,7 +152,10 @@ export const completeChatFromPrompt = async (
                 content: prompt.substring(0, 20000),
             },
         ],
-        response_format: zodResponseFormat(PremiumChatResponse, 'financialchatresponse'),
+        response_format:
+            chatType === ChatType.TransactionRecommendation
+                ? zodResponseFormat(Recommendations, 'recommendations')
+                : undefined,
         model,
         stream: true,
     }

@@ -66,13 +66,14 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                     console.info('Sending', items[i])
                     const res = await client.send(
                         GetEntities({
-                            pk: items[i].pk ?? '',
+                            pk: items[i].pk?.replace(/#ITEM#\w+/, '') ?? '',
                             dateRange: {
                                 hasNoTimeConstraint: true,
                             } as any,
                             username: '',
                             id: '',
                             entityName: 'SECURITY',
+                            getAllSecuritiesForUser: true,
                         })
                     )
                     encryptedTransactions.push(...(res?.Items ?? []))
@@ -111,6 +112,10 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                 const fhsaNetWorth = reduceAccounts(
                     decrypedAccounts.filter((acc) => checkAccountNameOrTypes(['fhsa'], acc))
                 )
+                const accountsToBalances: Record<string, { N: string }> = {}
+                decrypedAccounts.forEach((acc) => {
+                    accountsToBalances[acc.account_id] = { N: reduceAccounts([acc]).toFixed(2) }
+                })
                 const command = new PutItemCommand({
                     TableName: process.env.TABLE_NAME,
                     Item: {
@@ -119,12 +124,14 @@ async function processUsersInBatches(decryptedUserItemRecord: Item[]) {
                                 ? (items[0] as any)?.groupKey + '#NETWORTHDAILYSNAPSHOT'
                                 : '',
                         },
-                        sk: { S: new Date().toDateString() },
+                        sk: { S: new Date().toISOString() },
                         netWorth: { N: netWorth.toFixed(2) },
                         tfsaNetWorth: { N: tfsaNetWorth.toFixed(2) },
                         rrspNetWorth: { N: rrspNetWorth.toFixed(2) },
                         fhsaNetWorth: { N: fhsaNetWorth.toFixed(2) },
                         securityNetWorth: { N: securityNetWorth.toFixed(2) },
+                        securities: { S: JSON.stringify(securitySnapshot) },
+                        balances: { S: JSON.stringify(accountsToBalances) },
                     },
                 })
                 await client.send(command)

@@ -71,7 +71,7 @@ class Transactions(AbstractProduct):
         if event_name != "REMOVE" and isinstance(transaction, Transaction):
             body |= transaction.to_dict()
             body["plaid_type"] = type(transaction).__name__
-            body["gsi1pk"] = f"USER#{user_id}#ITEM#{item_id}#TRANSACTIONS"
+            body["gsi1pk"] = f"USER#{user_id}#TRANSACTIONS"
             body["gsi1sk"] = f"TRANSACTION#{transaction.date}#{transaction_id}"
 
         message["MessageBody"] = utils.json_dumps(body)
@@ -144,9 +144,10 @@ class Transactions(AbstractProduct):
 
             try:
                 response: TransactionsSyncResponse = self.client.transactions_sync(request)
-            except plaid.ApiException:
+            except plaid.ApiException as e:
+                logger.exception(e)
                 logger.exception("Failed to call transactions sync")
-                raise
+                return
 
             # Add this page of results
             added.extend(response["added"])

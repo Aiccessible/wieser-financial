@@ -10,5 +10,5 @@ export declare const getInvestments: GeneratedQuery<APITypes.GetInvestmentsQuery
 export declare const getFinancialRecommendations: GeneratedQuery<APITypes.GetFinancialRecommendationsQueryVariables, APITypes.GetFinancialRecommendationsQuery>;
 export declare const getFinancialConversationResponse: GeneratedQuery<APITypes.GetFinancialConversationResponseQueryVariables, APITypes.GetFinancialConversationResponseQuery>;
 export declare const getSpendingSummary: GeneratedQuery<APITypes.GetSpendingSummaryQueryVariables, APITypes.GetSpendingSummaryQuery>;
-export declare const getNetWorth: GeneratedQuery<APITypes.GetNetWorthQueryVariables, APITypes.GetNetWorthQuery>;
+export declare const getNetWorths: GeneratedQuery<APITypes.GetNetWorthsQueryVariables, APITypes.GetNetWorthsQuery>;
 export {};

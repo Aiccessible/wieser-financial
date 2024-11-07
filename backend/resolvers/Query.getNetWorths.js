@@ -18,7 +18,7 @@ export function request(ctx) {
           '#date': 'sk',
         },
         expressionValues: util.dynamodb.toMapValues({
-          ':pk': `USER#${username}#ITEM#${id}#${type}`,
+          ':pk': `USER#${username}#${type}`,
           ':minDate': minDate,
           ':maxDate': maxDate,
         }),
@@ -41,7 +41,5 @@ export function response(ctx) {
 
   const { items: networths = [] } = result;
 
-  return {
-    networths,
-  };
+  return networths;
 }

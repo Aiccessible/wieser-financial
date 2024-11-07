@@ -74,6 +74,8 @@ class InvestmentsHoldings(AbstractProduct):
             body: Dict[str, Any] = entity.to_dict()
             body["pk"] = f"USER#{user_id}#ITEM#{item_id}"
             body["sk"] = f"SECURITY#{entity.security_id}"
+            body["gsi1pk"] = f"USER#{user_id}#SECURITY"
+            body["gsi1sk"] = f"SECURITY#{entity.security_id}"
             body["plaid_type"] = type(entity).__name__
             body["updated_at"] = utils.now_iso8601()
             message["MessageBody"] = utils.json_dumps(body)
@@ -91,6 +93,8 @@ class InvestmentsHoldings(AbstractProduct):
             body: Dict[str, Any] = entity.to_dict()
             body["pk"] = f"USER#{user_id}#ITEM#{item_id}"
             body["sk"] = f"SECURITY#{entity.security_id}#ACCOUNT#{entity.account_id}"
+            body["gsi1pk"] = f"USER#{user_id}#SECURITY"
+            body["gsi1sk"] = f"SECURITY#{entity.security_id}#ACCOUNT#{entity.account_id}"
             body["plaid_type"] = type(entity).__name__
             body["updated_at"] = utils.now_iso8601()
             message["MessageBody"] = utils.json_dumps(body)

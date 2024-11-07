@@ -18,7 +18,7 @@ export function request(ctx) {
         '#sk': 'gsi1sk',
       },
       expressionValues: util.dynamodb.toMapValues({
-        ':pk': `USER#${username}#ITEM#${id}#TRANSACTIONS`,
+        ':pk': `USER#${username}#TRANSACTIONS`,
         ':sk': 'TRANSACTION#',
       }),
     },

@@ -23,6 +23,7 @@ const mapOfCacheTypeToExpiry: Record<CacheType, number> = {
     [CacheType.PortfolioAnalysis]: 60 * 60 * 1000 * 24,
     [CacheType.StockAnalysis]: 60 * 60 * 1000 * 24,
     [CacheType.StockNews]: 60 * 60 * 1000 * 4,
+    [CacheType.TransactionRecommendation]: 60 * 60 * 1000 * 24 * 5,
 }
 
 export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatResponse> = async (
@@ -33,8 +34,9 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     let neededInfo: { optionsForInformation: InformationOptions[] } = { optionsForInformation: [] }
     let dateRangeResponse: any
     if (
-        event.arguments.chat.shouldRagFetch &&
-        !(event.arguments.chat.currentDateRange && event.arguments.chat.highLevelCategory)
+        !event.arguments.chat.doNotUseAdvancedRag &&
+        !(event.arguments.chat.currentDateRange && event.arguments.chat.highLevelCategory) &&
+        !event.arguments.chat.doNotUseAdvancedRag
     ) {
         const informationNeeded = getNeededInformationFromModel(event.arguments.chat.prompt || '')
         const dateRange = getDateRangeFromModel(event.arguments.chat.prompt || '')
@@ -73,7 +75,8 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     ) {
         neededInfo.optionsForInformation.push('INVESTMENTS' as any)
     } else if (
-        event.arguments.chat.chatFocus === ChatFocus.Transaction &&
+        (event.arguments.chat.chatFocus === ChatFocus.Transaction ||
+            event.arguments.chat.chatType === ChatType.TransactionRecommendation) &&
         !neededInfo.optionsForInformation.find((el) => el === InformationOptions.TRANSACTIONS)
     ) {
         neededInfo.optionsForInformation.push('TRANSACTIONS' as any)
@@ -83,48 +86,52 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
     console.info('Date range: ', dateRangeResponse)
     const user = (event.identity as AppSyncIdentityCognito)?.username
     let tupleOfTypeToElements: [InformationOptions, QueryCommandOutput][]
-    tupleOfTypeToElements = (await Promise.all(
-        neededInfo.optionsForInformation.flatMap(async (option) => {
-            const entityName = mapOfInformationOptionToKey[option].toString()
-            return (
-                event.arguments.chat.accountIds?.map(async (accountId) => {
-                    return [
-                        option,
-                        await client.send(
-                            GetEntities({
-                                username: user || '',
-                                id: accountId || '',
-                                dateRange: entityName in dateSupportedFiltering ? dateRangeResponse : undefined,
-                                entityName: entityName,
-                                customDateRange:
-                                    (event.arguments.chat?.currentDateRange?.map((el) =>
-                                        el ? parseInt(el) : undefined
-                                    ) as any) ?? undefined,
-                                highLevelCategory: event.arguments.chat.highLevelCategory ?? undefined,
-                            })
-                        ),
-                    ]
-                }) ?? [option, undefined]
-            )
-        })
-    )) as any as [InformationOptions, QueryCommandOutput][]
-
+    tupleOfTypeToElements = (
+        await Promise.all(
+            neededInfo.optionsForInformation.map(async (option) => {
+                const entityName = mapOfInformationOptionToKey[option].toString()
+                return await Promise.all(
+                    event.arguments.chat.accountIds?.map(async (accountId) => {
+                        return [
+                            option,
+                            await client.send(
+                                GetEntities({
+                                    username: user || '',
+                                    id: accountId || '',
+                                    dateRange: entityName in dateSupportedFiltering ? dateRangeResponse : undefined,
+                                    entityName: entityName,
+                                    customDateRange:
+                                        (event.arguments.chat?.currentDateRange?.map((el) =>
+                                            el ? parseInt(el) : undefined
+                                        ) as any) ?? undefined,
+                                    highLevelCategory: event.arguments.chat.highLevelCategory ?? undefined,
+                                })
+                            ),
+                        ]
+                    }) ?? [option, undefined]
+                )
+            })
+        )
+    ).flatMap((el: any) => [...el]) as any as [InformationOptions, QueryCommandOutput][]
+    console.info(tupleOfTypeToElements, 'good')
     /** Get the contextual data */
     const ddbResponses = await Promise.all(
         tupleOfTypeToElements.map(async (tuple) => {
-            const decryptedItems = await decryptItemsInBatches(tuple[1]?.Items ?? [])
-            if (tuple[0].toString() === 'INVESTMENTS') {
+            await tuple[0]
+            const awaitedTuple = tuple
+            const decryptedItems = await decryptItemsInBatches(awaitedTuple[1]?.Items ?? [])
+            if (awaitedTuple[0].toString() === 'INVESTMENTS') {
                 const mappedData = await mapSecuritiesToJoinedData(decryptedItems)
                 return '\nInvestments:\n' + mapJointDataToChatInput(mappedData)
-            } else if (tuple[0].toString() === 'TRANSACTIONS') {
+            } else if (awaitedTuple[0].toString() === 'TRANSACTIONS') {
                 return (
                     '\nTranasactions:\n' +
                     decryptedItems.map(mapDynamoDBToTransaction).map(mapTransactionToChatInput).join('')
                 )
-            } else if (tuple[0].toString() === 'BANKACCOUNTS') {
+            } else if (awaitedTuple[0].toString() === 'BANKACCOUNTS') {
                 return '\nAccounts:\n' + decryptedItems.map(mapDynamoDBToAccount).map(mapAccountToChatInput).join('')
             } else {
-                throw new Error('UNRECOGNIZED OPTION ' + tuple[0])
+                throw new Error('UNRECOGNIZED OPTION ' + awaitedTuple[0])
             }
         })
     )

@@ -168,8 +168,8 @@ export type ChatQuery = {
     chatFocus?: ChatFocus | null;
     accountIds?: Array<string> | null;
     requiresLiveData?: boolean | null;
+    doNotUseAdvancedRag?: boolean | null;
     chatType?: ChatType | null;
-    shouldRagFetch?: boolean | null;
     highLevelCategory?: HighLevelTransactionCategory | null;
     currentDateRange?: Array<string | null> | null;
     cacheIdentifiers?: Array<CacheIdentifer> | null;
@@ -184,7 +184,8 @@ export declare enum ChatFocus {
 export declare enum ChatType {
     Regular = "Regular",
     FinancialNewsQuery = "FinancialNewsQuery",
-    FinancialAnalysisQuery = "FinancialAnalysisQuery"
+    FinancialAnalysisQuery = "FinancialAnalysisQuery",
+    TransactionRecommendation = "TransactionRecommendation"
 }
 export type CacheIdentifer = {
     key?: string | null;
@@ -194,7 +195,8 @@ export declare enum CacheType {
     StockNews = "StockNews",
     StockAnalysis = "StockAnalysis",
     InvestmentAnalysis = "InvestmentAnalysis",
-    PortfolioAnalysis = "PortfolioAnalysis"
+    PortfolioAnalysis = "PortfolioAnalysis",
+    TransactionRecommendation = "TransactionRecommendation"
 }
 export type Recommendation = {
     __typename: "Recommendation";
@@ -227,6 +229,11 @@ export type SpendingSummary = {
     sk?: string | null;
     spending?: string | null;
 };
+export declare enum NetWorthSummaryType {
+    NETWORTHDAILYSNAPSHOT = "NETWORTHDAILYSNAPSHOT",
+    NETWORTHWEEKLYSNAPSHOT = "NETWORTHWEEKLYSNAPSHOT",
+    NETWORTHMONTHLYSNAPSHOT = "NETWORTHMONTHLYSNAPSHOT"
+}
 export type NetWorth = {
     __typename: "NetWorth";
     pk?: string | null;
@@ -236,6 +243,7 @@ export type NetWorth = {
     rrspNetWorth?: string | null;
     fhsaNetWorth?: string | null;
     securityNetWorth?: string | null;
+    balances?: string | null;
 };
 export type CreateChatMutationVariables = {
     chat: ChatInput;
@@ -405,20 +413,20 @@ export type GetSpendingSummaryQueryVariables = {
     type?: SpendingSummaryType | null;
 };
 export type GetSpendingSummaryQuery = {
-    getSpendingSummary: {
+    getSpendingSummary?: {
         __typename: "SpendingSummary";
         sk?: string | null;
         spending?: string | null;
-    };
+    } | null;
 };
-export type GetNetWorthQueryVariables = {
+export type GetNetWorthsQueryVariables = {
     minDate?: string | null;
     maxDate?: string | null;
     id: string;
-    type?: SpendingSummaryType | null;
+    type?: NetWorthSummaryType | null;
 };
-export type GetNetWorthQuery = {
-    getNetWorth: {
+export type GetNetWorthsQuery = {
+    getNetWorths?: Array<{
         __typename: "NetWorth";
         pk?: string | null;
         sk?: string | null;
@@ -427,7 +435,8 @@ export type GetNetWorthQuery = {
         rrspNetWorth?: string | null;
         fhsaNetWorth?: string | null;
         securityNetWorth?: string | null;
-    };
+        balances?: string | null;
+    } | null> | null;
 };
 export type OnCreateChatSubscriptionVariables = {
     pk: string;
