@@ -1,13 +1,19 @@
 import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit'
-import { getSpendingSummary, getTransactions } from '../graphql/queries'
-import { Account, HighLevelTransactionCategory, SpendingSummary, SpendingSummaryType, Transaction } from '../API'
-import { GraphQLMethod } from '@aws-amplify/api-graphql'
-import { stat } from 'fs'
-import { RootState } from '../store'
+import { getFinancialConversationResponse, getSpendingSummary, getTransactions } from '../graphql/queries'
 import {
-    calculateAverageSpendingFromMonthlySummarys,
-    calculateTotalSpendingInCategories,
-} from '../components/common/spendingUtils'
+    Account,
+    CacheType,
+    ChatFocus,
+    ChatType,
+    HighLevelTransactionCategory,
+    Recommendation,
+    SpendingSummary,
+    SpendingSummaryType,
+    Transaction,
+} from '../API'
+import { GraphQLMethod } from '@aws-amplify/api-graphql'
+import { RootState } from '../store'
+import { calculateTotalSpendingInCategories } from '../components/common/spendingUtils'
 import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 // Define a type for the slice state
 interface TransactionsState {
@@ -17,14 +23,19 @@ interface TransactionsState {
     loading: boolean
     loadingDailySummary: boolean
     loadingMonthlySummary: boolean
+    loadingRecommendations: boolean
     error: string | undefined
     dailySummaries: SpendingSummary[] | undefined
     monthlySummaries: SpendingSummary[] | undefined
     currentDateRange: number[] | undefined
+    transactionRecommendations: Recommendation[] | undefined
 }
 
 const firstOfMonth = new Date()
 firstOfMonth.setDate(1)
+
+const oneWeekAgo = new Date()
+oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 // Define the initial state using that type
 const initialState: TransactionsState = {
     acccountRecommendation: '',
@@ -37,11 +48,19 @@ const initialState: TransactionsState = {
     dailySummaries: undefined,
     monthlySummaries: undefined,
     currentDateRange: [firstOfMonth.getTime(), new Date().getTime()],
+    transactionRecommendations: undefined,
+    loadingRecommendations: false,
 }
 
 export interface GetTransactionInput {
     client: { graphql: GraphQLMethod }
     id: string
+    append: boolean
+}
+
+export interface GetTransactionRecommendations {
+    client: { graphql: GraphQLMethod }
+    ids: string[]
     append: boolean
 }
 
@@ -73,6 +92,38 @@ export const getTransactionsAsync = createAsyncThunk(
                   ]
                 : res.data.getTransactions.transactions,
             cursor: res.data.getTransactions.cursor,
+            loading: false,
+        }
+    }
+)
+
+export const getTransactionsRecommendationsAsync = createAsyncThunk(
+    'transaction/get-transaction-recommendations',
+    async (input: GetTransactionRecommendations, getThunk: any) => {
+        const res = await input.client.graphql({
+            query: getFinancialConversationResponse,
+            variables: {
+                chat: {
+                    accountIds: input.ids,
+                    prompt: 'Provide me recommendations on how I can save money on my spending',
+                    chatFocus: ChatFocus.Transaction,
+                    chatType: ChatType.TransactionRecommendation,
+                    requiresLiveData: false,
+                    currentDateRange: [oneWeekAgo.getTime().toString(), new Date().getTime().toString()],
+                    doNotUseAdvancedRag: true,
+                    cacheIdentifiers: [
+                        { key: input.ids.join(',') + 'TRANSACTIONSUMMARIES', cacheType: CacheType.PortfolioAnalysis },
+                    ],
+                },
+            },
+        })
+        const errors = res.errors
+        if (errors && errors.length > 0) {
+            return { errors, recommendations: res.data.getFinancialConversationResponse }
+        }
+        return {
+            recommendations: res.data.getFinancialConversationResponse,
+            errors: null,
             loading: false,
         }
     }
@@ -196,6 +247,21 @@ export const transactionSlice = createSlice({
         builder.addCase(getMonthlySummariesAsyncThunk.pending, (state, action) => {
             state.error = undefined
             state.loadingMonthlySummary = true
+        })
+        builder.addCase(getTransactionsRecommendationsAsync.fulfilled, (state, action) => {
+            state.error = action.payload.errors ? action.payload.errors.toString() : undefined
+            state.loadingRecommendations = false
+            state.transactionRecommendations = JSON.parse(
+                action.payload.recommendations?.response ?? ''
+            )?.recommendations
+        })
+        builder.addCase(getTransactionsRecommendationsAsync.rejected, (state, action) => {
+            state.error = 'Failed to fetch accounts because ' + action.error.message
+            state.loadingRecommendations = false
+        })
+        builder.addCase(getTransactionsRecommendationsAsync.pending, (state, action) => {
+            state.error = undefined
+            state.loadingRecommendations = true
         })
     },
 })

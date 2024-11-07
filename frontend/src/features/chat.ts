@@ -82,6 +82,7 @@ export const chatSlice = createSlice({
             state.currentDateRange = action.payload.dateRange
             state.currentScope = action.payload.scope
             state.highLevelSpendingCategory = action.payload.highLevelTransactionCategory
+            state.chatOpen = true
         },
         updateDateRange: (state, action) => {
             state.currentDateRange = action.payload

@@ -188,8 +188,8 @@ export type ChatQuery = {
   chatFocus?: ChatFocus | null,
   accountIds?: Array< string > | null,
   requiresLiveData?: boolean | null,
+  doNotUseAdvancedRag?: boolean | null,
   chatType?: ChatType | null,
-  shouldRagFetch?: boolean | null,
   highLevelCategory?: HighLevelTransactionCategory | null,
   currentDateRange?: Array< string | null > | null,
   cacheIdentifiers?: Array< CacheIdentifer > | null,
@@ -208,6 +208,7 @@ export enum ChatType {
   Regular = "Regular",
   FinancialNewsQuery = "FinancialNewsQuery",
   FinancialAnalysisQuery = "FinancialAnalysisQuery",
+  TransactionRecommendation = "TransactionRecommendation",
 }
 
 
@@ -482,7 +483,7 @@ export type GetNetWorthsQueryVariables = {
 };
 
 export type GetNetWorthsQuery = {
-  getNetWorths?:  {
+  getNetWorths?:  Array< {
     __typename: "NetWorth",
     pk?: string | null,
     sk?: string | null,
@@ -492,7 +493,7 @@ export type GetNetWorthsQuery = {
     fhsaNetWorth?: string | null,
     securityNetWorth?: string | null,
     balances?: string | null,
-  } | null,
+  } | null > | null,
 };
 
 export type OnCreateChatSubscriptionVariables = {

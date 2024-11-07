@@ -17,6 +17,29 @@ interface Props {
     isIncomeAndTransfers?: boolean
 }
 
+const greenShades = [
+    '#9bc39d',
+    '#2e7d32',
+    '#388e3c',
+    '#43a047',
+    '#4caf50',
+    '#66bb6a',
+    '#81c784',
+    '#a5d6a7',
+    '#c8e6c9',
+    '#e8f5e9',
+    '#004d40',
+    '#00796b',
+    '#00897b',
+    '#009688',
+    '#26a69a',
+    '#4db6ac',
+    '#80cbc4',
+    '#b2dfdb',
+    '#e0f2f1',
+    '#f1f8e9',
+]
+
 export const Spending = (props: Props) => {
     const { spending, title, dateRange, isIncomeAndTransfers } = props
     const spendingData = Object.entries(spending || {})
@@ -81,6 +104,7 @@ export const Spending = (props: Props) => {
                                     '$</span>',
                                 connectorColor: 'rgba(128,128,128,0.5)',
                             },
+                            colors: greenShades,
                             point: {
                                 events: {
                                     click: (e) => {

@@ -12,7 +12,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
     const loadingTransfer = useAppSelector((state) => state.auth.loadingTransfer)
     const dispatch = useAppDispatch()
     const accounts = useAppSelector((state) => state.accounts.accounts)
-
+    console.info(recommendations)
     const onClickTransfer = (transfer: Transfer, description: string) => {
         const fromAccount = accounts!.find((it) => it.name === transfer.fromAccountName)
         const toAccount = accounts!.find((it) => it.name === transfer.toAccountName)

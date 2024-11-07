@@ -13,29 +13,51 @@ import {
 } from '@tremor/react'
 import Transaction from './Transaction'
 import Loader from '../components/common/Loader'
-import { Button } from '@aws-amplify/ui-react'
+import { Button, Heading } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
 import { useParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../hooks'
-import { getTransactionsAsync } from '../features/transactions'
+import { getTransactionsAsync, getTransactionsRecommendationsAsync } from '../features/transactions'
 import { useDataLoading } from '../hooks/useDataLoading'
 import { MonthlySpending } from './common/MonthlySpending'
 import { DailySpending } from './common/DailySpending'
 import { SpendingDiff } from './common/SpendingDiff'
 import { DatePickerCustom } from './common/DatePicker'
 import { SpendingBarChart } from './common/SpendingBarChart'
+import { SpendingTimeline } from './common/SpendingTimeline'
+import { RefreshCwIcon } from 'lucide-react'
+import RecommendationsAccordion from './common/RecommendationAcordion'
+import ScoreReview from './common/SpendingScore'
 const logger = new ConsoleLogger('Transactions')
 
-export default function Transactions({ accounts = {} }) {
+export default function Transactions({}) {
     const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
     const cursor = useAppSelector((state) => state.transactions.cursor)
     const loading = useAppSelector((state) => state.transactions.loading)
-    const { transactions } = useDataLoading({ id: id || '', client, loadTransactions: true })
+    const { transactions, accounts } = useDataLoading({
+        id: id || '',
+        client,
+        loadTransactions: true,
+        loadAccounts: true,
+    })
+    const institutions = useAppSelector((state) => state.idsSlice.institutions)
+
     const dailySpendsLastXDays = useAppSelector((state) => state.transactions.dailySummaries)
     const monthlySpending = useAppSelector((state) => state.transactions.monthlySummaries)
     const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
+    const transactionRecommendations = useAppSelector((state) => state.transactions.transactionRecommendations)
+    useEffect(() => {
+        institutions?.length &&
+            dispatch(
+                getTransactionsRecommendationsAsync({
+                    client: client,
+                    ids: institutions?.map((account) => account?.item_id) ?? [],
+                    append: false,
+                })
+            )
+    }, [institutions?.length])
     const handleLoadMore = async () => {
         try {
             await dispatch(getTransactionsAsync({ id: id || '', client, append: true }))
@@ -57,57 +79,25 @@ export default function Transactions({ accounts = {} }) {
                     <DatePickerCustom />
                 </>
             </div>
-            <div id="container" className={`max-w-[100%] flex flex-row`}>
-                <div className="flex flex-grow">
-                    <DailySpending width={100} isIncomeAndTransfers={true} />
+            <div className="flex flex-row justify-between">
+                <div className="flex flex-col w-2/3 flex-grow">
+                    <div className="flex flex-row  flex-grow max-h-[50vh]   p-3">
+                        <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Spending'} />
+                        <DailySpending width={50} />
+                    </div>
+                    <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
                 </div>
-                <div className="flex flex-grow">
-                    <DailySpending width={50} />
+                <div className="flex w-1/3  flex-col">
+                    <Heading level={6} className="text-2xl mb-1">
+                        <CustomTextBox className="flex flex-row items-center ">
+                            Spending Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />
+                        </CustomTextBox>
+                    </Heading>
+                    <div className="flex flex-col  scroll-auto">
+                        {<RecommendationsAccordion id={id || ''} recommendations={transactionRecommendations ?? []} />}
+                    </div>
                 </div>
             </div>
-
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableHeaderCell>Name</TableHeaderCell>
-                        <TableHeaderCell>Amount</TableHeaderCell>
-                        <TableHeaderCell>Date</TableHeaderCell>
-                        <TableHeaderCell>Account</TableHeaderCell>
-                        <TableHeaderCell>Payment Channel</TableHeaderCell>
-                        <TableHeaderCell>Transaction Type</TableHeaderCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {loading ? (
-                        <TableRow>
-                            <TableCell colSpan={6}>
-                                <Loader />
-                            </TableCell>
-                        </TableRow>
-                    ) : transactions?.length ? (
-                        transactions.map((transaction) => {
-                            return (
-                                <Transaction
-                                    key={transaction.transaction_id}
-                                    transaction={transaction}
-                                    account={(accounts as any)[transaction?.account_id ?? '']}
-                                />
-                            )
-                        })
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={6}>Waiting for transaction data...</TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-            {transactions?.length ? (
-                <Button isDisabled={!cursor} onClick={handleLoadMore} size="small" variation="primary">
-                    <CustomTextBox>Load More</CustomTextBox>
-                </Button>
-            ) : (
-                <div />
-            )}
         </div>
     )
 }

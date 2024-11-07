@@ -24,6 +24,14 @@ export function calculateTotalSpendingInCategories(
     }, {})
 }
 
+export function calculateTotalSpendingInCategoriesAsTotal(summary: SpendingSummary) {
+    let totals = 0
+    Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
+        if (!(category in nonSpendingKeys)) totals = (totals || 0) + value
+    })
+    return totals
+}
+
 export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
