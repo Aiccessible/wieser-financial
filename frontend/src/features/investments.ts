@@ -217,8 +217,20 @@ export const getInvestmentStockPrices = createAsyncThunk<
 
     const batchedObjects = await Promise.all(
         chunkArray(input.securities.slice(0, 20), 5).map(async (securityBatch) => {
+            const uniqueSecurityBatch = new Map<string, { security: Security | undefined; holding: Holding }>()
+
+            securityBatch.forEach((joinedData) => {
+                const { security } = joinedData
+                const idForSecurity = security ? getIdFromSecurity(security) : ''
+
+                if (!uniqueSecurityBatch.has(idForSecurity)) {
+                    uniqueSecurityBatch.set(idForSecurity, joinedData)
+                }
+            })
+            const deduplicatedBatch = Array.from(uniqueSecurityBatch.values())
+
             return await Promise.all(
-                securityBatch.map(async (joinedData) => {
+                deduplicatedBatch.map(async (joinedData) => {
                     const { security, holding } = joinedData
                     let priceData: number[] = []
                     const idForSecurity = security ? getIdFromSecurity(security) : ''

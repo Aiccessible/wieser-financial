@@ -71,32 +71,44 @@ export default function Transactions({}) {
             <Title>Transactions</Title>
             <div className="flex justify-between">
                 <>
-                    <SpendingDiff
-                        dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
-                        monthlySummaries={monthlySpending ?? []}
-                        balancesVisible={areBalancesVisible}
-                    />
-                    <DatePickerCustom />
+                    <div className="flex w-2/3  flex-col relative">
+                        <div className="flex w-2/3  flex-row ">
+                            <SpendingDiff
+                                dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
+                                monthlySummaries={monthlySpending ?? []}
+                                balancesVisible={areBalancesVisible}
+                            />
+                            <div className="absolute right-5">
+                                <DatePickerCustom />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-row justify-between">
+                            <div className="flex flex-col w-2/3 flex-grow">
+                                <div className="flex flex-row  flex-grow max-h-[50vh]   p-3">
+                                    <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Spending'} />
+                                    <DailySpending width={50} />
+                                </div>
+                                <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex w-1/3  flex-col">
+                        <Heading level={6} className="text-2xl mb-1">
+                            <CustomTextBox className="flex flex-row items-center ">
+                                Spending Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />
+                            </CustomTextBox>
+                        </Heading>
+                        <div className="flex flex-col  scroll-auto">
+                            {
+                                <RecommendationsAccordion
+                                    id={id || ''}
+                                    recommendations={transactionRecommendations ?? []}
+                                />
+                            }
+                        </div>
+                    </div>
                 </>
-            </div>
-            <div className="flex flex-row justify-between">
-                <div className="flex flex-col w-2/3 flex-grow">
-                    <div className="flex flex-row  flex-grow max-h-[50vh]   p-3">
-                        <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Spending'} />
-                        <DailySpending width={50} />
-                    </div>
-                    <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
-                </div>
-                <div className="flex w-1/3  flex-col">
-                    <Heading level={6} className="text-2xl mb-1">
-                        <CustomTextBox className="flex flex-row items-center ">
-                            Spending Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />
-                        </CustomTextBox>
-                    </Heading>
-                    <div className="flex flex-col  scroll-auto">
-                        {<RecommendationsAccordion id={id || ''} recommendations={transactionRecommendations ?? []} />}
-                    </div>
-                </div>
             </div>
         </div>
     )

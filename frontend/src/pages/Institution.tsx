@@ -117,7 +117,7 @@ export default function Institution() {
                 <Divider />
             </div>
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col max-w-2/3 flex-grow  p-3">
+                <div className="flex flex-col max-w-2/3 flex-grow  p-3 relative">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}

@@ -6,7 +6,7 @@ import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 
 import './graph.css'
-import { ChatFocus, SpendingSummary } from '../../../src/API'
+import { ChatFocus } from '../../../src/API'
 import { setChatParams } from '../../../src/features/chat'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
@@ -17,7 +17,7 @@ interface Props {
     isIncomeAndTransfers?: boolean
 }
 
-const greenShades = [
+export const greenShades = [
     '#9bc39d',
     '#2e7d32',
     '#388e3c',

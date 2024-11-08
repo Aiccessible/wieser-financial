@@ -48,7 +48,7 @@ Amplify.configure({
         }
       },
       mfa: {
-        status: 'on'
+        status: 'off'
       },
       passwordFormat: {
         requireNumbers: true,

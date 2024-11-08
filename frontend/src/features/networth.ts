@@ -46,6 +46,18 @@ export const selectMostRecentNetWorth = (state: RootState): NetWorth => {
         }, null)
     )
 }
+
+export const selectSortedNetWorths = (state: RootState) => {
+    const netWorths = [...(state.netWorthSlice?.networths ?? [])]
+    netWorths?.sort((a, b) => {
+        const currentSkDate = new Date(a?.sk ?? 0)
+        const maxSkDate = new Date(b?.sk ?? 0)
+        return currentSkDate?.getTime() - maxSkDate?.getTime()
+    })
+
+    return netWorths
+}
+
 export const getNetworths = createAsyncThunk('networth/get-net-worths', async (input: GetNetworthsInput) => {
     let endDate
     let startDate
