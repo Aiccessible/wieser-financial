@@ -1,0 +1,43 @@
+{
+    "expo": {
+        "name": "LAAM",
+        "slug": "LAAM",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "updates": {
+            "fallbackToCacheTimeout": 0
+        },
+        "assetBundlePatterns": ["**/*"],
+        "ios": {
+            "supportsTablet": true,
+            "infoPlist": {
+                "UIBackgroundModes": ["audio"]
+            },
+            "bundleIdentifier": "com.laam2.development"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#FFFFFF"
+            },
+            "package": "android.expo.host",
+            "permissions": ["android.permission.RECORD_AUDIO"]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "1a98a3d3-8b61-4b2c-aac7-1f2774654396"
+            }
+        },
+        "owner": "ostadlwiese",
+        "jsEngine": "hermes"
+    }
+}

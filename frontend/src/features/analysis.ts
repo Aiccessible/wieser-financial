@@ -13,6 +13,8 @@ interface AnalysisState {
     projectedAccountBalances: AccountBalances | undefined
     loadingProjections: boolean
     loadingProjectionsError: string | undefined
+    budgetPlanProjections: Record<string, AccountBalances | { loading: true }>
+    activeBudgetPlan: string | undefined
 }
 
 export interface FinancialInputs {
@@ -42,6 +44,8 @@ const initialState: AnalysisState = {
     projectedAccountBalances: undefined,
     loadingProjections: false,
     loadingProjectionsError: undefined,
+    budgetPlanProjections: {},
+    activeBudgetPlan: '',
 }
 
 export interface GetFullPictureRecommendationInput {
@@ -53,23 +57,42 @@ export interface GetFinancialProjectionInput {
     input: FinancialInputs
 }
 
-export const getFinancialProjection = createAsyncThunk<
-    any, // Return type
-    GetFinancialProjectionInput, // Input type
-    { state: RootState } // ThunkAPI type that includes the state
->('analysis/get-financial-projection', async (input: GetFinancialProjectionInput, getThunkApi) => {
+export interface GetFinancialBudgetProjectionInput {
+    client: { graphql: GraphQLMethod }
+    input: FinancialInputs
+    budgetName: string
+}
+
+export const getProjection = async (input: FinancialInputs) => {
     const { body } = await post({
         apiName: 'plaidapi',
         path: `/v1/analyze/projection`,
         options: {
             body: {
-                ...input.input,
+                ...input,
             },
         },
     }).response
     const data = await body.json()
 
     return { projection: data }
+}
+
+export const getFinancialProjection = createAsyncThunk<
+    any, // Return type
+    GetFinancialProjectionInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('analysis/get-financial-projection', async (input: GetFinancialProjectionInput, getThunkApi) => {
+    return await getProjection(input.input)
+})
+
+export const getFinancialProjectionForBudget = createAsyncThunk<
+    any, // Return type
+    GetFinancialBudgetProjectionInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('analysis/get-financial-projection-for-budget', async (input: GetFinancialBudgetProjectionInput, getThunkApi) => {
+    const projection = await getProjection(input.input)
+    return { ...projection, budgetName: input.budgetName }
 })
 
 export const getFullPictureRecommendationAsync = createAsyncThunk<
@@ -105,7 +128,12 @@ export const analysisSlice = createSlice({
     name: 'analysis',
     // `createSlice` will infer the state type from the `initialState` argument
     initialState,
-    reducers: { removeError: (state) => (state.error = undefined) },
+    reducers: {
+        removeError: (state) => (state.error = undefined),
+        setActiveBudgetPlan: (state, action) => {
+            state.activeBudgetPlan = action.payload
+        },
+    },
     extraReducers(builder) {
         builder.addCase(getFullPictureRecommendationAsync.fulfilled, (state, action) => {
             state.fullPictureRecommendations = action.payload.fullPictureRecommendations || ''
@@ -118,6 +146,21 @@ export const analysisSlice = createSlice({
         builder.addCase(getFullPictureRecommendationAsync.pending, (state, action) => {
             state.error = undefined
             state.loading = true
+        })
+        builder.addCase(getFinancialProjectionForBudget.fulfilled, (state, action) => {
+            state.budgetPlanProjections = {
+                ...state.budgetPlanProjections,
+                [action.payload.budgetName]: action.payload.projection,
+            }
+        })
+        builder.addCase(getFinancialProjectionForBudget.rejected, (state, action) => {
+            state.error = 'Failed to get recommendations because ' + action.error.message
+        })
+        builder.addCase(getFinancialProjectionForBudget.pending, (state, action) => {
+            state.budgetPlanProjections = {
+                ...state.budgetPlanProjections,
+                [action.meta.arg.budgetName]: { loading: true },
+            }
         })
         builder.addCase(getFinancialProjection.fulfilled, (state, action) => {
             state.projectedAccountBalances = action.payload.projection || undefined
@@ -134,7 +177,7 @@ export const analysisSlice = createSlice({
     },
 })
 
-export const { removeError } = analysisSlice.actions
+export const { removeError, setActiveBudgetPlan } = analysisSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

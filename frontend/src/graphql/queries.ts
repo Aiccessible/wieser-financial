@@ -122,18 +122,54 @@ export const getInvestments = /* GraphQL */ `query GetInvestments($id: ID!, $lim
   APITypes.GetInvestmentsQueryVariables,
   APITypes.GetInvestmentsQuery
 >;
+export const getBudgets = /* GraphQL */ `query GetBudgets($id: ID!, $limit: Int, $cursor: String) {
+  getBudgets(id: $id, limit: $limit, cursor: $cursor) {
+    cursor
+    budgets {
+      pk
+      sk
+      highLevelCategory
+      timeframe
+      spendingThreshold
+      createdAt
+      specificPayeeRegex
+      recommendationTitle
+      __typename
+    }
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetBudgetsQueryVariables,
+  APITypes.GetBudgetsQuery
+>;
 export const getFinancialRecommendations = /* GraphQL */ `query GetFinancialRecommendations($chat: ChatQuery) {
   getFinancialRecommendations(chat: $chat) {
     explanation
     action {
-      transfers {
-        fromAccountName
-        toAccountName
-        amount
-        __typename
+      ... on RecommendationAction {
+        transfers {
+          fromAccountName
+          toAccountName
+          amount
+          __typename
+        }
+        description
       }
-      description
-      __typename
+      ... on TransactionRecommendationAction {
+        budget {
+          pk
+          sk
+          highLevelCategory
+          timeframe
+          spendingThreshold
+          createdAt
+          specificPayeeRegex
+          recommendationTitle
+          __typename
+        }
+        description
+      }
     }
     title
     priority

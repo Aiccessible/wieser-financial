@@ -21,6 +21,7 @@ import { useDefaultValuesForProjection } from '../components/hooks/useDefaultVal
 import { callFunctionsForEachId } from '../components/Investments'
 import { getIdsAsync } from '../features/items'
 import { getNetworths } from '../features/networth'
+import { getBudgetsAsync } from '../features/budgets'
 const logger = new ConsoleLogger('DataLoading')
 interface DataLoadingInput {
     id: string
@@ -32,6 +33,7 @@ interface DataLoadingInput {
     loadProjection?: boolean
     loadNetworths?: boolean
     loadTopStockAnalysis?: boolean
+    loadBudgets?: boolean
 }
 export const useDataLoading = (input: DataLoadingInput) => {
     const {
@@ -43,11 +45,13 @@ export const useDataLoading = (input: DataLoadingInput) => {
         loadRecommendations,
         loadProjection,
         loadTopStockAnalysis,
+        loadBudgets,
     } = input
     const dispatch = useAppDispatch()
 
     // Selectors for state data
     const accounts = useAppSelector((state) => state.accounts.accounts)
+    const isAccountsLoading = useAppSelector((state) => state.accounts.loading)
     const investments = useAppSelector((state) => state.investments.investments)
     const transactions = useAppSelector((state) => state.transactions.transactions)
     const investmentCursor = useAppSelector((state) => state.investments.cursor)
@@ -71,6 +75,9 @@ export const useDataLoading = (input: DataLoadingInput) => {
     const institutions = useAppSelector((state) => state.idsSlice.institutions)
     const investmentMap = useAppSelector(selectInvestmentsMap)
     const topMovingStocks = useAppSelector(selectTopMovingStocks)
+    const budgets = useAppSelector((state) => state.budgetSlice.budgets)
+    const isBudgetsLoading = useAppSelector((state) => state.budgetSlice.loading)
+    const hasBudgetsLoaded = useAppSelector((state) => state.budgetSlice.hasLoaded)
     // Load investments
     const getInvestments = useCallback(async () => {
         try {
@@ -80,6 +87,12 @@ export const useDataLoading = (input: DataLoadingInput) => {
         }
     }, [id, investmentCursor])
 
+    //load budgets
+    useEffect(() => {
+        if (!budgets?.length && !isBudgetsLoading && !hasBudgetsLoaded && loadBudgets) {
+            dispatch(getBudgetsAsync({ client }))
+        }
+    }, [budgets, isBudgetsLoading, hasBudgetsLoaded, loadBudgets])
     // Load transactions
     const getTransactions = useCallback(async () => {
         try {
@@ -103,17 +116,16 @@ export const useDataLoading = (input: DataLoadingInput) => {
 
     // Load accounts on mount if not already loaded
     useEffect(() => {
-        if (institutions?.length && loadAccounts && !accounts?.length) {
+        if (institutions?.length && loadAccounts && !accounts?.length && !isAccountsLoading) {
+            console.info('loading accounts')
             try {
-                callFunctionsForEachId(
-                    (id: string) => dispatch(getAccountsAsync({ client, id: id || '' })),
-                    institutions?.map((el) => el.item_id)
-                )
+                const ids = institutions?.map((el) => el.item_id)
+                dispatch(getAccountsAsync({ client, ids: ids || [] }))
             } catch (err) {
                 logger.error('unable to get accounts', err)
             }
         }
-    }, [loadAccounts, institutions?.length, accounts?.length])
+    }, [loadAccounts, institutions?.length, accounts?.length, isAccountsLoading])
 
     // Load investments based on loading state
     useEffect(() => {

@@ -13,7 +13,7 @@ import {
 } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { RootState } from '../store'
-import { calculateTotalSpendingInCategories } from '../components/common/spendingUtils'
+import { calculateTotalSpending, calculateTotalSpendingInCategories } from '../components/common/spendingUtils'
 import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 // Define a type for the slice state
 interface TransactionsState {
@@ -112,7 +112,7 @@ export const getTransactionsRecommendationsAsync = createAsyncThunk(
                     currentDateRange: [oneWeekAgo.getTime().toString(), new Date().getTime().toString()],
                     doNotUseAdvancedRag: true,
                     cacheIdentifiers: [
-                        { key: input.ids.join(',') + 'TRANSACTIONSUMMARIES', cacheType: CacheType.PortfolioAnalysis },
+                        { key: input.ids.join(',') + 'TRANSACTIONSUMMARIES2', cacheType: CacheType.PortfolioAnalysis },
                     ],
                 },
             },
@@ -278,6 +278,10 @@ export const selectRegisteredSavingsThisYear = createSelector([selectMonthlySumm
         monthlySummaries?.filter((el) => new Date((el as any).date).getFullYear() === new Date().getFullYear()) ?? [],
         [HighLevelTransactionCategory.TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS]
     )
+)
+
+export const selectAverageSpendingPerCategory = createSelector([selectMonthlySummaries], (monthlySummaries) =>
+    calculateTotalSpending(monthlySummaries)
 )
 
 export interface EstimatedRegisteredSavings {

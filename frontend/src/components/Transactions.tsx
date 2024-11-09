@@ -1,49 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { generateClient } from 'aws-amplify/api'
 import { ConsoleLogger } from 'aws-amplify/utils'
-import {
-    Table,
-    TableHead,
-    TableHeaderCell,
-    TableBody,
-    TableRow,
-    TableCell,
-    Title,
-    DateRangePicker,
-} from '@tremor/react'
-import Transaction from './Transaction'
-import Loader from '../components/common/Loader'
-import { Button, Heading } from '@aws-amplify/ui-react'
+import { Title } from '@tremor/react'
+import { Heading } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
 import { useParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getTransactionsAsync, getTransactionsRecommendationsAsync } from '../features/transactions'
 import { useDataLoading } from '../hooks/useDataLoading'
-import { MonthlySpending } from './common/MonthlySpending'
 import { DailySpending } from './common/DailySpending'
 import { SpendingDiff } from './common/SpendingDiff'
 import { DatePickerCustom } from './common/DatePicker'
-import { SpendingBarChart } from './common/SpendingBarChart'
 import { SpendingTimeline } from './common/SpendingTimeline'
 import { RefreshCwIcon } from 'lucide-react'
 import RecommendationsAccordion from './common/RecommendationAcordion'
 import ScoreReview from './common/SpendingScore'
+import { BudgetPlanOverlay } from './common/BudgetPlanOverlay'
 const logger = new ConsoleLogger('Transactions')
 
 export default function Transactions({}) {
     const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
-    const cursor = useAppSelector((state) => state.transactions.cursor)
     const loading = useAppSelector((state) => state.transactions.loading)
-    const { transactions, accounts } = useDataLoading({
+    const {} = useDataLoading({
         id: id || '',
         client,
         loadTransactions: true,
         loadAccounts: true,
+        loadProjection: true,
+        loadBudgets: true,
     })
     const institutions = useAppSelector((state) => state.idsSlice.institutions)
-
     const dailySpendsLastXDays = useAppSelector((state) => state.transactions.dailySummaries)
     const monthlySpending = useAppSelector((state) => state.transactions.monthlySummaries)
     const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
@@ -68,6 +56,7 @@ export default function Transactions({}) {
 
     return (
         <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+            <BudgetPlanOverlay />
             <Title>Transactions</Title>
             <div className="flex justify-between">
                 <>

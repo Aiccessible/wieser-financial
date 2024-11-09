@@ -23,3 +23,20 @@ export const createChat = /* GraphQL */ `mutation CreateChat($chat: ChatInput!) 
   APITypes.CreateChatMutationVariables,
   APITypes.CreateChatMutation
 >;
+export const createBudget = /* GraphQL */ `mutation CreateBudget($budget: BudgetPlanInput!) {
+  createBudget(budget: $budget) {
+    pk
+    sk
+    highLevelCategory
+    timeframe
+    spendingThreshold
+    createdAt
+    specificPayeeRegex
+    recommendationTitle
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateBudgetMutationVariables,
+  APITypes.CreateBudgetMutation
+>;

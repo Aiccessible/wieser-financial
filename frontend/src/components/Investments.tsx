@@ -17,8 +17,7 @@ import {
     getInvestmentNewsSummary,
     setActiveStock,
 } from '../features/investments'
-import { getAccountsAsync } from '../features/accounts'
-import Markdown from 'react-markdown'
+import Markdown from '../components/native/Markdown'
 import ExpandableTextWithModal from './ExpandableTextWithModal'
 import StockOverlayComponent from './common/StockOverlayComponent'
 import { getIdFromSecurity } from '../libs/utlis'

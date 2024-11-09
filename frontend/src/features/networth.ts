@@ -1,6 +1,6 @@
 import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getAccounts, getNetWorths as getNetWorthsQuery } from '../graphql/queries'
-import { Account, NetWorth, SpendingSummaryType } from '../API'
+import { Account, BudgetPlan, NetWorth, SpendingSummaryType } from '../API'
 import { RootState } from '../store'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { identifyAccountType } from '../components/Analysis/PersonalFinance'
@@ -9,6 +9,7 @@ interface AccountsState {
     networths: NetWorth[] | undefined
     loading: boolean
     error: string | undefined
+    budgetAnalysis: BudgetPlan | undefined
 }
 
 // Define the initial state using that type
@@ -16,6 +17,7 @@ const initialState: AccountsState = {
     error: undefined,
     loading: false,
     networths: undefined,
+    budgetAnalysis: undefined,
 }
 
 export interface GetNetworthsInput {

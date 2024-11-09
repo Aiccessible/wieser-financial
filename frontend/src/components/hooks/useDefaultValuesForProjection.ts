@@ -1,9 +1,9 @@
-import { useAppDispatch, useAppSelector } from '../../../src/hooks'
-import { useCallback, useMemo } from 'react'
+import { useAppSelector } from '../../../src/hooks'
+import { useMemo } from 'react'
 import { calculateAverageSpendingFromMonthlySummarys, daysInMonth } from '../common/spendingUtils'
 import { calculateAverageTaxRate, identifyAccountType } from '../Analysis/PersonalFinance'
 import { reduceAccounts } from '../../../src/features/accounts'
-import { Account, HighLevelTransactionCategory, SpendingSummary } from '../../../src/API'
+import { HighLevelTransactionCategory } from '../../../src/API'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
 
 const useDefaultValuesForProjection = ({}: any) => {
@@ -27,16 +27,19 @@ const useDefaultValuesForProjection = ({}: any) => {
             }
         }
         const numberOfMonthsCompleted =
-            (monthlySpendings?.length ?? 1) + new Date().getDate() / daysInMonth[new Date().getMonth()]
-        const totalSpending = Object.values(averageSpending)
+            (monthlySpendings?.length ?? 1) - 1 + new Date().getDate() / daysInMonth[new Date().getMonth()]
+        const multipleier = 12 / numberOfMonthsCompleted
+        let annualizedSpendingPerCategory: Record<string, number> = {}
+        const totalSpending = Object.entries(averageSpending)
             .map((val) => {
-                return val * (12 / numberOfMonthsCompleted)
+                annualizedSpendingPerCategory[val[0]] = val[1] * multipleier
+                return val[1] * multipleier
             })
             .reduce((currVal, val) => currVal + val, 0)
         const transfersOut = Object.keys(averageSpending)
             .filter((key) => key.startsWith('TRANSFER_OUT'))
             .map((key) => {
-                return averageSpending[key] * (12 / numberOfMonthsCompleted)
+                return averageSpending[key] * multipleier
             })
             .reduce((currVal, val) => currVal + val, 0)
         const income = () => {
@@ -47,7 +50,7 @@ const useDefaultValuesForProjection = ({}: any) => {
             const totalIncome = [...incomeKeys, ...transferInKeys].reduce((acc, key) => {
                 return acc + (averageSpending[key] ?? 0)
             }, 0)
-            return totalIncome * (12 / numberOfMonthsCompleted)
+            return totalIncome * multipleier
         }
         return {
             initial_salary: income(),
@@ -66,6 +69,11 @@ const useDefaultValuesForProjection = ({}: any) => {
             initial_rrsp_room: estimatedSavings?.estimatedRsp ?? 0,
             initial_fhsa_room: estimatedSavings?.estimatedFhsa ?? 0,
             initial_tfsa_room: estimatedSavings?.estimatedTfsa ?? 0,
+            totalSpendingAnnualized: totalSpending,
+            incomeAnnualize: income(),
+            transfersOutAnnualized: transfersOut,
+            annualizedSpendingPerCategory,
+            multipleier,
         }
     }, [accounts, monthlySpendings])
 }

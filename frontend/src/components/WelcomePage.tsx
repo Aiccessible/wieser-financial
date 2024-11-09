@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import WordByWordRender from './WordByWord'
+import { useEffect, useState } from 'react'
 import { CustomTextBox } from './common/CustomTextBox'
-import Markdown from 'react-markdown'
-import Plaid from '../components/Plaid'
+import Markdown from '../components/native/Markdown'
 const WelcomePage = ({ setIsDone }: { setIsDone: (arg: boolean) => void }) => {
     const [wordIndex, setWordIndex] = useState(0)
     const typingSpeed = 150

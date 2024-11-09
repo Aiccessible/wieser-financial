@@ -22,7 +22,7 @@ const initialState: AccountsState = {
 
 export interface GetAccountsInput {
     client: { graphql: GraphQLMethod }
-    id: string
+    ids: string[]
 }
 
 export interface GetAccountRecommendation {
@@ -30,15 +30,22 @@ export interface GetAccountRecommendation {
 }
 
 export const getAccountsAsync = createAsyncThunk('account/get-accounts', async (input: GetAccountsInput) => {
-    const res = await input.client.graphql({
-        query: getAccounts,
-        variables: { id: input.id },
-    })
-    const errors = res.errors
-    if (errors && errors.length > 0) {
-        return { errors, accounts: res.data.getAccounts }
-    }
-    return { accounts: res.data.getAccounts }
+    const res = await Promise.all(
+        input.ids.map(async (id) => {
+            const res = await input.client.graphql({
+                query: getAccounts,
+                variables: { id: id },
+            })
+            const errors = res.errors
+            if (errors && errors.length > 0) {
+                return { errors, accounts: res.data.getAccounts }
+            }
+            return { accounts: res.data.getAccounts }
+        })
+    )
+    const accounts = res.flatMap((el) => el.accounts)
+    const errors = res.flatMap((el) => el.errors)
+    return { accounts, errors }
 })
 
 const getStorageKey = (id: string) => {
@@ -63,7 +70,7 @@ export const accountSlice = createSlice({
         builder.addCase(getAccountsAsync.fulfilled, (state, action) => {
             console.log(action.payload)
             state.error = action.payload.errors ? action.payload.errors?.toString() : undefined
-            state.accounts = [...(state.accounts ?? ([] as any)), ...(action.payload.accounts ?? [])].sort(
+            state.accounts = [...(action.payload.accounts ?? [])].sort(
                 (a1: Account, a2: Account) =>
                     parseFloat(a2?.balances?.current ?? '0') - parseFloat(a1?.balances?.current ?? '0')
             )

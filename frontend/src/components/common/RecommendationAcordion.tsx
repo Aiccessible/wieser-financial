@@ -1,18 +1,31 @@
 import * as Accordion from '@radix-ui/react-accordion'
-import { Alert, Button, ButtonGroup, Divider, Flex, Heading } from '@aws-amplify/ui-react'
+import { Button, ButtonGroup, Heading } from '@aws-amplify/ui-react'
 import Loader from '../../components/common/Loader'
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
 import { CustomTextBox } from './CustomTextBox'
-import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setAuthError, getTransferTokenAsync } from '../../features/auth'
-import { Recommendation, RecommendationAction, TransactionRecommendationAction } from '@/src/API'
+import {
+    BudgetPlan,
+    BudgetTimeframe,
+    Recommendation,
+    RecommendationAction,
+    TransactionRecommendationAction,
+} from '../../../src/API'
+import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
+import { getFinancialProjectionForBudget, setActiveBudgetPlan } from '../../../src/features/analysis'
+import { generateClient } from 'aws-amplify/api'
+import { selectAverageSpendingPerCategory } from '../../../src/features/transactions'
+import { addBudget } from '../../../src/features/budgets'
+
 const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Recommendation[]; id: string }) => {
     const loadingTransfer = useAppSelector((state) => state.auth.loadingTransfer)
     const dispatch = useAppDispatch()
     const accounts = useAppSelector((state) => state.accounts.accounts)
-    console.info(recommendations)
+    const defaultProjections = useDefaultValuesForProjection({})
+    const budgetPlanProjections = useAppSelector((state) => state.analysis.budgetPlanProjections)
+    const budgets = useAppSelector((state) => state.budgetSlice.budgets)
     const onClickTransfer = (transfer: Transfer, description: string) => {
         const fromAccount = accounts!.find((it) => it.name === transfer.fromAccountName)
         const toAccount = accounts!.find((it) => it.name === transfer.toAccountName)
@@ -43,7 +56,37 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
             })
         )
     }
-    console.info(recommendations)
+    const averageSpending: Record<string, number> = useAppSelector(selectAverageSpendingPerCategory)
+    const client = generateClient()
+    const isCreatingBudget = useAppSelector((state) => state.budgetSlice.creatingBudget)
+    const onAnalyze = (budget: BudgetPlan) => {
+        const copyProjections = { ...defaultProjections }
+        // current spending in highlevel category - spending threshold
+        if (!budget.highLevelCategory || !budget.spendingThreshold) {
+            return
+        }
+        const annualizedSpendingThresholdMultiplier =
+            (budget.timeframe === BudgetTimeframe.DAILY
+                ? 30
+                : budget.timeframe === BudgetTimeframe.MONTHLY
+                ? 1
+                : budget.timeframe === BudgetTimeframe.WEEKLY
+                ? 4
+                : 0) * defaultProjections.multipleier
+        const initSpending = defaultProjections.annualizedSpendingPerCategory[budget.highLevelCategory ?? '']
+        copyProjections.initial_expenses =
+            copyProjections.initial_expenses -
+            (initSpending - budget.spendingThreshold * annualizedSpendingThresholdMultiplier)
+        dispatch(setActiveBudgetPlan(budget.recommendationTitle))
+        dispatch(
+            getFinancialProjectionForBudget({
+                client: client,
+                input: copyProjections,
+                budgetName: budget.recommendationTitle ?? '',
+            })
+        )
+    }
+    console.info(budgets)
     return (
         <Accordion.Root className="space-y-4 max-h-[85vh] overflow-auto no-scrollbar hide-scrollbar" type="multiple">
             {recommendations &&
@@ -112,24 +155,68 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                     (budget, index) => (
                                         <div
                                             key={index}
-                                            className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
+                                            className="flex justify-between items-center bg-gray-200 p-3 rounded-lg mb-4 shadow-md"
                                         >
-                                            <div>
-                                                <CustomTextBox className="text-sm font-semibold">
+                                            <div className="flex flex-col">
+                                                <CustomTextBox className="text-base font-semibold text-gray-800">
                                                     Reduce {budget?.highLevelCategory} Spending
                                                 </CustomTextBox>
+                                                <p className="text-xl font-bold text-green-600">
+                                                    ${budget?.spendingThreshold}
+                                                </p>
                                             </div>
-                                            <p className="text-lg font-semibold text-highlight">
-                                                ${budget?.spendingThreshold}
-                                            </p>
                                             {loadingTransfer ? (
                                                 <Loader />
                                             ) : (
-                                                <ButtonGroup className="flex flex-col">
-                                                    <Button className="bg-primary text-black text-center font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0">
-                                                        Start Budget
-                                                    </Button>
-                                                    <Button className="bg-primary text-black text-center font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0">
+                                                <ButtonGroup className="flex flex-col space-y-2">
+                                                    {!budgets?.find(
+                                                        (budgetInRedux) =>
+                                                            budgetInRedux.recommendationTitle === recommendation?.title
+                                                    ) ? (
+                                                        <Button
+                                                            onClick={() => {
+                                                                const budgetCopy = { ...budget }
+                                                                budgetCopy!.recommendationTitle =
+                                                                    recommendation?.title ?? ''
+                                                                dispatch(
+                                                                    addBudget({
+                                                                        client,
+                                                                        budget: budgetCopy as BudgetPlan,
+                                                                    })
+                                                                )
+                                                            }}
+                                                            isLoading={isCreatingBudget}
+                                                            className="bg-primary text-black text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
+                                                        >
+                                                            Start Budget
+                                                        </Button>
+                                                    ) : (
+                                                        budgets?.find(
+                                                            (budgetInRedux) =>
+                                                                budgetInRedux.recommendationTitle ===
+                                                                recommendation?.title
+                                                        ) && (
+                                                            <Button className="bg-primary text-black text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300">
+                                                                Track Progress
+                                                            </Button>
+                                                        )
+                                                    )}
+                                                    <Button
+                                                        onClick={() => {
+                                                            const budgetCopy = { ...budget }
+                                                            budgetCopy!.recommendationTitle =
+                                                                recommendation?.title ?? ''
+                                                            budgetCopy && onAnalyze(budgetCopy as any)
+                                                        }}
+                                                        className="bg-secondary text-white text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
+                                                        isLoading={
+                                                            (
+                                                                budgetPlanProjections?.[
+                                                                    recommendation?.title ?? ''
+                                                                ] as any
+                                                            )?.loading
+                                                        }
+                                                    >
                                                         Analyze Impact
                                                     </Button>
                                                 </ButtonGroup>

@@ -20,11 +20,26 @@ export interface AccountBalances {
     NetWorth: number[]
 }
 
-export const NetWorthChart = ({ accountBalances, title }: { accountBalances: AccountBalances; title: string }) => {
-    const historicalNetWorth = useAppSelector(selectSortedNetWorths)
-    const [selectedTimeframe, setSelectedTimeframe] = useState<'1 Year' | '2 Weeks' | 'Now' | 'Future'>('2 Weeks')
+export type TimeFrame = '1 Year' | '2 Weeks' | 'Now' | 'Future'
 
-    const prepareSeriesForTimeframe = (timeframe: string) => {
+export const NetWorthChart = ({
+    accountBalances,
+    title,
+    overrideTimeFrame,
+    comparativeBalances,
+    comparativeKey,
+}: {
+    accountBalances: AccountBalances
+    title: string
+    overrideTimeFrame?: TimeFrame
+    comparativeBalances?: AccountBalances
+    comparativeKey?: string
+}) => {
+    console.log(accountBalances, comparativeBalances)
+    const historicalNetWorth = useAppSelector(selectSortedNetWorths)
+    const [selectedTimeframe, setSelectedTimeframe] = useState<TimeFrame>(overrideTimeFrame ?? '2 Weeks')
+
+    const prepareSeriesForTimeframe = (timeframe: string, accountBalances: AccountBalances) => {
         const fhsas = historicalNetWorth.map((el) => parseFloat(el.fhsaNetWorth ?? ''))
         const rrsp = historicalNetWorth.map((el) => parseFloat(el.rrspNetWorth ?? ''))
         const tfsa = historicalNetWorth.map((el) => parseFloat(el.tfsaNetWorth ?? ''))
@@ -53,7 +68,12 @@ export const NetWorthChart = ({ accountBalances, title }: { accountBalances: Acc
                     { name: 'Net Worth (Now)', data: [netWorth.at(-1)], fillOpacity: 0.3, color: greenShades[3] },
                 ]
             case 'Future':
-                return Object.entries(accountBalances).map(([name, data], index) => ({
+                const entries = Object.entries(accountBalances)
+                const compareData =
+                    comparativeBalances && comparativeKey
+                        ? entries.filter((entry) => entry[0] === comparativeKey)
+                        : entries
+                return compareData.map(([name, data], index) => ({
                     name: `${name} (Future)`,
                     data,
                     type: 'area',
@@ -78,20 +98,22 @@ export const NetWorthChart = ({ accountBalances, title }: { accountBalances: Acc
                 return []
         }
     }
-    const currentSeries = prepareSeriesForTimeframe(selectedTimeframe)
-
+    const currentSeries = prepareSeriesForTimeframe(selectedTimeframe, accountBalances)
+    const comparativeSeries = comparativeBalances && prepareSeriesForTimeframe(selectedTimeframe, comparativeBalances)
     return (
         <div>
             <div className="absolute right-5 z-999">
-                {['1 Year', '2 Weeks', 'Now', 'Future'].map((timeframe, index) => (
-                    <button
-                        className={(selectedTimeframe === timeframe ? 'text-primary' : '') + ' mr-1'}
-                        key={timeframe}
-                        onClick={() => setSelectedTimeframe(timeframe as typeof selectedTimeframe)}
-                    >
-                        {timeframe + (index === 3 ? '' : ',  ')}
-                    </button>
-                ))}
+                {(overrideTimeFrame ? [overrideTimeFrame] : ['1 Year', '2 Weeks', 'Now', 'Future']).map(
+                    (timeframe, index) => (
+                        <button
+                            className={(selectedTimeframe === timeframe ? 'text-primary' : '') + ' mr-1'}
+                            key={timeframe}
+                            onClick={() => setSelectedTimeframe(timeframe as typeof selectedTimeframe)}
+                        >
+                            {timeframe + (index === 3 ? '' : ',  ')}
+                        </button>
+                    )
+                )}
             </div>
             <HighchartsReact
                 highcharts={Highcharts}
@@ -151,7 +173,18 @@ export const NetWorthChart = ({ accountBalances, title }: { accountBalances: Acc
                             },
                         },
                     },
-                    series: currentSeries,
+                    series: [
+                        ...currentSeries.map((series) => ({
+                            ...series,
+                            name: `${series.name} (Current)`,
+                        })),
+                        ...(comparativeSeries
+                            ? comparativeSeries.map((series) => ({
+                                  ...series,
+                                  name: `${series.name} (Budget Worth)`,
+                              }))
+                            : []),
+                    ],
                 }}
             />
         </div>
