@@ -21,6 +21,85 @@ export type Chat = {
   messageId?: string | null,
 };
 
+export type BudgetPlanInput = {
+  pk?: string | null,
+  sk?: string | null,
+  highLevelCategory?: HighLevelTransactionCategory | null,
+  timeframe?: BudgetTimeframe | null,
+  spendingThreshold?: number | null,
+  createdAt?: string | null,
+  specificPayeeRegex?: string | null,
+};
+
+export enum HighLevelTransactionCategory {
+  LOAN_PAYMENTS = "LOAN_PAYMENTS",
+  BANK_FEES = "BANK_FEES",
+  ENTERTAINMENT = "ENTERTAINMENT",
+  FOOD_AND_DRINK = "FOOD_AND_DRINK",
+  GENERAL_MERCHANDISE = "GENERAL_MERCHANDISE",
+  HOME_IMPROVEMENT = "HOME_IMPROVEMENT",
+  MEDICAL = "MEDICAL",
+  PERSONAL_CARE = "PERSONAL_CARE",
+  GENERAL_SERVICES = "GENERAL_SERVICES",
+  GOVERNMENT_AND_NON_PROFIT = "GOVERNMENT_AND_NON_PROFIT",
+  TRANSPORTATION = "TRANSPORTATION",
+  TRAVEL = "TRAVEL",
+  INCOME = "INCOME",
+  TRANSFER_IN = "TRANSFER_IN",
+  INCOME_WAGES = "INCOME_WAGES",
+  TRANSFER_OUT = "TRANSFER_OUT",
+  RENT_AND_UTILITIES = "RENT_AND_UTILITIES",
+  INCOME_OTHER_INCOME = "INCOME_OTHER_INCOME",
+  INCOME_UNEMPLOYMENT = "INCOME_UNEMPLOYMENT",
+  INCOME_TAX_REFUND = "INCOME_TAX_REFUND",
+  INCOME_RETIREMENT_PENSION = "INCOME_RETIREMENT_PENSION",
+  INCOME_INTEREST_EARNED = "INCOME_INTEREST_EARNED",
+  INCOME_DIVIDENDS = "INCOME_DIVIDENDS",
+  TRANSFER_IN_CASH_ADVANCES_AND_LOANS = "TRANSFER_IN_CASH_ADVANCES_AND_LOANS",
+  TRANSFER_IN_DEPOSIT = "TRANSFER_IN_DEPOSIT",
+  TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS",
+  TRANSFER_IN_SAVINGS = "TRANSFER_IN_SAVINGS",
+  TRANSFER_IN_ACCOUNT_TRANSFER = "TRANSFER_IN_ACCOUNT_TRANSFER",
+  TRANSFER_IN_OTHER_TRANSFER_IN = "TRANSFER_IN_OTHER_TRANSFER_IN",
+  TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS",
+  TRANSFER_OUT_SAVINGS = "TRANSFER_OUT_SAVINGS",
+  TRANSFER_OUT_WITHDRAWAL = "TRANSFER_OUT_WITHDRAWAL",
+  TRANSFER_OUT_ACCOUNT_TRANSFER = "TRANSFER_OUT_ACCOUNT_TRANSFER",
+  TRANSFER_OUT_OTHER_TRANSFER_OUT = "TRANSFER_OUT_OTHER_TRANSFER_OUT",
+  LOAN_PAYMENTS_CAR_PAYMENT = "LOAN_PAYMENTS_CAR_PAYMENT",
+  LOAN_PAYMENTS_CREDIT_CARD_PAYMENT = "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+  LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT = "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
+  LOAN_PAYMENTS_MORTGAGE_PAYMENT = "LOAN_PAYMENTS_MORTGAGE_PAYMENT",
+  LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT = "LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT",
+  LOAN_PAYMENTS_OTHER_PAYMENT = "LOAN_PAYMENTS_OTHER_PAYMENT",
+  RENT_AND_UTILITIES_GAS_AND_ELECTRICITY = "RENT_AND_UTILITIES_GAS_AND_ELECTRICITY",
+  RENT_AND_UTILITIES_INTERNET_AND_CABLE = "RENT_AND_UTILITIES_INTERNET_AND_CABLE",
+  RENT_AND_UTILITIES_RENT = "RENT_AND_UTILITIES_RENT",
+  RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT = "RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT",
+  RENT_AND_UTILITIES_TELEPHONE = "RENT_AND_UTILITIES_TELEPHONE",
+  RENT_AND_UTILITIES_WATER = "RENT_AND_UTILITIES_WATER",
+  RENT_AND_UTILITIES_OTHER_UTILITIES = "RENT_AND_UTILITIES_OTHER_UTILITIES",
+}
+
+
+export enum BudgetTimeframe {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  MONTHLY = "MONTHLY",
+}
+
+
+export type BudgetPlan = {
+  __typename: "BudgetPlan",
+  pk?: string | null,
+  sk?: string | null,
+  highLevelCategory?: HighLevelTransactionCategory | null,
+  timeframe?: BudgetTimeframe | null,
+  spendingThreshold?: number | null,
+  createdAt?: string | null,
+  specificPayeeRegex?: string | null,
+};
+
 export type PaginatedItems = {
   __typename: "PaginatedItems",
   cursor?: string | null,
@@ -81,57 +160,6 @@ export type PersonalFinanceCategory = {
   primary?: HighLevelTransactionCategory | null,
 };
 
-export enum HighLevelTransactionCategory {
-  LOAN_PAYMENTS = "LOAN_PAYMENTS",
-  BANK_FEES = "BANK_FEES",
-  ENTERTAINMENT = "ENTERTAINMENT",
-  FOOD_AND_DRINK = "FOOD_AND_DRINK",
-  GENERAL_MERCHANDISE = "GENERAL_MERCHANDISE",
-  HOME_IMPROVEMENT = "HOME_IMPROVEMENT",
-  MEDICAL = "MEDICAL",
-  PERSONAL_CARE = "PERSONAL_CARE",
-  GENERAL_SERVICES = "GENERAL_SERVICES",
-  GOVERNMENT_AND_NON_PROFIT = "GOVERNMENT_AND_NON_PROFIT",
-  TRANSPORTATION = "TRANSPORTATION",
-  TRAVEL = "TRAVEL",
-  INCOME = "INCOME",
-  TRANSFER_IN = "TRANSFER_IN",
-  INCOME_WAGES = "INCOME_WAGES",
-  TRANSFER_OUT = "TRANSFER_OUT",
-  RENT_AND_UTILITIES = "RENT_AND_UTILITIES",
-  INCOME_OTHER_INCOME = "INCOME_OTHER_INCOME",
-  INCOME_UNEMPLOYMENT = "INCOME_UNEMPLOYMENT",
-  INCOME_TAX_REFUND = "INCOME_TAX_REFUND",
-  INCOME_RETIREMENT_PENSION = "INCOME_RETIREMENT_PENSION",
-  INCOME_INTEREST_EARNED = "INCOME_INTEREST_EARNED",
-  INCOME_DIVIDENDS = "INCOME_DIVIDENDS",
-  TRANSFER_IN_CASH_ADVANCES_AND_LOANS = "TRANSFER_IN_CASH_ADVANCES_AND_LOANS",
-  TRANSFER_IN_DEPOSIT = "TRANSFER_IN_DEPOSIT",
-  TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_IN_INVESTMENT_AND_RETIREMENT_FUNDS",
-  TRANSFER_IN_SAVINGS = "TRANSFER_IN_SAVINGS",
-  TRANSFER_IN_ACCOUNT_TRANSFER = "TRANSFER_IN_ACCOUNT_TRANSFER",
-  TRANSFER_IN_OTHER_TRANSFER_IN = "TRANSFER_IN_OTHER_TRANSFER_IN",
-  TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS = "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS",
-  TRANSFER_OUT_SAVINGS = "TRANSFER_OUT_SAVINGS",
-  TRANSFER_OUT_WITHDRAWAL = "TRANSFER_OUT_WITHDRAWAL",
-  TRANSFER_OUT_ACCOUNT_TRANSFER = "TRANSFER_OUT_ACCOUNT_TRANSFER",
-  TRANSFER_OUT_OTHER_TRANSFER_OUT = "TRANSFER_OUT_OTHER_TRANSFER_OUT",
-  LOAN_PAYMENTS_CAR_PAYMENT = "LOAN_PAYMENTS_CAR_PAYMENT",
-  LOAN_PAYMENTS_CREDIT_CARD_PAYMENT = "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
-  LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT = "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
-  LOAN_PAYMENTS_MORTGAGE_PAYMENT = "LOAN_PAYMENTS_MORTGAGE_PAYMENT",
-  LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT = "LOAN_PAYMENTS_STUDENT_LOAN_PAYMENT",
-  LOAN_PAYMENTS_OTHER_PAYMENT = "LOAN_PAYMENTS_OTHER_PAYMENT",
-  RENT_AND_UTILITIES_GAS_AND_ELECTRICITY = "RENT_AND_UTILITIES_GAS_AND_ELECTRICITY",
-  RENT_AND_UTILITIES_INTERNET_AND_CABLE = "RENT_AND_UTILITIES_INTERNET_AND_CABLE",
-  RENT_AND_UTILITIES_RENT = "RENT_AND_UTILITIES_RENT",
-  RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT = "RENT_AND_UTILITIES_SEWAGE_AND_WASTE_MANAGEMENT",
-  RENT_AND_UTILITIES_TELEPHONE = "RENT_AND_UTILITIES_TELEPHONE",
-  RENT_AND_UTILITIES_WATER = "RENT_AND_UTILITIES_WATER",
-  RENT_AND_UTILITIES_OTHER_UTILITIES = "RENT_AND_UTILITIES_OTHER_UTILITIES",
-}
-
-
 export type PaginatedInvestments = {
   __typename: "PaginatedInvestments",
   cursor?: string | null,
@@ -183,6 +211,12 @@ export type Security = {
   plaid_type?: string | null,
 };
 
+export type PaginatedBudgets = {
+  __typename: "PaginatedBudgets",
+  cursor?: string | null,
+  budgetPlans?:  Array<BudgetPlan | null > | null,
+};
+
 export type ChatQuery = {
   prompt?: string | null,
   chatFocus?: ChatFocus | null,
@@ -230,10 +264,13 @@ export enum CacheType {
 export type Recommendation = {
   __typename: "Recommendation",
   explanation?: string | null,
-  action?: RecommendationAction | null,
+  action?: Action | null,
   title?: string | null,
   priority?: string | null,
 };
+
+export type Action = RecommendationAction | TransactionRecommendationAction
+
 
 export type RecommendationAction = {
   __typename: "RecommendationAction",
@@ -246,6 +283,12 @@ export type Transfer = {
   fromAccountName?: string | null,
   toAccountName?: string | null,
   amount?: string | null,
+};
+
+export type TransactionRecommendationAction = {
+  __typename: "TransactionRecommendationAction",
+  budget?:  Array<BudgetPlan | null > | null,
+  description?: string | null,
 };
 
 export type ChatResponse = {
@@ -298,6 +341,23 @@ export type CreateChatMutation = {
     time?: string | null,
     isLastChunk?: boolean | null,
     messageId?: string | null,
+  } | null,
+};
+
+export type CreateBudgetMutationVariables = {
+  chat: BudgetPlanInput,
+};
+
+export type CreateBudgetMutation = {
+  createBudget?:  {
+    __typename: "BudgetPlan",
+    pk?: string | null,
+    sk?: string | null,
+    highLevelCategory?: HighLevelTransactionCategory | null,
+    timeframe?: BudgetTimeframe | null,
+    spendingThreshold?: number | null,
+    createdAt?: string | null,
+    specificPayeeRegex?: string | null,
   } | null,
 };
 
@@ -427,6 +487,29 @@ export type GetInvestmentsQuery = {
   },
 };
 
+export type GetBudgetsQueryVariables = {
+  id: string,
+  limit?: number | null,
+  cursor?: string | null,
+};
+
+export type GetBudgetsQuery = {
+  getBudgets:  {
+    __typename: "PaginatedBudgets",
+    cursor?: string | null,
+    budgetPlans?:  Array< {
+      __typename: "BudgetPlan",
+      pk?: string | null,
+      sk?: string | null,
+      highLevelCategory?: HighLevelTransactionCategory | null,
+      timeframe?: BudgetTimeframe | null,
+      spendingThreshold?: number | null,
+      createdAt?: string | null,
+      specificPayeeRegex?: string | null,
+    } | null > | null,
+  },
+};
+
 export type GetFinancialRecommendationsQueryVariables = {
   chat?: ChatQuery | null,
 };
@@ -435,16 +518,30 @@ export type GetFinancialRecommendationsQuery = {
   getFinancialRecommendations:  Array< {
     __typename: "Recommendation",
     explanation?: string | null,
-    action?:  {
-      __typename: "RecommendationAction",
-      transfers?:  Array< {
-        __typename: "Transfer",
-        fromAccountName?: string | null,
-        toAccountName?: string | null,
-        amount?: string | null,
-      } | null > | null,
-      description?: string | null,
-    } | null,
+    action: ( {
+        __typename: "RecommendationAction",
+        transfers?:  Array< {
+          __typename: string,
+          fromAccountName?: string | null,
+          toAccountName?: string | null,
+          amount?: string | null,
+        } | null > | null,
+        description?: string | null,
+      } | {
+        __typename: "TransactionRecommendationAction",
+        budget?:  Array< {
+          __typename: string,
+          pk?: string | null,
+          sk?: string | null,
+          highLevelCategory?: HighLevelTransactionCategory | null,
+          timeframe?: BudgetTimeframe | null,
+          spendingThreshold?: number | null,
+          createdAt?: string | null,
+          specificPayeeRegex?: string | null,
+        } | null > | null,
+        description?: string | null,
+      }
+    ) | null,
     title?: string | null,
     priority?: string | null,
   } | null >,

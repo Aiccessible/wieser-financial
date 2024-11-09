@@ -53,6 +53,34 @@ input ChatInput {
     messageId: String
 }
 
+enum BudgetTimeframe {
+    DAILY
+    WEEKLY
+    MONTHLY
+}
+
+type BudgetPlan {
+    pk: String
+    sk: String
+    highLevelCategory: HighLevelTransactionCategory
+    timeframe: BudgetTimeframe
+    spendingThreshold: Float
+    createdAt: String
+    specificPayeeRegex: String
+    recommendationTitle: String
+}
+
+input BudgetPlanInput {
+    pk: String
+    sk: String
+    highLevelCategory: HighLevelTransactionCategory
+    timeframe: BudgetTimeframe
+    spendingThreshold: Float
+    createdAt: String
+    specificPayeeRegex: String
+    recommendationTitle: String
+}
+
 input ChatQuery {
     prompt: String
     chatFocus: ChatFocus
@@ -186,6 +214,11 @@ type PaginatedInvestments {
     transactions: [Investment!]!
 }
 
+type PaginatedBudgets {
+    cursor: String
+    budgets: [BudgetPlan]
+}
+
 type PaginatedItems {
     cursor: String
     items: [Item!]!
@@ -206,15 +239,22 @@ type PremiumChatResponse {
     response: String
 }
 
+union Action = RecommendationAction | TransactionRecommendationAction
+
 type Recommendation {
     explanation: String
-    action: RecommendationAction
+    action: Action
     title: String
     priority: String
 }
 
 type RecommendationAction {
     transfers: [Transfer]
+    description: String
+}
+
+type TransactionRecommendationAction {
+    budget: [BudgetPlan]
     description: String
 }
 
@@ -275,6 +315,7 @@ type Transfer {
 
 type Mutation {
     createChat(chat: ChatInput!): Chat @aws_iam
+    createBudget(budget: BudgetPlanInput!): BudgetPlan
 }
 
 type Query {
@@ -282,6 +323,7 @@ type Query {
     getAccounts(id: ID!): [Account!]!
     getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
+    getBudgets(id: ID!, limit: Int, cursor: String): PaginatedBudgets!
     getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
     getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
     getSpendingSummary(minDate: Long, maxDate: Long, id: String!, type: SpendingSummaryType): SpendingSummary

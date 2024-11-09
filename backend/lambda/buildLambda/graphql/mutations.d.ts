@@ -4,4 +4,5 @@ type GeneratedMutation<InputType, OutputType> = string & {
     __generatedMutationOutput: OutputType;
 };
 export declare const createChat: GeneratedMutation<APITypes.CreateChatMutationVariables, APITypes.CreateChatMutation>;
+export declare const createBudget: GeneratedMutation<APITypes.CreateBudgetMutationVariables, APITypes.CreateBudgetMutation>;
 export {};

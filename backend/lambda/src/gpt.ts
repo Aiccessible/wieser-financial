@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { AssistantToolChoice } from 'openai/resources/beta/threads/threads'
-import { ChatFocus, ChatInput, ChatType } from './API'
+import { ChatFocus, ChatInput, ChatType, HighLevelTransactionCategory } from './API'
 import { createChat } from './graphql/mutations'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import * as aws4 from 'aws4'
@@ -21,11 +21,43 @@ const recommendationAction = z.object({
     ),
 })
 
+/**
+ * highLevelCategory: HighLevelTransactionCategory
+    timeframe: BudgetTimeframe
+    spendingThreshold: Float
+    createdAt: String
+    specificPayeeRegex: String
+ */
+const categories: string[] = Object.keys(HighLevelTransactionCategory).filter((key) => isNaN(Number(key)))
+const tupleValues = categories as [string, ...string[]]
+
+const transactionRecommendationAction = z.object({
+    description: z.string(),
+    budget: z.array(
+        z.object({
+            timeframe: z.enum(['DAILY', 'WEEKLY', 'MONTHLY']),
+            spendingThreshold: z.number(),
+            highLevelCategory: z.enum(tupleValues),
+        })
+    ),
+})
+
 const Recommendations = z.object({
     recommendations: z.array(
         z.object({
             explanation: z.string(),
             action: recommendationAction,
+            title: z.string(),
+            priority: z.enum(['High', 'Medium', 'Low']),
+        })
+    ),
+})
+
+const TransactionRecommendation = z.object({
+    recommendations: z.array(
+        z.object({
+            explanation: z.string(),
+            action: transactionRecommendationAction,
             title: z.string(),
             priority: z.enum(['High', 'Medium', 'Low']),
         })
@@ -154,7 +186,7 @@ export const completeChatFromPrompt = async (
         ],
         response_format:
             chatType === ChatType.TransactionRecommendation
-                ? zodResponseFormat(Recommendations, 'recommendations')
+                ? zodResponseFormat(TransactionRecommendation, 'recommendations')
                 : undefined,
         model,
         stream: true,

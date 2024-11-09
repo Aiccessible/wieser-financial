@@ -7,20 +7,22 @@ import { util } from '@aws-appsync/utils';
  */
 export function request(ctx) {
   const { username } = ctx.identity;
-  const { chat } = ctx.arguments;
+  const { budget } = ctx.arguments;
 
   // Construct a PutItem operation for DynamoDB
+  // TODO: fix?
   return {
     operation: 'PutItem',
     key: {
-      pk: { S: chat.pk },  // Partition key with the username
-      sk: { S: chat.sk },   // Sort key with the provided chat SK
+      pk: { S: 'USER#' + username + "#BUDGETPLAN" },  // Partition key with the username
+      sk: { S: budget.highLevelCategory + '#' + budget.sk },   // Sort key with the provided chat SK
     },
     attributeValues: {
-      message: { S: chat.message },  // Message field
-      time: { S: chat.time },        // Time field
-      messageId: { S: chat.messageId },
-      isLastChunk: { BOOL: chat.isLastChunk }
+      highLevelCategory: { S: budget.highLevelCategory },  // Message field
+      timeframe: { S: budget.timeframe },        // Time field
+      spendingThreshold: { N: budget.spendingThreshold },
+      createdAt: { S: budget.createdAt },
+      recommendationTitle: { S: budget.recommendationTitle }
     },
   };
 }

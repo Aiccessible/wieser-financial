@@ -4,7 +4,7 @@ import { GetItems, GetUser } from './queries/Entities'
 import { mapDdbResponseToItem } from './mappers/Item'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 
-console.info('QUEUE URL', process.env.WEBHOOK_URL)
+console.info('QUEUE URL', process.env.WEBHOOK_QUEUE_URL)
 // Initialize the SQS client
 const sqsClient = new SQSClient({ region: 'ca-central-1' }) // Replace 'your-region' with your actual AWS region
 const client = new DynamoDBClient({ region: 'ca-central-1' })
@@ -43,7 +43,7 @@ export async function updator() {
         }
         const params = [
             {
-                QueueUrl: process.env.WEBHOOK_URL,
+                QueueUrl: process.env.WEBHOOK_QUEUE_URL,
                 DelaySeconds: 0,
                 MessageAttributes: {
                     WebhookType: {
@@ -68,7 +68,7 @@ export async function updator() {
                 MessageGroupId: itemId,
             },
             {
-                QueueUrl: process.env.WEBHOOK_URL,
+                QueueUrl: process.env.WEBHOOK_QUEUE_URL,
                 DelaySeconds: 0,
                 MessageAttributes: {
                     WebhookType: {
