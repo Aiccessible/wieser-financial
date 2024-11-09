@@ -59,6 +59,7 @@ input ChatQuery {
     accountIds: [String!]
     requiresLiveData: Boolean
     doNotUseAdvancedRag: Boolean
+    shouldRagFetch: Boolean
     chatType: ChatType
     highLevelCategory: HighLevelTransactionCategory
     currentDateRange: [Long]

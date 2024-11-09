@@ -17,6 +17,7 @@
     "description": "",
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.677.0",
+        "@aws-sdk/client-sqs": "^3.687.0",
         "@aws-sdk/credential-providers": "^3.678.0",
         "@aws-sdk/protocol-http": "^3.370.0",
         "@aws-sdk/signature-v4": "^3.370.0",

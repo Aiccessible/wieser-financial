@@ -420,7 +420,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda2/7269e8f8ffb66ae77d28879871fd08ca
+      ContentUri: s3://sam-s3-bucket-for-lambda2/5b23201ee55b549c5beed919d0c54bd0
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -798,7 +798,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/b0ecb4cca62ca8297bce3ff901b9342b
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/bee4f019bf7d73b2b8dc3da179dd06e3
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -1323,9 +1323,7 @@ Resources:
         AllowAdminCreateUserOnly: false
       AutoVerifiedAttributes:
       - email
-      EnabledMfas:
-      - SOFTWARE_TOKEN_MFA
-      MfaConfiguration: 'ON'
+      MfaConfiguration: 'OFF'
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -1728,6 +1726,38 @@ Resources:
       - Key: Environment
         Value:
           Ref: Environment
+  UpdatorLogGroup:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Ignoring KMS key
+      SamResourceId: UpdatorLogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/lambda/${UpdatorLambda}
+      RetentionInDays: 3
+      Tags:
+      - Key: aws-cloudformation:stack-name
+        Value:
+          Ref: AWS::StackName
+      - Key: aws-cloudformation:stack-id
+        Value:
+          Ref: AWS::StackId
+      - Key: aws-cloudformation:logical-id
+        Value: UpdatorLogGroup
+      - Key: GITHUB_ORG
+        Value:
+          Ref: GitHubOrg
+      - Key: GITHUB_REPO
+        Value:
+          Ref: GitHubRepo
+      - Key: Environment
+        Value:
+          Ref: Environment
   GetFinancialRecommendationsLogGroup:
     Type: AWS::Logs::LogGroup
     UpdateReplacePolicy: Delete
@@ -1773,7 +1803,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/18feb8a1bdd1ff88563c2886ac57ccce
+      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1813,7 +1843,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/18feb8a1bdd1ff88563c2886ac57ccce
+      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1879,6 +1909,19 @@ Resources:
         Id: SnapShotNetWorthTarget
     Metadata:
       SamResourceId: SnapShotNetWorthSchedule
+  UpdatorSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: rate(12 hours)
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - UpdatorLambda
+          - Arn
+        Id: UpdatorTarget
+    Metadata:
+      SamResourceId: UpdatorSchedule
   PermissionForEventsToInvokeSnapshotLambda:
     Type: AWS::Lambda::Permission
     Properties:
@@ -1892,6 +1935,62 @@ Resources:
         - Arn
     Metadata:
       SamResourceId: PermissionForEventsToInvokeSnapshotLambda
+  PermissionForEventsToInvokeUpdatorLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: UpdatorLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - UpdatorSchedule
+        - Arn
+    Metadata:
+      SamResourceId: PermissionForEventsToInvokeUpdatorLambda
+  UpdatorLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W58
+          reason: Ignoring CloudWatch
+        - id: W89
+          reason: Ignoring VPC
+        - id: W92
+          reason: Ignoring Reserved Concurrency
+      SamResourceId: UpdatorLambda
+    Properties:
+      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      Handler: buildLambda/updator.updator
+      Description:
+        Fn::Sub: Triggers updates of users
+      Environment:
+        Variables:
+          GptSecretKey:
+            Ref: GptSecretKey
+          PerplexitySecretKey:
+            Ref: PerplexitySecretKey
+          KEY_ARN:
+            Fn::GetAtt:
+            - EncryptionKey
+            - Arn
+          TABLE_NAME:
+            Ref: Table
+          APPSYNC_URL:
+            Fn::GetAtt:
+            - GraphQLApi
+            - GraphQLUrl
+          WEBHOOK_URL:
+            Fn::Sub: ${HttpApi.ApiEndpoint}/v1/webhook
+          X: '323'
+      MemorySize: 2048
+      Role:
+        Fn::GetAtt:
+        - ApiFunctionRole
+        - Arn
+      Runtime: nodejs18.x
+      Timeout: 900
   SnapShotNetWorthLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -1905,7 +2004,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: SnapShotNetWorthLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/18feb8a1bdd1ff88563c2886ac57ccce
+      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
       Handler: buildLambda/snapShotNetWorth.snapShotNetWorth
       Description:
         Fn::Sub: Snapshots the networth of users
@@ -1945,7 +2044,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: CalculateIncomeAndSpendingLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/18feb8a1bdd1ff88563c2886ac57ccce
+      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
       Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
       Description:
         Fn::Sub: Calculate the income and spending for users

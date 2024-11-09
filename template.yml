@@ -1061,9 +1061,7 @@ Resources:
                 AllowAdminCreateUserOnly: false
             AutoVerifiedAttributes:
                 - email
-            EnabledMfas:
-                - SOFTWARE_TOKEN_MFA
-            MfaConfiguration: 'ON'
+            MfaConfiguration: 'OFF'
             Policies:
                 PasswordPolicy:
                     MinimumLength: 8
@@ -1379,7 +1377,31 @@ Resources:
                   Value: !Ref GitHubRepo
                 - Key: Environment
                   Value: !Ref Environment
-
+    UpdatorLogGroup:
+        Type: 'AWS::Logs::LogGroup'
+        UpdateReplacePolicy: Delete
+        DeletionPolicy: Delete
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W84
+                      reason: 'Ignoring KMS key'
+        Properties:
+            LogGroupName: !Sub '/aws/lambda/${UpdatorLambda}'
+            RetentionInDays: 3
+            Tags:
+                - Key: 'aws-cloudformation:stack-name'
+                  Value: !Ref 'AWS::StackName'
+                - Key: 'aws-cloudformation:stack-id'
+                  Value: !Ref 'AWS::StackId'
+                - Key: 'aws-cloudformation:logical-id'
+                  Value: UpdatorLogGroup
+                - Key: GITHUB_ORG
+                  Value: !Ref GitHubOrg
+                - Key: GITHUB_REPO
+                  Value: !Ref GitHubRepo
+                - Key: Environment
+                  Value: !Ref Environment
     GetFinancialRecommendationsLogGroup:
         Type: 'AWS::Logs::LogGroup'
         UpdateReplacePolicy: Delete
@@ -1485,6 +1507,15 @@ Resources:
                 - Arn: !GetAtt SnapShotNetWorthLambda.Arn
                   Id: 'SnapShotNetWorthTarget'
 
+    UpdatorSchedule:
+        Type: AWS::Events::Rule
+        Properties:
+            ScheduleExpression: 'rate(12 hours)' # Runs daily
+            State: 'ENABLED'
+            Targets:
+                - Arn: !GetAtt UpdatorLambda.Arn
+                  Id: 'UpdatorTarget'
+
     PermissionForEventsToInvokeSnapshotLambda:
         Type: AWS::Lambda::Permission
         Properties:
@@ -1493,6 +1524,42 @@ Resources:
             Principal: 'events.amazonaws.com'
             SourceArn: !GetAtt SnapShotNetWorthSchedule.Arn
 
+    PermissionForEventsToInvokeUpdatorLambda:
+        Type: AWS::Lambda::Permission
+        Properties:
+            FunctionName: !Ref UpdatorLambda
+            Action: 'lambda:InvokeFunction'
+            Principal: 'events.amazonaws.com'
+            SourceArn: !GetAtt UpdatorSchedule.Arn
+
+    UpdatorLambda:
+        Type: 'AWS::Serverless::Function'
+        Metadata:
+            cfn_nag:
+                rules_to_suppress:
+                    - id: W58
+                      reason: 'Ignoring CloudWatch'
+                    - id: W89
+                      reason: 'Ignoring VPC'
+                    - id: W92
+                      reason: 'Ignoring Reserved Concurrency'
+        Properties:
+            CodeUri: backend/lambda/lambda-code.zip
+            Handler: buildLambda/updator.updator
+            Description: !Sub 'Triggers updates of users'
+            Environment:
+                Variables:
+                    GptSecretKey: !Ref GptSecretKey
+                    PerplexitySecretKey: !Ref PerplexitySecretKey
+                    KEY_ARN: !GetAtt EncryptionKey.Arn
+                    TABLE_NAME: !Ref Table
+                    APPSYNC_URL: !GetAtt GraphQLApi.GraphQLUrl
+                    WEBHOOK_URL: !Sub '${HttpApi.ApiEndpoint}/v1/webhook'
+                    TESTING_FUN: '323'
+            MemorySize: 2048 # megabytes
+            Role: !GetAtt ApiFunctionRole.Arn
+            Runtime: nodejs18.x
+            Timeout: 900 # seconds
     SnapShotNetWorthLambda:
         Type: 'AWS::Serverless::Function'
         Metadata:

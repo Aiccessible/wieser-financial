@@ -25,7 +25,7 @@ async function decryptData(encryptedData: string): Promise<string> {
 }
 
 export async function decryptItemsInBatches(items: Record<string, any>[]) {
-    if (process.env.STAGE !== 'prod') {
+    if (true) {
         return items
     }
     const decryptedItems: Record<string, any>[] = []
