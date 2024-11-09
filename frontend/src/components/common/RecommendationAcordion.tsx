@@ -1,5 +1,5 @@
 import * as Accordion from '@radix-ui/react-accordion'
-import { Alert, Button, Divider, Flex, Heading } from '@aws-amplify/ui-react'
+import { Alert, Button, ButtonGroup, Divider, Flex, Heading } from '@aws-amplify/ui-react'
 import Loader from '../../components/common/Loader'
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
@@ -7,7 +7,7 @@ import { CustomTextBox } from './CustomTextBox'
 import { Link } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setAuthError, getTransferTokenAsync } from '../../features/auth'
-import { Recommendation } from '@/src/API'
+import { Recommendation, RecommendationAction, TransactionRecommendationAction } from '@/src/API'
 const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Recommendation[]; id: string }) => {
     const loadingTransfer = useAppSelector((state) => state.auth.loadingTransfer)
     const dispatch = useAppDispatch()
@@ -43,13 +43,14 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
             })
         )
     }
+    console.info(recommendations)
     return (
         <Accordion.Root className="space-y-4 max-h-[85vh] overflow-auto no-scrollbar hide-scrollbar" type="multiple">
             {recommendations &&
                 recommendations.map((recommendation, index) => (
                     <div
                         key={index}
-                        className=" flex-grow bg-transparent py-4 pl-9 pr-4 font-medium focus:outline-none text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl relative"
+                        className=" flex-grow bg-transparent py-4 pl-9 pr-4 font-medium focus:outline-none text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl relative hide-scrollbar"
                     >
                         <div
                             style={{ backgroundColor: recommendation.priority === 'High' ? '#fe0103' : '#fa8d03' }}
@@ -66,42 +67,80 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                 {recommendation.title}
                             </CustomTextBox>
                         </Heading>
-                        <CustomTextBox className="font-normal text-left">{recommendation.explanation}</CustomTextBox>
                         <CustomTextBox className="font-normal text-left">
                             {recommendation!.action!.description}
                         </CustomTextBox>
-
-                        {recommendation!.action!.transfers!.map((transfer, index) => (
-                            <div
-                                key={index}
-                                className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
-                            >
-                                <div>
-                                    <CustomTextBox className="text-sm font-semibold">
-                                        From: {transfer!.fromAccountName}
-                                    </CustomTextBox>
-                                    <CustomTextBox className="text-sm font-semibold">
-                                        To: {transfer!.toAccountName}
-                                    </CustomTextBox>
-                                </div>
-                                <p className="text-lg font-semibold text-highlight">${transfer!.amount}</p>
-                                {loadingTransfer ? (
-                                    <Loader />
-                                ) : (
-                                    <button
-                                        onClick={() =>
-                                            onClickTransfer(
-                                                transfer as Transfer,
-                                                recommendation!.action!.description || ''
-                                            )
-                                        }
-                                        className="bg-primary text-black font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0"
+                        <CustomTextBox className="font-normal text-left">{recommendation.explanation}</CustomTextBox>
+                        {(recommendation!.action as any).transfers ? (
+                            <>
+                                {(recommendation!.action as any).transfers?.map((transfer: Transfer, index: number) => (
+                                    <div
+                                        key={index}
+                                        className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
                                     >
-                                        Confirm Transfers
-                                    </button>
+                                        <div>
+                                            <CustomTextBox className="text-sm font-semibold">
+                                                From: {transfer!.fromAccountName}
+                                            </CustomTextBox>
+                                            <CustomTextBox className="text-sm font-semibold">
+                                                To: {transfer!.toAccountName}
+                                            </CustomTextBox>
+                                        </div>
+                                        <p className="text-lg font-semibold text-highlight">${transfer!.amount}</p>
+                                        {loadingTransfer ? (
+                                            <Loader />
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    onClickTransfer(
+                                                        transfer as Transfer,
+                                                        (recommendation!.action as RecommendationAction)!.description ||
+                                                            ''
+                                                    )
+                                                }
+                                                className="bg-primary text-black font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0"
+                                            >
+                                                Confirm Transfers
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </>
+                        ) : (recommendation!.action as any).budget ? (
+                            <>
+                                {(recommendation!.action as TransactionRecommendationAction).budget?.map(
+                                    (budget, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
+                                        >
+                                            <div>
+                                                <CustomTextBox className="text-sm font-semibold">
+                                                    Reduce {budget?.highLevelCategory} Spending
+                                                </CustomTextBox>
+                                            </div>
+                                            <p className="text-lg font-semibold text-highlight">
+                                                ${budget?.spendingThreshold}
+                                            </p>
+                                            {loadingTransfer ? (
+                                                <Loader />
+                                            ) : (
+                                                <ButtonGroup className="flex flex-col">
+                                                    <Button className="bg-primary text-black text-center font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0">
+                                                        Start Budget
+                                                    </Button>
+                                                    <Button className="bg-primary text-black text-center font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0">
+                                                        Analyze Impact
+                                                    </Button>
+                                                </ButtonGroup>
+                                            )}
+                                        </div>
+                                    )
                                 )}
-                            </div>
-                        ))}
+                            </>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 ))}
         </Accordion.Root>
