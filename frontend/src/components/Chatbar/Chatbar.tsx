@@ -10,6 +10,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { useTransition, animated, config } from 'react-spring'
 import { Button } from '@aws-amplify/ui-react'
+import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
@@ -32,6 +33,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
     const [lastRecievedChat, setLastReceivedChat] = useState(0)
     const ids = useAppSelector((state) => state.idsSlice.institutions?.map((el) => el.item_id))
     const chatContainerRef = useRef(null)
+    const projection = useDefaultValuesForProjection({})
 
     const getSortedChunks = useMemo(() => {
         const chunksOfConcern = chunks
@@ -89,6 +91,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
                 ids: ids ?? [],
                 highLevelSpendingCategory: highLevelCategory,
                 currentDateRange,
+                projection,
             })
         )
         setInputValue('') // Clear input after submission

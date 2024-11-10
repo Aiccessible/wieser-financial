@@ -6,6 +6,30 @@ import { reduceAccounts } from '../../../src/features/accounts'
 import { HighLevelTransactionCategory } from '../../../src/API'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
 
+export interface FinancialProjection {
+    initial_salary: number // Initial income or salary
+    salary_growth: number // Annual salary growth rate (as a decimal, e.g., 0.05 for 5%)
+    initial_bonus: number // Initial bonus amount
+    bonus_growth: number // Annual bonus growth rate (as a decimal)
+    initial_expenses: number // Initial expenses (calculated as totalSpending - income - transfersOut)
+    expenses_growth: number // Annual expense growth rate (as a decimal)
+    investment_yield: number // Expected annual investment yield (as a decimal)
+    tax_rate: number // Tax rate (as a decimal, e.g., 0.2 for 20%)
+    years: number // Number of years for the projection
+    initial_rrsp_balance: number // Initial balance in RRSP account
+    initial_fhsa_balance: number // Initial balance in FHSA account
+    initial_tfsa_balance: number // Initial balance in TFSA account
+    initial_brokerage_balance: number // Initial balance in Brokerage account
+    initial_rrsp_room: number // Initial contribution room for RRSP
+    initial_fhsa_room: number // Initial contribution room for FHSA
+    initial_tfsa_room: number // Initial contribution room for TFSA
+    totalSpendingAnnualized: number // Total spending annualized
+    incomeAnnualize: number // Annualized income
+    transfersOutAnnualized: number // Annualized outgoing transfers
+    annualizedSpendingPerCategory: Record<string, number> // Spending broken down by category (e.g., { TRANSPORTATION: 1000, GROCERIES: 2000 })
+    multipleier: number // Some custom multiplier value
+}
+
 const useDefaultValuesForProjection = ({}: any) => {
     const accounts = useAppSelector((state) => state.accounts.accounts)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
@@ -74,7 +98,7 @@ const useDefaultValuesForProjection = ({}: any) => {
             transfersOutAnnualized: transfersOut,
             annualizedSpendingPerCategory,
             multipleier,
-        }
+        } as FinancialProjection
     }, [accounts, monthlySpendings])
 }
 

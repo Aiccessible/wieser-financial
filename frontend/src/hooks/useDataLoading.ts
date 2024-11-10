@@ -175,9 +175,10 @@ export const useDataLoading = (input: DataLoadingInput) => {
             !isInvestmentsLoading() &&
             !loadRecommendationsError &&
             !loadingRecommendations &&
+            defaultParams &&
             !recommendations
         ) {
-            dispatch(getFullPictureRecommendationAsync({ client }))
+            dispatch(getFullPictureRecommendationAsync({ client, projection: defaultParams }))
         }
     }, [
         accounts,
@@ -189,6 +190,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
         loadRecommendationsError,
         loadingRecommendations,
         recommendations,
+        defaultParams,
     ])
 
     useEffect(() => {

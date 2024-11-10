@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '../../../src/hooks'
 import { sendChatToLLM, setIsChatOpen, setNewChatVal } from '../../../src/features/chat'
 import { generateClient } from 'aws-amplify/api'
 import { ChatFocus } from '../../../src/API'
+import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -22,6 +23,7 @@ const Header = (props: {
     const newChat = useAppSelector((state) => state.chat.newChat)
     const dispatch = useAppDispatch()
     const client = generateClient()
+    const projection = useDefaultValuesForProjection({})
     const accounts = useAppSelector((state) => state.accounts.accounts)
     return (
         <header
@@ -56,6 +58,7 @@ const Header = (props: {
                                     ids: accounts?.map((el) => el.account_id) ?? [],
                                     highLevelSpendingCategory: undefined,
                                     currentDateRange: undefined,
+                                    projection,
                                 })
                             )
                         }}

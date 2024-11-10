@@ -1,10 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getFinancialRecommendationsFromData } from '../libs/gpt'
 import { RootState } from '../store'
-import { Recommendation } from '../API'
+import { CacheType, ChatFocus, ChatType, Recommendation } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { post } from 'aws-amplify/api'
 import { AccountBalances } from '../components/Analysis/NetworthChart'
+import { getFinancialConversationResponse } from '../graphql/queries'
+import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
 // Define a type for the slice state
 interface AnalysisState {
     fullPictureRecommendations: Recommendation[] | undefined
@@ -50,6 +52,7 @@ const initialState: AnalysisState = {
 
 export interface GetFullPictureRecommendationInput {
     client: { graphql: GraphQLMethod }
+    projection: FinancialProjection
 }
 
 export interface GetFinancialProjectionInput {
@@ -63,6 +66,13 @@ export interface GetFinancialBudgetProjectionInput {
     budgetName: string
 }
 
+export const financialProjectionToChatInput = (projection: FinancialProjection) => {
+    return `my estimated annual post tax income is ${projection.incomeAnnualize} ,
+                 my estimated annualized expenses are ${projection.initial_expenses} 
+                 my estimated contribution room for the tax accounts are: Tfsa: (balance: ${projection.initial_tfsa_balance} room ${projection.initial_tfsa_room}) 
+                (balance: ${projection.initial_rrsp_balance} room ${projection.initial_rrsp_room})
+                (balance: ${projection.initial_fhsa_balance} room ${projection.initial_fhsa_room})`
+}
 export const getProjection = async (input: FinancialInputs) => {
     const { body } = await post({
         apiName: 'plaidapi',
@@ -106,22 +116,41 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             fullPictureRecommendations: JSON.parse(storedItem || ''),
         }
     }
-    const res = await getFinancialRecommendationsFromData(
-        'Recommend the user five financial optimizations based on the following allocations, example recommendations include: opening new accounts which have tax benefits, closing accounts, moving money between accounts to pay debt etc... \n Accounts:' +
-            JSON.stringify((getThunkApi.getState() as any).accounts.accounts) +
-            ' Investments: ' +
-            JSON.stringify(getThunkApi.getState().investments.investments) +
-            ' Transactions: ' +
-            JSON.stringify(getThunkApi.getState().transactions.transactions),
-        input.client
-    )
-    localStorage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(res))
-    return { fullPictureRecommendations: res }
+    const ids =
+        getThunkApi
+            .getState()
+            .idsSlice.institutions?.map((account) => account.item_id)
+            .slice(0, 25) ?? []
+    const res = await input.client.graphql({
+        query: getFinancialConversationResponse,
+        variables: {
+            chat: {
+                accountIds: ids,
+                prompt: `Provide me financial transfers, spending advice, investment allocations on what actions would help me grow my networth in Canada, ${financialProjectionToChatInput(
+                    input.projection
+                )}`,
+                chatFocus: ChatFocus.All,
+                chatType: ChatType.GeneralRecommendation,
+                requiresLiveData: false,
+                currentDateRange: [
+                    (new Date().getTime() - 1000 * 3600 * 24 * 365).toString(),
+                    new Date().getTime().toString(),
+                ],
+                doNotUseAdvancedRag: true,
+                cacheIdentifiers: [
+                    { key: 'RECOMMENDATIONUMMARIES23' + ids.join(','), cacheType: CacheType.GeneralRecommendation },
+                ],
+            },
+        },
+    })
+    const recs = res.data.getFinancialConversationResponse.response
+    localStorage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(recs))
+    return { fullPictureRecommendations: recs }
 })
 
 const getStorageKey = (id: string) => {
     const currentDate = new Date().toISOString().split('T')[0] // Get the date in YYYY-MM-DD format
-    return `fullpicturerecommendation-${id}-${currentDate}`
+    return `fullpicturerecommendation4332-${id}-${currentDate}`
 }
 
 export const analysisSlice = createSlice({
@@ -136,7 +165,9 @@ export const analysisSlice = createSlice({
     },
     extraReducers(builder) {
         builder.addCase(getFullPictureRecommendationAsync.fulfilled, (state, action) => {
-            state.fullPictureRecommendations = action.payload.fullPictureRecommendations || ''
+            state.fullPictureRecommendations = JSON.parse(
+                action.payload.fullPictureRecommendations || ''
+            ).recommendations
             state.loading = false
         })
         builder.addCase(getFullPictureRecommendationAsync.rejected, (state, action) => {

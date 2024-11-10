@@ -97,37 +97,46 @@ export const getTransactionsAsync = createAsyncThunk(
     }
 )
 
-export const getTransactionsRecommendationsAsync = createAsyncThunk(
-    'transaction/get-transaction-recommendations',
-    async (input: GetTransactionRecommendations, getThunk: any) => {
-        const res = await input.client.graphql({
-            query: getFinancialConversationResponse,
-            variables: {
-                chat: {
-                    accountIds: input.ids,
-                    prompt: 'Provide me recommendations on how I can save money on my spending',
-                    chatFocus: ChatFocus.Transaction,
-                    chatType: ChatType.TransactionRecommendation,
-                    requiresLiveData: false,
-                    currentDateRange: [oneWeekAgo.getTime().toString(), new Date().getTime().toString()],
-                    doNotUseAdvancedRag: true,
-                    cacheIdentifiers: [
-                        { key: input.ids.join(',') + 'TRANSACTIONSUMMARIES2', cacheType: CacheType.PortfolioAnalysis },
-                    ],
-                },
+export const getTransactionsRecommendationsAsync = createAsyncThunk<
+    any, // Return type
+    GetTransactionRecommendations, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('transaction/get-transaction-recommendations', async (input: GetTransactionRecommendations, getThunk) => {
+    const ids =
+        getThunk
+            .getState()
+            .idsSlice.institutions?.map((account) => account.item_id)
+            .slice(0, 25) ?? []
+    const res = await input.client.graphql({
+        query: getFinancialConversationResponse,
+        variables: {
+            chat: {
+                accountIds: ids,
+                prompt: 'Provide me recommendations on how I can save money on my spending',
+                chatFocus: ChatFocus.Transaction,
+                chatType: ChatType.TransactionRecommendation,
+                requiresLiveData: false,
+                currentDateRange: [oneWeekAgo.getTime().toString(), new Date().getTime().toString()],
+                doNotUseAdvancedRag: true,
+                cacheIdentifiers: [
+                    {
+                        key: input.ids.slice(0, 25).join(',') + 'TRANSACTIONSUMMARIES2',
+                        cacheType: CacheType.PortfolioAnalysis,
+                    },
+                ],
             },
-        })
-        const errors = res.errors
-        if (errors && errors.length > 0) {
-            return { errors, recommendations: res.data.getFinancialConversationResponse }
-        }
-        return {
-            recommendations: res.data.getFinancialConversationResponse,
-            errors: null,
-            loading: false,
-        }
+        },
+    })
+    const errors = res.errors
+    if (errors && errors.length > 0) {
+        return { errors, recommendations: res.data.getFinancialConversationResponse }
     }
-)
+    return {
+        recommendations: res.data.getFinancialConversationResponse,
+        errors: null,
+        loading: false,
+    }
+})
 
 export const getYesterdaySummaryAsyncThunk = createAsyncThunk<
     any, // Return type

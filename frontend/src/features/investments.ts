@@ -134,18 +134,25 @@ export const getInvestmentNewsSummary = createAsyncThunk<
     if (localStorage.getItem(getStorageKey(key))) {
         return { investmentSummary: localStorage.getItem(getStorageKey(key)) }
     }
+    const ids =
+        getThunk
+            .getState()
+            .idsSlice.institutions?.map((account) => account.item_id)
+            .slice(0, 25) ?? []
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
             chat: {
-                accountIds: input.ids,
+                accountIds: ids,
                 prompt: 'Provide me the news summary for the investments which I will send in the prompt as well',
                 chatFocus: ChatFocus.Investment,
                 chatType: ChatType.FinancialNewsQuery,
                 requiresLiveData: true,
                 shouldRagFetch: true,
-                cacheIdentifiers: [{ key: input.ids.join(',') + 'SUMMARY', cacheType: CacheType.PortfolioAnalysis }],
+                cacheIdentifiers: [
+                    { key: input.ids.slice(0, 25).join(',') + 'SUMMARY', cacheType: CacheType.PortfolioAnalysis },
+                ],
             } as any,
         },
     })

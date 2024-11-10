@@ -3,6 +3,8 @@ import { RootState } from '../store'
 import { getFinancialConversationResponse } from '../graphql/queries'
 import { ChatFocus, GetFinancialConversationResponseQuery, HighLevelTransactionCategory, SpendingSummary } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
+import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
+import { financialProjectionToChatInput } from './analysis'
 
 // Define a type for the slice state
 interface ChatState {
@@ -36,19 +38,32 @@ export interface SendChatToLLMArgs {
     dontRagFetch?: boolean
     currentDateRange?: [number?, number?]
     highLevelSpendingCategory?: HighLevelTransactionCategory | undefined
+    projection: FinancialProjection
 }
 
 export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: RootState }>(
     'chat/chat-llm',
     async (input: SendChatToLLMArgs, getThunkApi) => {
+        const ids =
+            getThunkApi
+                .getState()
+                .idsSlice.institutions?.map((account) => account.item_id)
+                .slice(0, 25) ?? []
         try {
+            if (input.focus === ChatFocus.All) {
+                input.newChat =
+                    input.newChat +
+                    `. Here is some context and I will provide more detailed info below ${financialProjectionToChatInput(
+                        input.projection
+                    )}`
+            }
             const res = await input.client.graphql({
                 query: getFinancialConversationResponse,
                 variables: {
                     chat: {
                         prompt: input.newChat,
                         chatFocus: input.focus,
-                        accountIds: input.ids,
+                        accountIds: ids,
                         shouldRagFetch: !input.dontRagFetch,
                         currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
                         highLevelCategory: input.highLevelSpendingCategory,
