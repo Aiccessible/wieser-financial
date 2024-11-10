@@ -1,6 +1,7 @@
 import os
 from typing import Dict, Any, Union, List
 import json
+
 # from pprint import pprint
 
 from aws_lambda_powertools import Logger, Tracer, Metrics
@@ -22,22 +23,22 @@ router = Router()
 def simulate_account_balances() -> Dict[str, List[float]]:
     # Initialize account balances
     body = json.loads(router.current_event.get("body", "{}"))
-    initial_salary= body.get("initial_salary")
-    salary_growth= body.get("salary_growth")
-    initial_bonus= body.get("initial_bonus")
-    bonus_growth= body.get("bonus_growth")
-    initial_expenses= body.get("initial_expenses")
-    expenses_growth= body.get("expenses_growth")
-    investment_yield= body.get("investment_yield")
-    tax_rate= body.get("tax_rate")
-    years= body.get("years")
-    initial_rrsp_balance= body.get("initial_rrsp_balance")
-    initial_fhsa_balance= body.get("initial_fhsa_balance")
-    initial_tfsa_balance= body.get("initial_tfsa_balance")
-    initial_brokerage_balance= body.get("initial_brokerage_balance")
-    initial_rrsp_room= body.get("initial_rrsp_room")
-    initial_fhsa_room= body.get("initial_fhsa_room")
-    initial_tfsa_room= body.get("initial_tfsa_room")
+    initial_salary = body.get("initial_salary")
+    salary_growth = body.get("salary_growth")
+    initial_bonus = body.get("initial_bonus")
+    bonus_growth = body.get("bonus_growth")
+    initial_expenses = body.get("initial_expenses")
+    expenses_growth = body.get("expenses_growth")
+    investment_yield = body.get("investment_yield")
+    tax_rate = body.get("tax_rate")
+    years = body.get("years")
+    initial_rrsp_balance = body.get("initial_rrsp_balance")
+    initial_fhsa_balance = body.get("initial_fhsa_balance")
+    initial_tfsa_balance = body.get("initial_tfsa_balance")
+    initial_brokerage_balance = body.get("initial_brokerage_balance")
+    initial_rrsp_room = body.get("initial_rrsp_room")
+    initial_fhsa_room = body.get("initial_fhsa_room")
+    initial_tfsa_room = body.get("initial_tfsa_room")
     rrsp_balance = initial_rrsp_balance
     fhsa_balance = initial_fhsa_balance
     tfsa_balance = initial_tfsa_balance
@@ -145,11 +146,11 @@ def simulate_account_balances() -> Dict[str, List[float]]:
             net_worths.append(
                 sum(
                     [
-                        rrsp_balance - (rrsp_balance - initial_rrsp_balance) * tax_rate,
+                        rrsp_balance,  # - (rrsp_balance - initial_rrsp_balance) * tax_rate,
                         fhsa_balance,
                         tfsa_balance,
-                        brokerage_balance
-                        - (brokerage_balance - initial_brokerage_balance) * tax_rate,
+                        brokerage_balance,
+                        # - (brokerage_balance - initial_brokerage_balance) * tax_rate,
                     ]
                 )
             )
