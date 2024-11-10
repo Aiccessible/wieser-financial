@@ -798,7 +798,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/bee4f019bf7d73b2b8dc3da179dd06e3
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/0aa88db0baa88b6ce99a6353ed6cae26
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -972,7 +972,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      CodeS3Location: s3://sam-s3-bucket-for-lambda2/b58eb1d3e860a522eb32edb782073afa
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/e44f98e150ccb255ff4fd50b50991c77
       DataSourceName:
         Fn::GetAtt:
         - DynamoDBDataSource
@@ -983,6 +983,46 @@ Resources:
         RuntimeVersion: 1.0.0
     Metadata:
       SamResourceId: CreateChatFunctionConfiguration
+  CreateBudgetResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: createBudget
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - CreateBudgetFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Mutation
+    Metadata:
+      SamResourceId: CreateBudgetResolver
+  CreateBudgetFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/c9d22cea1d8898a9ac2fad6411b7d201
+      DataSourceName:
+        Fn::GetAtt:
+        - DynamoDBDataSource
+        - Name
+      Name: CREATE_BUDGET
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: CreateBudgetFunctionConfiguration
   BasicAuthFunctionConfiguration:
     Type: AWS::AppSync::FunctionConfiguration
     Properties:
@@ -1183,6 +1223,46 @@ Resources:
       TypeName: Query
     Metadata:
       SamResourceId: GetInvestmentsResolver
+  GetBudgetsFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/740100c4a71f5d35ca486cdaec5fa9f0
+      DataSourceName:
+        Fn::GetAtt:
+        - DynamoDBDataSource
+        - Name
+      Name: GET_BUDGETS
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: GetBudgetsFunctionConfiguration
+  GetBudgetsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: getBudgets
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - GetBudgetsFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Query
+    Metadata:
+      SamResourceId: GetBudgetsResolver
   GetInvestmentsFunctionConfiguration:
     Type: AWS::AppSync::FunctionConfiguration
     Properties:
@@ -1803,7 +1883,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1843,7 +1923,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -1961,7 +2041,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: UpdatorLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
       Handler: buildLambda/updator.updator
       Description:
         Fn::Sub: Triggers updates of users
@@ -1983,7 +2063,8 @@ Resources:
             - GraphQLUrl
           WEBHOOK_URL:
             Fn::Sub: ${HttpApi.ApiEndpoint}/v1/webhook
-          X: '323'
+          WEBHOOK_QUEUE_URL:
+            Ref: WebhookQueue
       MemorySize: 2048
       Role:
         Fn::GetAtt:
@@ -2004,7 +2085,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: SnapShotNetWorthLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
       Handler: buildLambda/snapShotNetWorth.snapShotNetWorth
       Description:
         Fn::Sub: Snapshots the networth of users
@@ -2044,7 +2125,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: CalculateIncomeAndSpendingLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/8f02e4ddce5a65372820fd9aae834368
+      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
       Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
       Description:
         Fn::Sub: Calculate the income and spending for users
