@@ -21,7 +21,8 @@ export declare const completeChatFromPrompt: (prompt: string, type: ChatFocus | 
 export declare enum InformationOptions {
     'INVESTMENTS' = 0,
     'TRANSACTIONS' = 1,
-    'BANKACCOUNTS' = 2
+    'ACCOUNTS' = 2,
+    'MONTHLYSUMMARIES' = 3
 }
 export interface GptDateResponse {
     day: number;

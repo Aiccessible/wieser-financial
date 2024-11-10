@@ -25,6 +25,7 @@ enum CacheType {
     InvestmentAnalysis
     PortfolioAnalysis
     TransactionRecommendation
+    GeneralRecommendation
 }
 
 type Chat {
@@ -51,6 +52,7 @@ input ChatInput {
     time: String
     isLastChunk: Boolean
     messageId: String
+    expire_at: String
 }
 
 enum BudgetTimeframe {
@@ -103,6 +105,7 @@ enum ChatType {
     FinancialNewsQuery
     FinancialAnalysisQuery
     TransactionRecommendation
+    GeneralRecommendation
 }
 
 type GraphType {

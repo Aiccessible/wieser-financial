@@ -5,6 +5,7 @@ export type ChatInput = {
     time?: string | null;
     isLastChunk?: boolean | null;
     messageId?: string | null;
+    expire_at?: string | null;
 };
 export type Chat = {
     __typename: "Chat";
@@ -217,7 +218,8 @@ export declare enum ChatType {
     Regular = "Regular",
     FinancialNewsQuery = "FinancialNewsQuery",
     FinancialAnalysisQuery = "FinancialAnalysisQuery",
-    TransactionRecommendation = "TransactionRecommendation"
+    TransactionRecommendation = "TransactionRecommendation",
+    GeneralRecommendation = "GeneralRecommendation"
 }
 export type CacheIdentifer = {
     key?: string | null;
@@ -228,7 +230,8 @@ export declare enum CacheType {
     StockAnalysis = "StockAnalysis",
     InvestmentAnalysis = "InvestmentAnalysis",
     PortfolioAnalysis = "PortfolioAnalysis",
-    TransactionRecommendation = "TransactionRecommendation"
+    TransactionRecommendation = "TransactionRecommendation",
+    GeneralRecommendation = "GeneralRecommendation"
 }
 export type Recommendation = {
     __typename: "Recommendation";

@@ -166,6 +166,8 @@ export const completeChatFromPrompt = async (
             ? technicalPrompt
             : chatType === ChatType.TransactionRecommendation
             ? `You are a personal spending assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide spending recommendations which are highly useful.`
+            : chatType === ChatType.GeneralRecommendation
+            ? 'You are a personal finance assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. Leave the transfer information empty if no transfer is needed'
             : `You are a personal ${
                   type && type !== ChatFocus.All ? type : 'Finance'
               } assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. `
@@ -187,6 +189,8 @@ export const completeChatFromPrompt = async (
         response_format:
             chatType === ChatType.TransactionRecommendation
                 ? zodResponseFormat(TransactionRecommendation, 'recommendations')
+                : chatType === ChatType.GeneralRecommendation
+                ? zodResponseFormat(Recommendations, 'recommendations')
                 : undefined,
         model,
         stream: true,
@@ -248,7 +252,8 @@ export const completeChatFromPrompt = async (
 export enum InformationOptions {
     'INVESTMENTS',
     'TRANSACTIONS',
-    'BANKACCOUNTS',
+    'ACCOUNTS',
+    'MONTHLYSUMMARIES',
 }
 export interface GptDateResponse {
     day: number
@@ -311,7 +316,7 @@ export const getDateRangeFromModel = async (prompt: string) => {
 export const getNeededInformationFromModel = async (prompt: string) => {
     console.log('Getting needed information')
     const AcceptableInformationOptions = z.object({
-        optionsForInformation: z.array(z.enum(['INVESTMENTS', 'TRANSACTIONS', 'BANKACCOUNTS'])),
+        optionsForInformation: z.array(z.enum(['INVESTMENTS', 'TRANSACTIONS', 'ACCOUNTS'])),
     })
     const chatOutput = await chat.completions.create({
         messages: [
@@ -424,6 +429,7 @@ export const sendChatToUI = async (
     isLastChunk: boolean,
     messageId: string
 ) => {
+    // TODO: expire the chats
     const chatInput: ChatInput = {
         pk: pk,
         sk: sk,

@@ -61,6 +61,14 @@ export const GetEntities = (params: EntityQueryParams) => {
             IndexName: 'GSI1',
         }
     }
+    if (params.entityName === 'MONTHLYSUMMARY') {
+        filter = {
+            KeyConditionExpression: 'pk = :gsi1pk ',
+            ExpressionAttributeValues: {
+                ':gsi1pk': { S: params.pk ?? `USER#${params.username}#TRANSACTIONS#MONTHLYSUMMARY` },
+            },
+        }
+    }
     if (params.dateRange && !params.dateRange.hasNoTimeConstraint) {
         filter = { ...filter, ExpressionAttributeNames: {} }
         filter['FilterExpression'] = '#date BETWEEN :startDate AND :endDate'
