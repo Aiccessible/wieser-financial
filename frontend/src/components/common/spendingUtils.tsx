@@ -18,7 +18,7 @@ export function calculateTotalSpendingInCategories(
 ) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            if (category in categories) totals[category] = (totals[category] || 0) + value
+            if (categories.find((el) => el === category)) totals[category] = (totals[category] || 0) + value
         })
         return totals
     }, {})
@@ -27,7 +27,10 @@ export function calculateTotalSpendingInCategories(
 export function calculateTotalSpendingInCategoriesAsTotal(summary: SpendingSummary) {
     let totals = 0
     Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-        if (!(category in nonSpendingKeys)) totals = (totals || 0) + value
+        if (!nonSpendingKeys.find((el) => el === category)) {
+            console.info('adding', value)
+            totals = (totals || 0) + value
+        }
     })
     return totals
 }
@@ -35,7 +38,7 @@ export function calculateTotalSpendingInCategoriesAsTotal(summary: SpendingSumma
 export function calculateTotalSpending(spendingSummaries: SpendingSummary[]) {
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            if (!(category in nonSpendingKeys)) totals[category] = (totals[category] || 0) + value
+            if (!nonSpendingKeys.find((el) => el === category)) totals[category] = (totals[category] || 0) + value
         })
         return totals
     }, {})
@@ -60,7 +63,7 @@ export function calculateAverageSpendingFromMonthlySummarys(
             numberOfDays = daysInMonth[dateOfSummary.getMonth()]
         }
         Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
-            if (!(category in nonSpendingKeys) || includeAll)
+            if (!nonSpendingKeys.find((el) => el === category) || includeAll)
                 totals[category] = (totals[category] || 0) + (isDailyAverage ? value / numberOfDays : value)
         })
         return totals
