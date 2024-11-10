@@ -125,7 +125,7 @@ export const getInvestments = /* GraphQL */ `query GetInvestments($id: ID!, $lim
 export const getBudgets = /* GraphQL */ `query GetBudgets($id: ID!, $limit: Int, $cursor: String) {
   getBudgets(id: $id, limit: $limit, cursor: $cursor) {
     cursor
-    budgetPlans {
+    budgets {
       pk
       sk
       highLevelCategory
@@ -133,6 +133,7 @@ export const getBudgets = /* GraphQL */ `query GetBudgets($id: ID!, $limit: Int,
       spendingThreshold
       createdAt
       specificPayeeRegex
+      recommendationTitle
       __typename
     }
     __typename
@@ -164,6 +165,7 @@ export const getFinancialRecommendations = /* GraphQL */ `query GetFinancialReco
           spendingThreshold
           createdAt
           specificPayeeRegex
+          recommendationTitle
           __typename
         }
         description

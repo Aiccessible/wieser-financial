@@ -29,6 +29,7 @@ export type BudgetPlanInput = {
   spendingThreshold?: number | null,
   createdAt?: string | null,
   specificPayeeRegex?: string | null,
+  recommendationTitle?: string | null,
 };
 
 export enum HighLevelTransactionCategory {
@@ -98,6 +99,7 @@ export type BudgetPlan = {
   spendingThreshold?: number | null,
   createdAt?: string | null,
   specificPayeeRegex?: string | null,
+  recommendationTitle?: string | null,
 };
 
 export type PaginatedItems = {
@@ -214,7 +216,7 @@ export type Security = {
 export type PaginatedBudgets = {
   __typename: "PaginatedBudgets",
   cursor?: string | null,
-  budgetPlans?:  Array<BudgetPlan | null > | null,
+  budgets?:  Array<BudgetPlan | null > | null,
 };
 
 export type ChatQuery = {
@@ -345,7 +347,7 @@ export type CreateChatMutation = {
 };
 
 export type CreateBudgetMutationVariables = {
-  chat: BudgetPlanInput,
+  budget: BudgetPlanInput,
 };
 
 export type CreateBudgetMutation = {
@@ -358,6 +360,7 @@ export type CreateBudgetMutation = {
     spendingThreshold?: number | null,
     createdAt?: string | null,
     specificPayeeRegex?: string | null,
+    recommendationTitle?: string | null,
   } | null,
 };
 
@@ -497,7 +500,7 @@ export type GetBudgetsQuery = {
   getBudgets:  {
     __typename: "PaginatedBudgets",
     cursor?: string | null,
-    budgetPlans?:  Array< {
+    budgets?:  Array< {
       __typename: "BudgetPlan",
       pk?: string | null,
       sk?: string | null,
@@ -506,6 +509,7 @@ export type GetBudgetsQuery = {
       spendingThreshold?: number | null,
       createdAt?: string | null,
       specificPayeeRegex?: string | null,
+      recommendationTitle?: string | null,
     } | null > | null,
   },
 };
@@ -538,6 +542,7 @@ export type GetFinancialRecommendationsQuery = {
           spendingThreshold?: number | null,
           createdAt?: string | null,
           specificPayeeRegex?: string | null,
+          recommendationTitle?: string | null,
         } | null > | null,
         description?: string | null,
       }
