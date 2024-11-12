@@ -9,6 +9,7 @@ export type ChatInput = {
   time?: string | null,
   isLastChunk?: boolean | null,
   messageId?: string | null,
+  expire_at?: string | null,
 };
 
 export type Chat = {
@@ -246,6 +247,7 @@ export enum ChatType {
   FinancialNewsQuery = "FinancialNewsQuery",
   FinancialAnalysisQuery = "FinancialAnalysisQuery",
   TransactionRecommendation = "TransactionRecommendation",
+  GeneralRecommendation = "GeneralRecommendation",
 }
 
 
@@ -260,6 +262,7 @@ export enum CacheType {
   InvestmentAnalysis = "InvestmentAnalysis",
   PortfolioAnalysis = "PortfolioAnalysis",
   TransactionRecommendation = "TransactionRecommendation",
+  GeneralRecommendation = "GeneralRecommendation",
 }
 
 
