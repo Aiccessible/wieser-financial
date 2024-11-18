@@ -1,7 +1,4 @@
 import { Link } from 'react-router-dom'
-import DarkModeSwitcher from './DarkModeSwitcher'
-import DropdownMessage from './DropdownMessage'
-import DropdownNotification from './DropdownNotification'
 import DropdownUser from './DropdownUser'
 import { MenuIcon } from 'lucide-react'
 import { useSidebar } from '../Sidebar/use-sidebar'

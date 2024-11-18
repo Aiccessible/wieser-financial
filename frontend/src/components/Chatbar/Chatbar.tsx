@@ -125,7 +125,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
         ...chats,
         ...(getSortedChunks?.split('\n**')?.map((el: string) => ({ message: el, role: 'Assistant' })) ?? ([] as any)),
     ]
-    console.info(messages)
     return (
         <Dialog.Root open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
             <Dialog.Portal>

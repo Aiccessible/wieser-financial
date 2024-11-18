@@ -8,7 +8,7 @@ import * as Accordion from '../../components/native/Accordion'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { NetWorthChart } from './NetworthChart'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
-import { TextInput, TouchableOpacity, Text } from 'react-native'
+import { TextInput, Text } from 'react-native'
 import { NewInputsOverlay } from '../common/NewInputsOverlay'
 import Loader from '../common/Loader'
 import { Button } from '@aws-amplify/ui-react'
@@ -67,12 +67,12 @@ const Projection = () => {
         )
     }
     return (
-        <div className="flex flex-1  bg-black">
+        <div className="flex flex-1 flex-col bg-black">
             <NewInputsOverlay inputs={inputs} handleInputChange={handleInputChange} />
-            <div className="flex col justify-between bg-black">
+            <div className="flex  justify-between bg-black">
                 <Accordion.Root
                     type="multiple"
-                    className="w-full max-w-lg  p-4 text-primary text-primary border rounded-lg shadow-md"
+                    className="w-full max-w-lg flex p-4 text-primary text-primary border rounded-lg shadow-md"
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Accordion.Item value="salary" className="border-b">
