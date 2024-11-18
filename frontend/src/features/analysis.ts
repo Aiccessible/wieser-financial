@@ -6,8 +6,7 @@ import { post } from 'aws-amplify/api'
 import { AccountBalances } from '../components/Analysis/NetworthChart'
 import { getFinancialConversationResponse, getFinancialSimulationExpansion } from '../graphql/queries'
 import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-let storage = AsyncStorage
+import storage from './storage'
 
 // Define a type for the slice state
 interface AnalysisState {
@@ -251,7 +250,6 @@ export const analysisSlice = createSlice({
             state.loadingProjections = true
         })
         builder.addCase(getFinancialSimulationExpansionThunk.fulfilled, (state, action) => {
-            console.info('hereyo')
             state.activeSimulationDescription = action.payload.simulationExpansion.description
             state.activeSimulationKey = action.payload.simulationExpansion.s3Key
             state.newSimulationInputs = action.payload.simulationExpansion.newInputs

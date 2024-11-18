@@ -53,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         </main>
                         {/* <!-- ===== Main Content End ===== --> */}
                     </div>
-                    <ChatBar id={''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
+                    <ChatBar activeTab={''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
 
                     {/* <!-- ===== Content Area End ===== --> */}
                 </div>

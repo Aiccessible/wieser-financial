@@ -1,1 +1,1 @@
-export * from '@rn-primitives/dialog'
+export {}
