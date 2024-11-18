@@ -1,26 +1,23 @@
 import { getFinancialProjection } from '../../../src/features/analysis'
 import { useAppDispatch, useAppSelector } from '../../..//src/hooks'
 import { useDataLoading } from '../../..//src/hooks/useDataLoading'
-import { Button } from '@aws-amplify/ui-react'
 import { generateClient } from 'aws-amplify/api'
-import { useParams } from 'react-router-dom'
 import { CustomTextBox } from '../common/CustomTextBox'
-import { calculateAverageSpendingFromMonthlySummarys } from '../common/spendingUtils'
-import { useCallback, useEffect, useState } from 'react'
-import { HighLevelTransactionCategory } from '../../../src/API'
-import { calculateAverageTaxRate, identifyAccountType } from './PersonalFinance'
-import { reduceAccounts } from '../../../src/features/accounts'
-import * as Accordion from '@radix-ui/react-accordion'
+import { useEffect, useState } from 'react'
+import * as Accordion from '../../components/native/Accordion'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { NetWorthChart } from './NetworthChart'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
-
+import { TextInput, TouchableOpacity, View, Text } from 'react-native'
+import { NewInputsOverlay } from '../common/NewInputsOverlay'
+import Loader from '../common/Loader'
 const Projection = () => {
-    const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
     const accounts = useAppSelector((state) => state.accounts.accounts)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
+    const generatingSimulation = useAppSelector((state) => state.analysis.generatingSimulation)
+    const loadingProjection = useAppSelector((state) => state.analysis.loadingProjections)
     const estimatedSavings = useAppSelector(selectRegisteredSavingsPerAccounts)
     useDataLoading({
         loadTransactions: true,
@@ -61,11 +58,22 @@ const Projection = () => {
             })
         )
     }
+    if (generatingSimulation || loadingProjection) {
+        return (
+            <View className="flex flex-1  bg-black">
+                <Loader />
+            </View>
+        )
+    }
     return (
-        <div>
-            <div className="flex col justify-between">
-                <Accordion.Root type="multiple" className="w-full max-w-lg  p-4 border rounded-lg shadow-md">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <View className="flex flex-1  bg-black">
+            <NewInputsOverlay inputs={inputs} handleInputChange={handleInputChange} />
+            <View className="flex col justify-between bg-black">
+                <Accordion.Root
+                    type="multiple"
+                    className="w-full max-w-lg  p-4 text-primary text-primary border rounded-lg shadow-md"
+                >
+                    <View className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Accordion.Item value="salary" className="border-b">
                             <Accordion.Header className="py-2">
                                 <Accordion.Trigger className="text-lg font-semibold">
@@ -73,54 +81,49 @@ const Projection = () => {
                                 </Accordion.Trigger>
                             </Accordion.Header>
                             <Accordion.Content className="px-4 py-2 space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Initial Salary</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="initial_salary"
+                                    </View>
+                                    <TextInput
+                                        keyboardType="numeric"
                                         value={inputs.initial_salary.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        onChangeText={(e) => handleInputChange({ name: 'initial_salary', value: e })}
+                                        className="w-full p-2 text-primary border rounded"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                </View>
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Salary Growth (%)</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="salary_growth"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'salary_growth', value: e })}
+                                        keyboardType="numeric"
                                         value={inputs.salary_growth.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                </View>
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Initial Bonus</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="initial_bonus"
-                                        value={inputs.initial_bonus.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'initial_bonus', value: e })}
+                                        keyboardType="numeric"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                </View>
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Bonus Growth (%)</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="bonus_growth"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'bonus_growth', value: e })}
+                                        keyboardType="numeric"
                                         value={inputs.bonus_growth.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
+                                </View>
                             </Accordion.Content>
                         </Accordion.Item>
 
@@ -131,30 +134,28 @@ const Projection = () => {
                                 </Accordion.Trigger>
                             </Accordion.Header>
                             <Accordion.Content className="px-4 py-2 space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Initial Expenses</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="initial_expenses"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'initial_expenses', value: e })}
+                                        keyboardType="numeric"
                                         value={inputs.initial_expenses.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                </View>
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Expenses Growth (%)</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="expenses_growth"
-                                        value={inputs.expenses_growth}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'expenses_growth', value: e })}
+                                        keyboardType="numeric"
+                                        value={inputs.expenses_growth.toFixed(2)}
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
+                                </View>
                             </Accordion.Content>
                         </Accordion.Item>
 
@@ -165,30 +166,28 @@ const Projection = () => {
                                 </Accordion.Trigger>
                             </Accordion.Header>
                             <Accordion.Content className="px-4 py-2 space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Investment Yield (%)</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="investment_yield"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'investment_yield', value: e })}
+                                        keyboardType="numeric"
                                         value={inputs.investment_yield.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium">
+                                </View>
+                                <View>
+                                    <View className="block text-sm font-medium">
                                         <CustomTextBox>Tax Rate (%)</CustomTextBox>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="tax_rate"
+                                    </View>
+                                    <TextInput
+                                        onChangeText={(e) => handleInputChange({ name: 'tax_rate', value: e })}
+                                        keyboardType="numeric"
                                         value={inputs.tax_rate.toFixed(2)}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border rounded"
+                                        className="w-full p-2 text-primary text-primary border rounded"
                                     />
-                                </div>
+                                </View>
                             </Accordion.Content>
                         </Accordion.Item>
 
@@ -208,29 +207,36 @@ const Projection = () => {
                                     'initial_tfsa_room',
                                     'initial_brokerage_balance',
                                 ].map((field) => (
-                                    <div key={field}>
-                                        <label className="block text-sm font-medium capitalize">
-                                            {field.replace('initial_', '').replace(/_/g, ' ')}
-                                        </label>
-                                        <input
-                                            type="number"
-                                            name={field}
+                                    <View key={field}>
+                                        <View className="block text-sm font-medium capitalize">
+                                            <CustomTextBox>
+                                                {field.replace('initial_', '').replace(/_/g, ' ')}
+                                            </CustomTextBox>
+                                        </View>
+                                        <TextInput
+                                            onChangeText={(e) => handleInputChange({ name: field, value: e })}
+                                            keyboardType="numeric"
                                             value={(inputs as any)[field].toFixed(2)}
-                                            onChange={handleInputChange}
-                                            className="w-full p-2 border rounded"
+                                            className="w-full p-2 text-primary text-primary border rounded"
                                         />
-                                    </div>
+                                    </View>
                                 ))}
                             </Accordion.Content>
                         </Accordion.Item>
-                    </div>
+                    </View>
                 </Accordion.Root>
-                <Button style={{ maxHeight: '100px' }} onClick={getProjection}>
-                    <CustomTextBox>Get Projection</CustomTextBox>
-                </Button>
-            </div>
+                <TouchableOpacity
+                    style={{ marginTop: 10, marginHorizontal: 10 }}
+                    className="bg-gradient-to-r text-center bg-primary active:scale-95 text-black py-4 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out mt-4"
+                    onPressOut={getProjection}
+                >
+                    <Text className="text-xl text-center font-bold tracking-wider text-black">
+                        Run Wieser Simulation
+                    </Text>
+                </TouchableOpacity>
+            </View>
             {projectedBalances && <NetWorthChart accountBalances={projectedBalances} title="Networth Expirement" />}
-        </div>
+        </View>
     )
 }
 export default Projection
