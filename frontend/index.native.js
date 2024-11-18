@@ -1,4 +1,6 @@
 import { registerRootComponent } from 'expo'
+import './src/initAmplify'
+
 if (typeof window.queueMicrotask !== 'function') {
     window.queueMicrotask = function (callback) {
         Promise.resolve()

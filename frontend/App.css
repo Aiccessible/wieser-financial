@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 nav {
     display: flex;
     justify-content: center;
@@ -7,8 +10,20 @@ nav {
 
 .auth-wrapper {
     display: flex;
+    flex: 1;
     justify-content: center;
     margin-top: 2rem;
+}
+
+.amplify-button--primary {
+    position: absolute;
+    width: 1000px;
+    height: 1000px;
+    background-color: #403b66 !important;
+    top: 0;
+    bottom: 0;
+    z-index: 9999;
+    color: red;
 }
 
 .hide-scrollbar {

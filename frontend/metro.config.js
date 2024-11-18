@@ -1,22 +1,26 @@
-const { getDefaultConfig } = require("metro-config");
-const { resolver: defaultResolver } = getDefaultConfig.getDefaultValues();
 
-module.exports = {
-  server: {
-    rewriteRequestUrl: (url) => {
-      if (!url.endsWith(".bundle")) {
-        return url;
-      }
-      // https://github.com/facebook/react-native/issues/36794
-      // JavaScriptCore strips query strings, so try to re-add them with a best guess.
-      return (
-        url +
-        "?platform=ios&dev=true&minify=false&modulesOnly=false&runModule=true"
-      );
-    }, // ...
-  }, // ...
+// Learn more https://docs.expo.io/guides/customizing-metro
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro')
+/** @type {import('expo/metro-config').MetroConfig} */
+const config = getDefaultConfig(__dirname, { isCSSEnabled: true })
+
+config.transformer = {
+  ...config.transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer'),
+  assetPlugins: ['expo-asset/tools/hashAssetFiles'],
+  getTransformOptions: async () => ({
+    transform: {
+      experimentalImportSupport: false,
+      inlineRequires: true,
+    },
+  }),
 };
-exports.resolver = {
-  ...defaultResolver,
-  sourceExts: [...defaultResolver.sourceExts, "cjs"],
-};
+//
+config.resolver = {
+    ...config.resolver,
+    assetExts: [...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'hcscript'],
+    sourceExts: [...config.resolver.sourceExts, 'svg', 'd.ts'],
+}
+
+module.exports = withNativeWind(config, { input: './App.css' });
