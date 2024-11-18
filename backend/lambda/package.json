@@ -9,7 +9,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "recodegen": "npx @aws-amplify/cli codegen --max-depth 5",
         "codegen": "./codegen.sh",
-        "build": "rm -rf buildLambda && tsc && npm run zip",
+        "build": "rm -rf buildLambda && echo '/**\n* Do not edit:\n* This is a compatibility redirect for contexts that do not understand package.json exports field\n */\ndeclare module '@smithy/core/protocols' {\n}' > node_modules/@smithy/core/protocols.d.ts && tsc && npm run zip",
         "zip": "zip -r lambda-code.zip . -x 'package-lock.json' -x '.DS_Store' -x 'schema.json' -x 'lambda-code.zip' -x 'src/*' -x 'node_modules/typescript/*' 'node_modules/aws-sdk/*' 'node_modules/@aws-sdk/*' 'node_modules/@types/*' 'node_modules/@smithy/*'"
     },
     "author": "",
@@ -17,6 +17,7 @@
     "description": "",
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.677.0",
+        "@aws-sdk/client-s3": "^3.693.0",
         "@aws-sdk/client-sqs": "^3.687.0",
         "@aws-sdk/credential-providers": "^3.678.0",
         "@aws-sdk/protocol-http": "^3.370.0",
@@ -27,6 +28,8 @@
         "aws4": "^1.13.2",
         "openai": "^4.68.1",
         "typescript": "^5.6.3",
-        "zod": "^3.23.8"
+        "zod": "^3.23.8",
+        "@smithy/core": "2.5.1",
+        "@smithy/types": "3.6.0"
     }
 }

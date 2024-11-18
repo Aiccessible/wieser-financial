@@ -83,8 +83,19 @@ input BudgetPlanInput {
     recommendationTitle: String
 }
 
+enum Role {
+    Assistant
+    User
+}
+
+input ChatHistory {
+    message: String
+    role: Role
+}
+
 input ChatQuery {
     prompt: String
+    chatHistory: ChatHistory
     chatFocus: ChatFocus
     accountIds: [String!]
     requiresLiveData: Boolean
@@ -106,6 +117,7 @@ enum ChatType {
     FinancialAnalysisQuery
     TransactionRecommendation
     GeneralRecommendation
+    SimulationExpansion
 }
 
 type GraphType {
@@ -321,12 +333,24 @@ type Mutation {
     createBudget(budget: BudgetPlanInput!): BudgetPlan
 }
 
+type FinancialSimulationExpansion {
+    s3Key: String
+    newInputs: [String]
+    description: String
+}
+
+input ExpandFinancialSimulation {
+    message: String
+    s3Key: String
+}
+
 type Query {
     getItems(limit: Int, cursor: String): PaginatedItems!
     getAccounts(id: ID!): [Account!]!
     getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
     getBudgets(id: ID!, limit: Int, cursor: String): PaginatedBudgets!
+    getFinancialSimulationExpansion(chat: ExpandFinancialSimulation): FinancialSimulationExpansion!
     getFinancialRecommendations(chat: ChatQuery): [Recommendation]!
     getFinancialConversationResponse(chat: ChatQuery): ChatResponse!
     getSpendingSummary(minDate: Long, maxDate: Long, id: String!, type: SpendingSummaryType): SpendingSummary

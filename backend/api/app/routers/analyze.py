@@ -9,6 +9,7 @@ from aws_lambda_powertools.metrics import MetricUnit
 from aws_lambda_powertools.event_handler.api_gateway import Router, Response
 from aws_lambda_powertools.event_handler import content_types
 from aws_lambda_powertools.event_handler.exceptions import InternalServerError
+import boto3
 
 __all__ = ["router"]
 
@@ -16,6 +17,53 @@ tracer = Tracer()
 logger = Logger(child=True)
 metrics = Metrics()
 router = Router()
+s3_client = boto3.client('s3')
+metrics = Metrics()
+
+
+def load_analysis_function(bucket_name: str, object_key: str):
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
+        script = response['Body'].read().decode('utf-8')
+        namespace = {}
+        exec(script, namespace)
+        return namespace.get("simulate_account_balances", None)  # Ensure the analyze function is present
+    except Exception as e:
+        logger.exception("Failed to load or execute the analysis function")
+        raise InternalServerError(f"Error loading the function from S3: {str(e)}")
+
+@router.post("/analyze")
+def analyze_handler():
+    body = json.loads(router.current_event.get("body", "{}"))
+
+    # Collect inputs dynamically
+    inputs = body.get("inputs", {})
+    s3_key = body.get("s3_key")
+
+    # S3 bucket and key for the analysis script
+    s3_bucket = os.environ.get("BUCKET_NAME")
+
+
+    # Load the function from S3
+    analyze = load_analysis_function(s3_bucket, s3_key)
+
+    if not analyze:
+        raise InternalServerError("Analyze function not found in the loaded script.")
+
+    try:
+        # Run the analyze function with the provided inputs
+        result = analyze(inputs)
+        return {
+            "RRSP": result.rrsp_balances,
+            "FHSA": result.fhsa_balances,
+            "TFSA": result.tfsa_balances,
+            "Brokerage": result.brokerage_balances,
+            "Net Worth": result.net_worths,
+            **result  # Add all other keys dynamically
+        }
+    except Exception as e:
+        logger.exception("Error executing analysis function")
+        raise InternalServerError(f"Error during analysis execution: {str(e)}")
 
 
 @router.post("/projection")

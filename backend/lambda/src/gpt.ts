@@ -6,7 +6,7 @@ import { ChatFocus, ChatInput, ChatType, HighLevelTransactionCategory } from './
 import { createChat } from './graphql/mutations'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import * as aws4 from 'aws4'
-import { newsPrompt, technicalPrompt } from './stockPrompts'
+import { expansionPrompt, newsPrompt, technicalPrompt } from './stockPrompts'
 const appsyncUrl = process.env.APPSYNC_URL as string
 const apiKey = process.env.APPSYNC_API_KEY as string
 
@@ -41,6 +41,18 @@ const transactionRecommendationAction = z.object({
         })
     ),
 })
+
+const SimulationExpansionResponseFormat = z.object({
+    highLevelDescriptionOfIdeaWithoutMentioningCode: z.string(),
+    newCode: z.string(),
+    inputKeys: z.array(z.string()),
+})
+
+export interface SimulationExpansionResponseInterface {
+    highLevelDescriptionOfIdeaWithoutMentioningCode: string
+    newCode: string
+    inputKeys: string[]
+}
 
 const Recommendations = z.object({
     recommendations: z.array(
@@ -164,6 +176,8 @@ export const completeChatFromPrompt = async (
             ? newsPrompt
             : chatType === ChatType.FinancialAnalysisQuery
             ? technicalPrompt
+            : chatType === ChatType.SimulationExpansion
+            ? expansionPrompt
             : chatType === ChatType.TransactionRecommendation
             ? `You are a personal spending assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide spending recommendations which are highly useful.`
             : chatType === ChatType.GeneralRecommendation
@@ -191,6 +205,8 @@ export const completeChatFromPrompt = async (
                 ? zodResponseFormat(TransactionRecommendation, 'recommendations')
                 : chatType === ChatType.GeneralRecommendation
                 ? zodResponseFormat(Recommendations, 'recommendations')
+                : chatType === ChatType.SimulationExpansion
+                ? zodResponseFormat(SimulationExpansionResponseFormat, 'simulationExpansion')
                 : undefined,
         model,
         stream: true,

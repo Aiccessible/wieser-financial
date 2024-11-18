@@ -8,6 +8,7 @@ export declare const getAccounts: GeneratedQuery<APITypes.GetAccountsQueryVariab
 export declare const getTransactions: GeneratedQuery<APITypes.GetTransactionsQueryVariables, APITypes.GetTransactionsQuery>;
 export declare const getInvestments: GeneratedQuery<APITypes.GetInvestmentsQueryVariables, APITypes.GetInvestmentsQuery>;
 export declare const getBudgets: GeneratedQuery<APITypes.GetBudgetsQueryVariables, APITypes.GetBudgetsQuery>;
+export declare const getFinancialSimulationExpansion: GeneratedQuery<APITypes.GetFinancialSimulationExpansionQueryVariables, APITypes.GetFinancialSimulationExpansionQuery>;
 export declare const getFinancialRecommendations: GeneratedQuery<APITypes.GetFinancialRecommendationsQueryVariables, APITypes.GetFinancialRecommendationsQuery>;
 export declare const getFinancialConversationResponse: GeneratedQuery<APITypes.GetFinancialConversationResponseQueryVariables, APITypes.GetFinancialConversationResponseQuery>;
 export declare const getSpendingSummary: GeneratedQuery<APITypes.GetSpendingSummaryQueryVariables, APITypes.GetSpendingSummaryQuery>;
