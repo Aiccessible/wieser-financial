@@ -1,0 +1,13 @@
+diff --git a/node_modules/@aws-amplify/ui-react-native/src/primitives/Button/Button.tsx b/node_modules/@aws-amplify/ui-react-native/src/primitives/Button/Button.tsx
+index b14770f..faf21dd 100644
+--- a/node_modules/@aws-amplify/ui-react-native/src/primitives/Button/Button.tsx
++++ b/node_modules/@aws-amplify/ui-react-native/src/primitives/Button/Button.tsx
+@@ -47,7 +47,7 @@ export default function Button({
+       {...rest}
+       accessibilityRole={accessibilityRole}
+       disabled={disabled}
+-      style={pressableStyle}
++      style={pressableStyle({ pressed: false })}
+     >
+       {typeof children === 'string' ? (
+         <Text style={[buttonTextStyle, textStyle]}>{children}</Text>
