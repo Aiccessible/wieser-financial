@@ -1,12 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { getFinancialRecommendationsFromData } from '../libs/gpt'
 import { RootState } from '../store'
-import { CacheType, ChatFocus, ChatType, Recommendation } from '../API'
+import { CacheType, ChatFocus, ChatType, ExpandFinancialSimulation, Recommendation } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { post } from 'aws-amplify/api'
 import { AccountBalances } from '../components/Analysis/NetworthChart'
-import { getFinancialConversationResponse } from '../graphql/queries'
+import { getFinancialConversationResponse, getFinancialSimulationExpansion } from '../graphql/queries'
 import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+let storage = AsyncStorage
+
 // Define a type for the slice state
 interface AnalysisState {
     fullPictureRecommendations: Recommendation[] | undefined
@@ -17,6 +19,11 @@ interface AnalysisState {
     loadingProjectionsError: string | undefined
     budgetPlanProjections: Record<string, AccountBalances | { loading: true }>
     activeBudgetPlan: string | undefined
+    generatingSimulation: boolean
+    newSimulationInputs: string[] | undefined
+    activeSimulationKey: string | undefined
+    activeSimulationDescription: string | undefined
+    generationError: string | undefined
 }
 
 export interface FinancialInputs {
@@ -48,6 +55,11 @@ const initialState: AnalysisState = {
     loadingProjectionsError: undefined,
     budgetPlanProjections: {},
     activeBudgetPlan: '',
+    activeSimulationDescription: undefined,
+    activeSimulationKey: undefined,
+    newSimulationInputs: undefined,
+    generatingSimulation: false,
+    generationError: '',
 }
 
 export interface GetFullPictureRecommendationInput {
@@ -58,12 +70,18 @@ export interface GetFullPictureRecommendationInput {
 export interface GetFinancialProjectionInput {
     client: { graphql: GraphQLMethod }
     input: FinancialInputs
+    path?: string | undefined
 }
 
 export interface GetFinancialBudgetProjectionInput {
     client: { graphql: GraphQLMethod }
     input: FinancialInputs
     budgetName: string
+}
+
+export interface GetFinancialSimulationExpansionInput {
+    client: { graphql: GraphQLMethod }
+    input: ExpandFinancialSimulation
 }
 
 export const financialProjectionToChatInput = (projection: FinancialProjection) => {
@@ -73,10 +91,10 @@ export const financialProjectionToChatInput = (projection: FinancialProjection) 
                 (balance: ${projection.initial_rrsp_balance} room ${projection.initial_rrsp_room})
                 (balance: ${projection.initial_fhsa_balance} room ${projection.initial_fhsa_room})`
 }
-export const getProjection = async (input: FinancialInputs) => {
+export const getProjection = async (input: FinancialInputs, path = `/v1/analyze/projection`) => {
     const { body } = await post({
         apiName: 'plaidapi',
-        path: `/v1/analyze/projection`,
+        path: path,
         options: {
             body: {
                 ...input,
@@ -93,7 +111,29 @@ export const getFinancialProjection = createAsyncThunk<
     GetFinancialProjectionInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-financial-projection', async (input: GetFinancialProjectionInput, getThunkApi) => {
-    return await getProjection(input.input)
+    return await getProjection(input.input, input.path ?? '/v1/analyze/projection')
+})
+
+export const getFinancialSimulationExpansionThunk = createAsyncThunk<
+    any, // Return type
+    GetFinancialSimulationExpansionInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('analysis/get-financial-simulation-expansion', async (input: GetFinancialSimulationExpansionInput, getThunkApi) => {
+    console.info('sending ', input.input)
+    try {
+        const response = await input.client.graphql({
+            query: getFinancialSimulationExpansion,
+            variables: {
+                chat: input.input,
+            },
+        })
+        console.info(response)
+        const recs = response.data.getFinancialSimulationExpansion
+        return { simulationExpansion: recs }
+    } catch (e) {
+        console.error(e)
+        throw e
+    }
 })
 
 export const getFinancialProjectionForBudget = createAsyncThunk<
@@ -110,7 +150,9 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
     GetFullPictureRecommendationInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-analysis', async (input: GetFullPictureRecommendationInput, getThunkApi) => {
-    const storedItem = localStorage.getItem(getStorageKey('full-picture-recommendation'))
+    console.info('getting storage item')
+    const storedItem = await storage.getItem(getStorageKey('full-picture-recommendation'))
+    console.info(storedItem)
     if (storedItem) {
         return {
             fullPictureRecommendations: JSON.parse(storedItem || ''),
@@ -121,6 +163,7 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             .getState()
             .idsSlice.institutions?.map((account) => account.item_id)
             .slice(0, 25) ?? []
+    console.info('Calling graphql')
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
@@ -143,8 +186,9 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             },
         },
     })
+    console.info('got back ', res)
     const recs = res.data.getFinancialConversationResponse.response
-    localStorage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(recs))
+    storage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(recs))
     return { fullPictureRecommendations: recs }
 })
 
@@ -171,7 +215,8 @@ export const analysisSlice = createSlice({
             state.loading = false
         })
         builder.addCase(getFullPictureRecommendationAsync.rejected, (state, action) => {
-            state.error = 'Failed to get recommendations because ' + action.error.message
+            console.error('Failed getting recs', action.error)
+            state.error = 'Fgot backailed to get recommendations because ' + action.error.message
             state.loading = false
         })
         builder.addCase(getFullPictureRecommendationAsync.pending, (state, action) => {
@@ -204,6 +249,22 @@ export const analysisSlice = createSlice({
         builder.addCase(getFinancialProjection.pending, (state, action) => {
             state.loadingProjectionsError = undefined
             state.loadingProjections = true
+        })
+        builder.addCase(getFinancialSimulationExpansionThunk.fulfilled, (state, action) => {
+            console.info('hereyo')
+            state.activeSimulationDescription = action.payload.simulationExpansion.description
+            state.activeSimulationKey = action.payload.simulationExpansion.s3Key
+            state.newSimulationInputs = action.payload.simulationExpansion.newInputs
+            state.generatingSimulation = false
+        })
+        builder.addCase(getFinancialSimulationExpansionThunk.rejected, (state, action) => {
+            console.error(action.error)
+            state.generationError = 'Failed to get projections because ' + action.error.message
+            state.generatingSimulation = false
+        })
+        builder.addCase(getFinancialSimulationExpansionThunk.pending, (state, action) => {
+            state.generatingSimulation = true
+            state.generationError = undefined
         })
     },
 })

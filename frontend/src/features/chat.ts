@@ -8,7 +8,7 @@ import { financialProjectionToChatInput } from './analysis'
 
 // Define a type for the slice state
 interface ChatState {
-    chats: { role: string; message: string }[]
+    chats: { role: string; message: string; date: string | number }[]
     error: string | undefined
     loadingChat: boolean
     currentScope: ChatFocus | undefined
@@ -57,6 +57,7 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                         input.projection
                     )}`
             }
+            console.info('sending ', input)
             const res = await input.client.graphql({
                 query: getFinancialConversationResponse,
                 variables: {
@@ -70,6 +71,7 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                     } as any,
                 },
             })
+            console.info(res)
             const errors = res.errors
             if (errors && errors.length > 0) {
                 return { errors, chatResponse: res, loading: false }
@@ -80,6 +82,7 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                 loading: false,
             }
         } catch (e: any) {
+            console.error(e)
             return { error: e?.message }
         }
     }
@@ -112,12 +115,13 @@ export const chatSlice = createSlice({
             state.chatOpen = action.payload
         },
         pushChatToLLM: (state, action) => {
-            state.chats.push({ role: 'Assistant', message: action.payload })
+            state.chats.push({ role: 'Assistant', message: action.payload, date: Date.now() })
         },
     },
     extraReducers(builder) {
         builder.addCase(sendChatToLLM.fulfilled, (state, action) => {
-            action.payload.chatResponse && state.chats.push({ role: 'Assistant', message: action.payload.chatResponse })
+            action.payload.chatResponse &&
+                state.chats.push({ role: 'Assistant', message: action.payload.chatResponse, date: Date.now() })
             state.error = action.payload.error
         })
         builder.addCase(sendChatToLLM.rejected, (state, action) => {
@@ -125,7 +129,7 @@ export const chatSlice = createSlice({
             state.loadingChat = false
         })
         builder.addCase(sendChatToLLM.pending, (state, action) => {
-            state.chats.push({ role: 'User', message: action.meta.arg?.newChat })
+            state.chats.push({ role: 'User', message: action.meta.arg?.newChat, date: Date.now() })
             state.error = undefined
             state.loadingChat = true
             state.newChat = ''
