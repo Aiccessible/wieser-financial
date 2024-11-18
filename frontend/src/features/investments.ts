@@ -6,6 +6,8 @@ import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { post } from 'aws-amplify/api'
 import { getIdFromSecurity } from '../libs/utlis'
 import { Investment as InvestmentType } from '../API'
+import storage from './storage'
+
 // Define a type for the slice state
 
 export interface InvestmentKnoweldgeViewModel {
@@ -131,8 +133,8 @@ export const getInvestmentNewsSummary = createAsyncThunk<
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-news-summary', async (input: GetInvestmentNewsSummaryInput, getThunk) => {
     const key = input.ids.join(',')
-    if (localStorage.getItem(getStorageKey(key))) {
-        return { investmentSummary: localStorage.getItem(getStorageKey(key)) }
+    if (await storage.getItem(getStorageKey(key))) {
+        return { investmentSummary: await storage.getItem(getStorageKey(key)) }
     }
     const ids =
         getThunk
@@ -157,7 +159,7 @@ export const getInvestmentNewsSummary = createAsyncThunk<
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getStorageKey(key), res.data?.getFinancialConversationResponse?.response)
+        (await storage.setItem(getStorageKey(key), res.data?.getFinancialConversationResponse?.response))
     const errors = res.errors
     if (errors && errors.length > 0) {
         return { errors, investmentSummary: res.data?.getFinancialConversationResponse?.response }
@@ -175,8 +177,8 @@ export const getInvestmentNews = createAsyncThunk<
 >('investment/get-investment-news', async (input: GetInvestmentNewsInput, getThunk) => {
     const idForSecurity = input?.security ? getIdFromSecurity(input?.security) : ''
 
-    if (localStorage.getItem(getNewsKey(idForSecurity))) {
-        return { value: localStorage.getItem(getNewsKey(idForSecurity)), key: idForSecurity }
+    if (await storage.getItem(getNewsKey(idForSecurity))) {
+        return { value: await storage.getItem(getNewsKey(idForSecurity)), key: idForSecurity }
     }
     // TODO: Either add streaming ability or turn it off
     const res = await input.client.graphql({
@@ -194,7 +196,7 @@ export const getInvestmentNews = createAsyncThunk<
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getNewsKey(idForSecurity), res.data?.getFinancialConversationResponse?.response)
+        (await storage.setItem(getNewsKey(idForSecurity), res.data?.getFinancialConversationResponse?.response))
     const errors = res.errors
     if (errors && errors.length > 0) {
         return { errors, value: res.data?.getFinancialConversationResponse?.response, key: idForSecurity }
@@ -298,11 +300,9 @@ export const getInvestmentAnalysis = createAsyncThunk<
     GetInvestmentNewsInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('investment/get-investment-analysis', async (input: GetInvestmentNewsInput, getThunk) => {
-    console.info(getThunk.getState().investments.stockPriceData, 'prive data')
     const arrayOfRecords = getThunk.getState().investments.stockPriceData as any as Record<string, StockPriceData>[]
     const keyLookingFor = getIdFromSecurity(input?.security ?? undefined)
     let priceData = Object.values(arrayOfRecords?.find((el) => Object.keys(el)[0] === keyLookingFor) ?? {})?.[0]?.price
-    console.log(priceData, 234)
     const endDate = new Date() // Current date
     const startDate = new Date()
     startDate.setDate(endDate.getDate() - 14) // 2 weeks (14 days) before the current date
@@ -325,9 +325,9 @@ export const getInvestmentAnalysis = createAsyncThunk<
     } catch (e) {
         console.log(e)
     }
-    if (localStorage.getItem(getAnalysisKey(idForSecurity))) {
+    if (await storage.getItem(getAnalysisKey(idForSecurity))) {
         return {
-            value: localStorage.getItem(getAnalysisKey(idForSecurity)),
+            value: await storage.getItem(getAnalysisKey(idForSecurity)),
             key: idForSecurity,
             priceData,
         }
@@ -351,7 +351,7 @@ export const getInvestmentAnalysis = createAsyncThunk<
         },
     })
     res.data?.getFinancialConversationResponse?.response &&
-        localStorage.setItem(getAnalysisKey(idForSecurity), res.data?.getFinancialConversationResponse?.response)
+        (await storage.setItem(getAnalysisKey(idForSecurity), res.data?.getFinancialConversationResponse?.response))
     const errors = res.errors
     if (errors && errors.length > 0) {
         return { errors, value: res.data?.getFinancialConversationResponse?.response, key: idForSecurity, priceData }

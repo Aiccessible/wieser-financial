@@ -1,4 +1,4 @@
-import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { getAccounts } from '../graphql/queries'
 import { Account } from '../API'
 import { RootState } from '../store'
