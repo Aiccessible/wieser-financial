@@ -1,14 +1,13 @@
-import { TableCell, TableRow } from '@aws-amplify/ui-react'
+import { TableRow } from '@aws-amplify/ui-react'
 import { InvestmentViewModel } from './Investments'
 import Currency from './Currency'
 import { CustomTableCell } from './common/CustomTableCell'
 import { CustomTextBox } from './common/CustomTextBox'
 import { InvestmentKnoweldgeViewModel } from '../features/investments'
-import ExpandableTextWithModal from './ExpandableTextWithModal'
-import { ChevronDownIcon, Loader } from 'lucide-react'
 import { setActiveStock } from '../features/investments'
 import { useAppDispatch } from '../hooks'
 import { getIdFromSecurity } from '../libs/utlis'
+import { TouchableOpacity, View, Text } from 'react-native'
 export default function Investment({
     investment,
     knoweldge,
@@ -19,12 +18,21 @@ export default function Investment({
     const dispatch = useAppDispatch()
     // Name, close, quantity, cost
     return (
-        <TableRow>
+        <View className="flex flex-row bg-black">
             <CustomTableCell>
                 <CustomTextBox className="underline mt-2">
-                    <button className="underline" onClick={() => dispatch(setActiveStock(investment?.security))}>
-                        {getIdFromSecurity(investment?.security) ?? 'Unknown Security'}
-                    </button>
+                    <TouchableOpacity
+                        className="underline"
+                        onPress={() => dispatch(setActiveStock(investment?.security))}
+                    >
+                        <Text
+                            className="font-semibold text-white flex-1 flex-wrap"
+                            numberOfLines={2} // Limit to 2 lines, text will wrap if too long
+                            ellipsizeMode="tail" // Optional: Add ellipsis if it overflows
+                        >
+                            {investment?.security?.ticker_symbol ?? investment?.security?.name}
+                        </Text>
+                    </TouchableOpacity>
                 </CustomTextBox>
             </CustomTableCell>
             <CustomTableCell>
@@ -41,6 +49,6 @@ export default function Investment({
             <CustomTableCell>
                 <CustomTextBox>{investment.holding.cost_basis}</CustomTextBox>
             </CustomTableCell>
-        </TableRow>
+        </View>
     )
 }

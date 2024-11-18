@@ -6,8 +6,7 @@ import { CustomTextBox } from './common/CustomTextBox'
 import PlaidLink from './PlaidLink'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getInvestementsAsync } from '../features/investments'
-import { useParams } from 'react-router-dom'
-import { callFunctionsForEachId } from './Investments'
+import { TouchableOpacity, View, Text } from 'react-native'
 
 const logger = new ConsoleLogger('Refresh')
 
@@ -77,23 +76,28 @@ export default function RefreshHoldings({ item_id }: { item_id: string }) {
             logger.error('unable to refresh item', err)
         }
     }
-    const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
 
     const onSuccess = () => {
-        getInvestementsAsync({ id: id || '', client: client, append: false })
+        dispatch(getInvestementsAsync({ id: 'v0', client: client, append: false }))
     }
 
     return (
-        <div className="flex flex-col">
-            <Button className="m4" isLoading={loading} onClick={refresh} size="small">
-                <CustomTextBox>Refresh Holdings</CustomTextBox>
-            </Button>
-            <Button className="mt-4" isLoading={loadingToken} onClick={linkInvestment} size="small">
-                <CustomTextBox>Link Investments</CustomTextBox>
-            </Button>
+        <View className="flex flex-row">
+            <TouchableOpacity
+                className="bg-primary w-[40vw] text-black text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
+                onPress={refresh}
+            >
+                <Text className="text-black text-center">Refresh Holdings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                className="bg-secondary w-[40vw] text-black ml-2 text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
+                onPress={linkInvestment}
+            >
+                <Text className="text-white text-center">Link Investments</Text>
+            </TouchableOpacity>
             {token && <PlaidLink token={token} onSuccess={onSuccess} onExit={() => {}} />}
-        </div>
+        </View>
     )
 }

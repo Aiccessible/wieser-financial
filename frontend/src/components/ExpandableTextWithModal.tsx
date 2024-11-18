@@ -1,6 +1,7 @@
 import React, { useState, ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { CustomTextBox } from './common/CustomTextBox'
+import { Dimensions, TouchableOpacity, View } from 'react-native'
 
 interface ExpandableTextWithModalProps {
     maxHeight?: string // Max height for the preview, e.g., '4rem' or '80px'
@@ -14,24 +15,23 @@ const ExpandableTextWithModal: React.FC<ExpandableTextWithModalProps> = ({
     const [isDialogOpen, setIsDialogOpen] = useState(false)
 
     return (
-        <div>
+        <View>
             {/* Preview Text with max-height and overflow */}
-            <div
+            <View
                 className="overflow-hidden text-gray-700"
                 style={{
-                    maxHeight,
-                    WebkitLineClamp: 3,
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
+                    maxHeight: Dimensions.get('window').height * 0.5,
                 }}
             >
                 <CustomTextBox>{children}</CustomTextBox>
-            </div>
+            </View>
 
             {/* "Read more" Button */}
             <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <Dialog.Trigger asChild>
-                    <button className="text-blue-500 underline mt-2">Read more</button>
+                    <TouchableOpacity className="text-blue-500 underline mt-2">
+                        <CustomTextBox>Read more</CustomTextBox>
+                    </TouchableOpacity>
                 </Dialog.Trigger>
 
                 {/* Modal Content */}
@@ -41,14 +41,14 @@ const ExpandableTextWithModal: React.FC<ExpandableTextWithModalProps> = ({
                         <Dialog.Title className="text-lg font-semibold mb-4">My Investment Report</Dialog.Title>
                         <Dialog.Description className="text-gray-700">{children}</Dialog.Description>
                         <Dialog.Close asChild>
-                            <button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
-                                Close
-                            </button>
+                            <TouchableOpacity className="mt-4 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                                <CustomTextBox>Close</CustomTextBox>
+                            </TouchableOpacity>
                         </Dialog.Close>
                     </Dialog.Content>
                 </Dialog.Portal>
             </Dialog.Root>
-        </div>
+        </View>
     )
 }
 

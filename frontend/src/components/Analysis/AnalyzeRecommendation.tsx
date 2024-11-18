@@ -1,4 +1,3 @@
-import { useParams } from 'react-router-dom'
 import { Divider, Flex, Heading } from '@aws-amplify/ui-react'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { generateClient } from 'aws-amplify/api'
@@ -14,11 +13,11 @@ import {
     runThread,
     uploadFileToAssistant,
 } from '../../libs/gpt'
+import { View } from 'react-native'
 const logger = new ConsoleLogger('AnalyzeRecommendation')
 
 export default function AnalyzeRecommendation() {
-    const { name, id } = useParams()
-    const client = generateClient()
+    /**const client = generateClient()
     const [assistant, setAssistant] = useState<any>(localStorage.getItem('assistant-id'))
     const [investmentFileId, setInvestmentFileId] = useState<any>(localStorage.getItem('investment-file-id'))
     const [transactionFileId, setTransactionFileId] = useState<any>(localStorage.getItem('transactions-file-id'))
@@ -77,7 +76,7 @@ export default function AnalyzeRecommendation() {
     const recommendationsLoading = useAppSelector((state) => state.analysis.loading)
     const recommendations = useAppSelector((state) => state.analysis.fullPictureRecommendations)
     const { investments, accounts, transactions } = useDataLoading({
-        id: id || '',
+        id: 'v0',
         client,
         loadAccounts: false,
         loadInvestments: false,
@@ -121,5 +120,6 @@ export default function AnalyzeRecommendation() {
                 </Heading>
             </Flex>
         </Flex>
-    )
+    ) */
+    return <View></View>
 }

@@ -1,7 +1,7 @@
 import { setChatParams } from '../../../src/features/chat'
 import { useAppDispatch } from '../../../src/hooks'
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '../Link'
 
 const DropdownMessage = (props: { chatbarOpen: boolean; setChatbarOpen: (arg: boolean) => void }) => {
     //const [dropdownOpen, setDropdownOpen] = useState(false)

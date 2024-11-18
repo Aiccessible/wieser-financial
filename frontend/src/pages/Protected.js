@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
-import { View, Heading, Flex } from '@aws-amplify/ui-react';
 import { getItems as GetItems } from '../graphql/queries';
 import Plaid from '../components/Plaid';
 import Institutions from '../components/Institutions';
@@ -9,6 +8,7 @@ import { CustomTextBox } from '../components/common/CustomTextBox';
 import WelcomePage from '../components/WelcomePage';
 import { usePlaidHooks } from '../components/hooks/usePlaidHooks';
 import PlaidLink from '../components/PlaidLink';
+import { View, Text } from 'react-native'
 const logger = new ConsoleLogger("Protected");
 
 export default function Protected() {
@@ -51,25 +51,23 @@ export default function Protected() {
   if (!items?.length && !loading) {
       return (
           <>
-              <WelcomePage setIsDone={setIsDone} />{' '}
+              <WelcomePage setIsDone={setIsDone} />
               {token && done && <PlaidLink token={token} onSuccess={handleSuccess} onExit={() => setConnecting(false)} />}
           </>
       )
   }
   
   return (
-      <Flex direction="column">
+      <View className='flex flex-col'>
           <Plaid getItems={getItems} />
           {items && items.length ? (
               <View>
-                  <Heading>
-                      <CustomTextBox>Institutions</CustomTextBox>
-                  </Heading>
+                  <CustomTextBox className='font-bold'>Institutions</CustomTextBox>
                   <Institutions institutions={items} />
               </View>
           ) : (
-              <div />
+              <View />
           )}
-      </Flex>
+      </View>
   )
 }

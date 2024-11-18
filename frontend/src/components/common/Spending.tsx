@@ -1,11 +1,11 @@
 import React from 'react'
 import { useAppDispatch, useAppSelector } from '../../hooks'
-import HighchartsReact from 'highcharts-react-official'
+import HighchartsReact from '../native/Chats'
 import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 
-import './graph.css'
+// import './graph.css'
 import { ChatFocus } from '../../../src/API'
 import { setChatParams } from '../../../src/features/chat'
 HighchartsAccessibility(Highcharts)

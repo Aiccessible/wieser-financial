@@ -1,5 +1,5 @@
-import * as Accordion from '@radix-ui/react-accordion'
-import { Button, ButtonGroup, Heading } from '@aws-amplify/ui-react'
+import * as Accordion from '../native/Accordion'
+import { Heading } from 'lucide-react-native'
 import Loader from '../../components/common/Loader'
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
@@ -18,6 +18,11 @@ import { getFinancialProjectionForBudget, setActiveBudgetPlan } from '../../../s
 import { generateClient } from 'aws-amplify/api'
 import { selectAverageSpendingPerCategory } from '../../../src/features/transactions'
 import { addBudget } from '../../../src/features/budgets'
+import { Text, View, TouchableOpacity, ScrollView, Dimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+const StyledView = View
+const Button = TouchableOpacity
 
 const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Recommendation[]; id: string }) => {
     const loadingTransfer = useAppSelector((state) => state.auth.loadingTransfer)
@@ -56,7 +61,6 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
             })
         )
     }
-    const averageSpending: Record<string, number> = useAppSelector(selectAverageSpendingPerCategory)
     const client = generateClient()
     const isCreatingBudget = useAppSelector((state) => state.budgetSlice.creatingBudget)
     const onAnalyze = (budget: BudgetPlan) => {
@@ -86,30 +90,38 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
             })
         )
     }
-    console.info(budgets)
+
+    const insets = useSafeAreaInsets() // Get safe area insets
+
     return (
-        <Accordion.Root className="space-y-4 max-h-[85vh] overflow-auto no-scrollbar hide-scrollbar" type="multiple">
+        <ScrollView
+            horizontal={true}
+            decelerationRate={0}
+            snapToInterval={Dimensions.get('screen').width * 0.9} //your element width
+            snapToAlignment={'center'}
+        >
             {recommendations &&
                 recommendations.map((recommendation, index) => (
-                    <div
+                    <StyledView
                         key={index}
-                        className=" flex-grow bg-transparent py-4 pl-9 pr-4 font-medium focus:outline-none text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl relative hide-scrollbar"
+                        style={{
+                            width: Dimensions.get('screen').width * 0.9,
+                        }}
+                        className="flex-grow bg-transparent py-4  font-medium focus:outline-none text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl relative hide-scrollbar w-screen"
                     >
-                        <div
+                        <StyledView
                             style={{ backgroundColor: recommendation.priority === 'High' ? '#fe0103' : '#fa8d03' }}
                             className={`absolute top-0 right-0 w-10 h-6 bg-${
                                 recommendation.priority === 'High' ? 'danger1' : 'warning1'
                             } rounded-full translate-x-1/4 -translate-y-1/4`}
-                        ></div>
+                        ></StyledView>
 
-                        <Heading>
-                            <CustomTextBox
-                                className=" hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out text-md"
-                                key={index}
-                            >
-                                {recommendation.title}
-                            </CustomTextBox>
-                        </Heading>
+                        <CustomTextBox
+                            className="w-full hover:text-white-700 hover:underline-offset-2 transition duration-300 ease-in-out text-md font-bold"
+                            key={index}
+                        >
+                            {recommendation.title}
+                        </CustomTextBox>
                         <CustomTextBox className="font-normal text-left">
                             {recommendation!.action!.description}
                         </CustomTextBox>
@@ -117,24 +129,26 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                         {(recommendation!.action as any).transfers ? (
                             <>
                                 {(recommendation!.action as any).transfers?.map((transfer: Transfer, index: number) => (
-                                    <div
+                                    <StyledView
                                         key={index}
                                         className="flex justify-between items-center bg-gray-100 p-1 rounded-lg mb-1"
                                     >
-                                        <div>
+                                        <StyledView>
                                             <CustomTextBox className="text-sm font-semibold">
                                                 From: {transfer!.fromAccountName}
                                             </CustomTextBox>
                                             <CustomTextBox className="text-sm font-semibold">
                                                 To: {transfer!.toAccountName}
                                             </CustomTextBox>
-                                        </div>
-                                        <p className="text-lg font-semibold text-highlight">${transfer!.amount}</p>
+                                        </StyledView>
+                                        <Text className="text-lg font-semibold text-highlight">
+                                            ${transfer!.amount}
+                                        </Text>
                                         {loadingTransfer ? (
                                             <Loader />
                                         ) : (
-                                            <button
-                                                onClick={() =>
+                                            <Button
+                                                onPress={() =>
                                                     onClickTransfer(
                                                         transfer as Transfer,
                                                         (recommendation!.action as RecommendationAction)!.description ||
@@ -143,38 +157,38 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                                 }
                                                 className="bg-primary text-black font-bold ml-2 py-3 px-6 rounded-lg shadow-lg hover:bg-white transition-all duration-500  animate-fade m-0"
                                             >
-                                                Confirm Transfers
-                                            </button>
+                                                <Text>Confirm Transfers</Text>
+                                            </Button>
                                         )}
-                                    </div>
+                                    </StyledView>
                                 ))}
                             </>
                         ) : (recommendation!.action as any).budget ? (
                             <>
                                 {(recommendation!.action as TransactionRecommendationAction).budget?.map(
                                     (budget, index) => (
-                                        <div
+                                        <StyledView
                                             key={index}
-                                            className="flex justify-between items-center bg-gray-200 p-3 rounded-lg mb-4 shadow-md"
+                                            className="flex flex-col justify-between items-center bg-gray-200 p-3 rounded-lg mb-4 shadow-md flex-row"
                                         >
-                                            <div className="flex flex-col">
+                                            <StyledView className="flex flex-col">
                                                 <CustomTextBox className="text-base font-semibold text-gray-800">
                                                     Reduce {budget?.highLevelCategory} Spending
                                                 </CustomTextBox>
-                                                <p className="text-xl font-bold text-green-600">
+                                                <Text className="text-xl font-bold text-green-600">
                                                     ${budget?.spendingThreshold}
-                                                </p>
-                                            </div>
+                                                </Text>
+                                            </StyledView>
                                             {loadingTransfer ? (
                                                 <Loader />
                                             ) : (
-                                                <ButtonGroup className="flex flex-col space-y-2">
+                                                <StyledView className="flex flex-col space-y-2">
                                                     {!budgets?.find(
                                                         (budgetInRedux) =>
                                                             budgetInRedux.recommendationTitle === recommendation?.title
                                                     ) ? (
                                                         <Button
-                                                            onClick={() => {
+                                                            onPress={() => {
                                                                 const budgetCopy = { ...budget }
                                                                 budgetCopy!.recommendationTitle =
                                                                     recommendation?.title ?? ''
@@ -185,10 +199,9 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                                                     })
                                                                 )
                                                             }}
-                                                            isLoading={isCreatingBudget}
                                                             className="bg-primary text-black text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300"
                                                         >
-                                                            Start Budget
+                                                            <Text className="text-black">Start Budget</Text>
                                                         </Button>
                                                     ) : (
                                                         budgets?.find(
@@ -197,40 +210,33 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                                                 recommendation?.title
                                                         ) && (
                                                             <Button className="bg-primary text-black text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-green-600 transition duration-300">
-                                                                Track Progress
+                                                                <Text> Track Progress</Text>
                                                             </Button>
                                                         )
                                                     )}
                                                     <Button
-                                                        onClick={() => {
+                                                        onPress={() => {
                                                             const budgetCopy = { ...budget }
                                                             budgetCopy!.recommendationTitle =
                                                                 recommendation?.title ?? ''
                                                             budgetCopy && onAnalyze(budgetCopy as any)
                                                         }}
-                                                        className="bg-secondary text-white text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
-                                                        isLoading={
-                                                            (
-                                                                budgetPlanProjections?.[
-                                                                    recommendation?.title ?? ''
-                                                                ] as any
-                                                            )?.loading
-                                                        }
+                                                        className="mt-2 bg-secondary text-white text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-blue-600 transition duration-300"
                                                     >
-                                                        Analyze Impact
+                                                        <CustomTextBox>Analyze Impact</CustomTextBox>
                                                     </Button>
-                                                </ButtonGroup>
+                                                </StyledView>
                                             )}
-                                        </div>
+                                        </StyledView>
                                     )
                                 )}
                             </>
                         ) : (
                             <></>
                         )}
-                    </div>
+                    </StyledView>
                 ))}
-        </Accordion.Root>
+        </ScrollView>
     )
 }
 

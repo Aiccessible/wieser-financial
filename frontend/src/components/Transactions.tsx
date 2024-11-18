@@ -1,10 +1,7 @@
 import { useEffect } from 'react'
 import { generateClient } from 'aws-amplify/api'
 import { ConsoleLogger } from 'aws-amplify/utils'
-import { Title } from '@tremor/react'
-import { Heading } from '@aws-amplify/ui-react'
 import { CustomTextBox } from './common/CustomTextBox'
-import { useParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { getTransactionsAsync, getTransactionsRecommendationsAsync } from '../features/transactions'
 import { useDataLoading } from '../hooks/useDataLoading'
@@ -12,19 +9,21 @@ import { DailySpending } from './common/DailySpending'
 import { SpendingDiff } from './common/SpendingDiff'
 import { DatePickerCustom } from './common/DatePicker'
 import { SpendingTimeline } from './common/SpendingTimeline'
-import { RefreshCwIcon } from 'lucide-react'
+import { RefreshCw } from 'lucide-react-native'
 import RecommendationsAccordion from './common/RecommendationAcordion'
 import ScoreReview from './common/SpendingScore'
 import { BudgetPlanOverlay } from './common/BudgetPlanOverlay'
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import * as Accordion from '../components/native/Accordion'
+
 const logger = new ConsoleLogger('Transactions')
 
 export default function Transactions({}) {
-    const { id } = useParams()
     const client = generateClient()
     const dispatch = useAppDispatch()
     const loading = useAppSelector((state) => state.transactions.loading)
     const {} = useDataLoading({
-        id: id || '',
+        id: 'v0',
         client,
         loadTransactions: true,
         loadAccounts: true,
@@ -48,57 +47,56 @@ export default function Transactions({}) {
     }, [institutions?.length])
     const handleLoadMore = async () => {
         try {
-            await dispatch(getTransactionsAsync({ id: id || '', client, append: true }))
+            await dispatch(getTransactionsAsync({ id: 'v0', client, append: true }))
         } catch (err) {
             logger.error('unable to get transactions', err)
         }
     }
 
     return (
-        <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+        <View className="bg-black     px-4 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <BudgetPlanOverlay />
-            <Title>Transactions</Title>
-            <div className="flex justify-between">
+            <ScrollView className="flex  bg-black">
                 <>
-                    <div className="flex w-2/3  flex-col relative">
-                        <div className="flex w-2/3  flex-row ">
+                    <View className="flex   flex-col relative">
+                        <View style={{ width: Dimensions.get('screen').width }} className="flex flex-1">
                             <SpendingDiff
                                 dailySpending={dailySpendsLastXDays?.[0] ?? ([] as any)}
                                 monthlySummaries={monthlySpending ?? []}
                                 balancesVisible={areBalancesVisible}
                             />
-                            <div className="absolute right-5">
-                                <DatePickerCustom />
-                            </div>
-                        </div>
+                        </View>
+                        <View
+                            className="flex flex-1  flex-row "
+                            style={{
+                                width: Dimensions.get('screen').width,
+                                height: Dimensions.get('screen').height * 0.35,
+                            }}
+                        >
+                            <DailySpending width={50} />
+                        </View>
 
-                        <div className="flex flex-row justify-between">
-                            <div className="flex flex-col w-2/3 flex-grow">
-                                <div className="flex flex-row  flex-grow max-h-[50vh]   p-3">
+                        <View className="flex flex-row justify-between">
+                            <View className="flex flex-col  flex-grow">
+                                <View className="flex flex-col  flex-grow max-h-[50vh]   p-3">
                                     <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Spending'} />
-                                    <DailySpending width={50} />
-                                </div>
-                                <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex w-1/3  flex-col">
-                        <Heading level={6} className="text-2xl mb-1">
-                            <CustomTextBox className="flex flex-row items-center ">
-                                Spending Insights <RefreshCwIcon className="text-primary ml-4 cursor-pointer" />
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                    <View className="flex w-full  flex-col">
+                        <Text>
+                            <CustomTextBox className="flex flex-row items-center font-semibold">
+                                Spending Insights <RefreshCw className="text-primary ml-4 cursor-pointer" />
                             </CustomTextBox>
-                        </Heading>
-                        <div className="flex flex-col  scroll-auto">
-                            {
-                                <RecommendationsAccordion
-                                    id={id || ''}
-                                    recommendations={transactionRecommendations ?? []}
-                                />
-                            }
-                        </div>
-                    </div>
+                        </Text>
+                        <View className="flex flex-col  scroll-auto">
+                            {<RecommendationsAccordion id={'v0'} recommendations={transactionRecommendations ?? []} />}
+                        </View>
+                        <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
+                    </View>
                 </>
-            </div>
-        </div>
+            </ScrollView>
+        </View>
     )
 }

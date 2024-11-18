@@ -1,10 +1,10 @@
 import React from 'react'
-import HighchartsReact from 'highcharts-react-official'
+import HighchartsReact from '../native/Chats'
 import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 
-import './graph.css'
+// import './graph.css'
 import { SpendingSummary } from '@/src/API'
 import { calculateTotalSpendingInCategoriesAsTotal } from './spendingUtils'
 HighchartsAccessibility(Highcharts)
@@ -19,6 +19,7 @@ export const SpendingTimeline = (props: Props) => {
     const { spending } = props
     const copy = [...spending]
     copy.sort((el: any, el2: any) => el.date - el2.date)
+    console.info('calculation2', copy)
     const spendingData = copy.map((spending) => ({
         name: new Date((spending as any).date).toDateString(),
         y: calculateTotalSpendingInCategoriesAsTotal(spending),

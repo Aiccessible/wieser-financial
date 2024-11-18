@@ -1,7 +1,7 @@
 'use client'
-import './data-tables-css.css'
-import './satoshi.css'
-import './loader.css'
+// import './data-tables-css.css'
+// import './satoshi.css'
+// import './loader.css'
 import { useState, useEffect } from 'react'
 import Loader from './components/common/Loader'
 
@@ -9,7 +9,6 @@ import Sidebar from './components/Sidebar/Sidebar'
 import Header from './components/Header'
 import ChatBar from './components/Chatbar/Chatbar'
 import { Provider } from 'react-redux'
-import { useParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from './hooks'
 import { setIsChatOpen } from './features/chat'
 
@@ -19,13 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const dispatch = useAppDispatch()
     const setChatbarOpen = (val: boolean) => dispatch(setIsChatOpen(val))
 
-    const { id } = useParams()
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
         setTimeout(() => setLoading(false), 1000)
     }, [])
-    console.log(chatbarOpen)
     return (
         <div className="dark:bg-black dark:text-bodydark">
             {loading ? (
@@ -44,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             setSidebarOpen={setSidebarOpen}
                             setChatbarOpen={setChatbarOpen}
                             chatbarOpen={chatbarOpen}
+                            activeTab={''}
                         />
                         {/* <!-- ===== Header End ===== --> */}
 
@@ -53,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         </main>
                         {/* <!-- ===== Main Content End ===== --> */}
                     </div>
-                    <ChatBar id={''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
+                    <ChatBar activeTab={''} isSidebarOpen={chatbarOpen} setIsSidebarOpen={setChatbarOpen} />
 
                     {/* <!-- ===== Content Area End ===== --> */}
                 </div>

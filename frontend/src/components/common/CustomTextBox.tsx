@@ -1,5 +1,8 @@
-import { FunctionComponent } from 'react'
-
+import { cssInterop } from 'nativewind'
+import { Text } from 'react-native'
+const StyledText = cssInterop(Text, {
+    className: 'style',
+})
 export const CustomTextBox = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <p className={`text-black dark:text-white ${className ?? ''} `}>{children}</p>
+    <StyledText className={`text-white ${className ?? ''} `}>{children}</StyledText>
 )

@@ -1,14 +1,12 @@
 import { useEffect, useCallback } from 'react'
 import { generateClient } from 'aws-amplify/api'
 import { ConsoleLogger } from 'aws-amplify/utils'
-import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, Title } from '@tremor/react'
 import RefreshHoldings from './RefreshHoldings'
 import { Holding, Investment as InvestmentType, Security } from '../../src/API'
 import Investment from './Investment'
 import Loader from '../components/common/Loader'
-import { Alert, Button } from '@aws-amplify/ui-react'
+import { ScrollView, Text, View } from 'react-native'
 import { CustomTextBox } from './common/CustomTextBox'
-import { useParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import {
     getInvestementsAsync,
@@ -32,25 +30,20 @@ export interface InvestmentViewModel {
 
 const PortfolioValue = ({ netWorth }: { netWorth: number }) => {
     return (
-        <div className="bg-gray-800 p-1 rounded-lg text-white w-full">
+        <View className="bg-gray-800 p-1 rounded-lg text-white w-full">
             <CustomTextBox className="text-3xl font-bold mb-2">${netWorth.toFixed(2)}</CustomTextBox>
             <CustomTextBox className="text-green-400">+$11.33 / 0.25% today</CustomTextBox>
-        </div>
+        </View>
     )
 }
 
 const NewsSection = ({ news }: { news: string | undefined }) => {
     if (!news) {
-        return (
-            <CustomTextBox>
-                Loading News Summary...
-                <Loader />
-            </CustomTextBox>
-        )
+        return <CustomTextBox>Loading News Summary...</CustomTextBox>
     }
     return (
         <>
-            <Title>My Investment Report</Title>
+            <Text className="font-bold">My Investment Report</Text>
             <Markdown>{news}</Markdown>
         </>
     )
@@ -64,11 +57,10 @@ export const callFunctionsForEachId = async (func: any, ids: string[]) => {
     )
 }
 
-export default function Investments({}: { id: string; accounts: any }) {
+export default function Investments({}: {}) {
     const loading = useAppSelector((state) => state.investments.loading)
 
     const client = generateClient()
-    const { id } = useParams()
     const investments = useAppSelector((state) => state.investments.investments)
     const investmentSummary = useAppSelector((state) => state.investments.investmentSummary)
     const error = useAppSelector((state) => state.investments.error)
@@ -90,7 +82,7 @@ export default function Investments({}: { id: string; accounts: any }) {
     }, [investments, investmentSummary])
     const getInvestments = async () => {
         try {
-            await dispatch(getInvestementsAsync({ client, id: id || '', append: false }))
+            await dispatch(getInvestementsAsync({ client, id: 'v0', append: false }))
         } catch (err) {
             logger.error('unable to get transactions', err)
         }
@@ -163,62 +155,53 @@ export default function Investments({}: { id: string; accounts: any }) {
     useEffect(() => {
         ids && getInvestments()
     }, [ids])
+
     const holdingsAndSecuritiesJoined = Object.values(getIdToSecurityAndHolding()).filter((entity) => entity.security)
     return (
-        <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-            {error && <Alert>{error}</Alert>}
+        <View className="rounded-sm flex-1  bg-black px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+            {error && <Text className="text-red-500">{error}</Text>}
             {activeStock && (
                 <StockOverlayComponent activeStock={activeStock} onClose={() => dispatch(setActiveStock(undefined))} />
             )}
-            <div className="grid grid-cols-4 gap-6 p-1">
+            <View className="grid grid-cols-4 gap-6 p-1">
                 {/* Left Section (Portfolio Value) */}
-                <div className="col-span-1">
-                    <Title>Investments</Title>
+                <View className="col-span-1">
+                    <Text className="font-bold text-white">Investments</Text>
                     <PortfolioValue netWorth={getNetWorth(getIdToSecurityAndHolding())} />
-                </div>
+                </View>
 
                 {/* Middle Section (Relevant News) */}
-                <div className="col-span-2">
+                <View className="col-span-2">
                     <ExpandableTextWithModal maxHeight="20rem">
                         <NewsSection news={investmentSummary} />
                     </ExpandableTextWithModal>
-                </div>
-                <div className="col-span-1">
-                    <RefreshHoldings item_id={id || ''} />
-                </div>
-            </div>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableHeaderCell>Name</TableHeaderCell>
-                        <TableHeaderCell>Last Close Price</TableHeaderCell>
-                        <TableHeaderCell>Quantity</TableHeaderCell>
-                        <TableHeaderCell>Cost</TableHeaderCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {loading ? (
-                        <TableRow>
-                            <TableCell colSpan={6}>
-                                <Loader />
-                            </TableCell>
-                        </TableRow>
-                    ) : holdingsAndSecuritiesJoined.length ? (
-                        holdingsAndSecuritiesJoined.map((investmentViewModel) => {
-                            return (
-                                <Investment
-                                    knoweldge={investmentKnoweldge[getIdFromSecurity(investmentViewModel?.security)]}
-                                    investment={investmentViewModel}
-                                />
-                            )
-                        })
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={6}>Waiting for holdings data...</TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </div>
+                </View>
+                <View className="col-span-1">
+                    <RefreshHoldings item_id={'v0'} />
+                </View>
+            </View>
+            <ScrollView className="flex-grow flex-col  bg-gray-900 rounded-lg m-4">
+                <View className="flex-row bg-gray-800 p-4 border-b border-gray-700">
+                    <Text className="flex-1 font-bold text-white">Name</Text>
+                    <Text className="flex-1 font-bold text-white">Last Close Price</Text>
+                    <Text className="flex-1 font-bold text-white">Quantity</Text>
+                    <Text className="flex-1 font-bold text-white">Cost</Text>
+                </View>
+                {loading ? (
+                    <Loader />
+                ) : holdingsAndSecuritiesJoined.length ? (
+                    holdingsAndSecuritiesJoined.map((investmentViewModel) => {
+                        return (
+                            <Investment
+                                knoweldge={investmentKnoweldge[getIdFromSecurity(investmentViewModel?.security)]}
+                                investment={investmentViewModel}
+                            />
+                        )
+                    })
+                ) : (
+                    <></>
+                )}
+            </ScrollView>
+        </View>
     )
 }

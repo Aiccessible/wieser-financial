@@ -1,19 +1,9 @@
 import React from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import {
-    MenuIcon,
-    ShoppingBag,
-    User2Icon,
-    BarChart2,
-    Settings,
-    HomeIcon,
-    ActivityIcon,
-    BrainCircuitIcon,
-} from 'lucide-react'
+import { MenuIcon, BarChart2, HomeIcon, ActivityIcon, BrainCircuitIcon } from 'lucide-react'
 import { useSidebar } from './use-sidebar'
 import { cn } from '../../libs/utlis'
 import LinkItem from './LinkItem'
-import ExpandMenu from './ExpandMenu'
 import { CustomTextBox } from '../common/CustomTextBox'
 
 const iconClass = 'bg-black rounded-full text-white p-1 h-7 w-7 hover:text-white'
@@ -22,14 +12,12 @@ interface SidebarProps {}
 const SidebarTitle = (isActive: boolean, title: string) =>
     !isActive ? ((<CustomTextBox>{title}</CustomTextBox>) as any) : ((<p className="text-black">{title}</p>) as any)
 const Sidebar = ({}: SidebarProps) => {
-    const pathname = ''
     const { isSidebarOpen, toggleSidebar } = useSidebar((state) => state)
     const { id } = useParams()
     const location = useLocation() // Get the current location
     const checkIsActive = (path: string) => {
         return location.pathname === path
     }
-    console.info(checkIsActive(`/institution/${id}/transactions`))
     return (
         <aside
             className={cn(
