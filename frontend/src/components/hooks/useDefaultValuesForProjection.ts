@@ -29,6 +29,29 @@ export interface FinancialProjection {
     annualizedSpendingPerCategory: Record<string, number> // Spending broken down by category (e.g., { TRANSPORTATION: 1000, GROCERIES: 2000 })
     multipleier: number // Some custom multiplier value
 }
+export const financialProjectionKeys = new Set<keyof FinancialProjection>([
+    'initial_salary',
+    'salary_growth',
+    'initial_bonus',
+    'bonus_growth',
+    'initial_expenses',
+    'expenses_growth',
+    'investment_yield',
+    'tax_rate',
+    'years',
+    'initial_rrsp_balance',
+    'initial_fhsa_balance',
+    'initial_tfsa_balance',
+    'initial_brokerage_balance',
+    'initial_rrsp_room',
+    'initial_fhsa_room',
+    'initial_tfsa_room',
+    'totalSpendingAnnualized',
+    'incomeAnnualize',
+    'transfersOutAnnualized',
+    'annualizedSpendingPerCategory',
+    'multipleier',
+])
 
 const useDefaultValuesForProjection = ({}: any) => {
     const accounts = useAppSelector((state) => state.accounts.accounts)

@@ -24,11 +24,11 @@ export function calculateTotalSpendingInCategories(
     }, {})
 }
 
+// TODO: This is being called alot
 export function calculateTotalSpendingInCategoriesAsTotal(summary: SpendingSummary) {
     let totals = 0
     Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
         if (!nonSpendingKeys.find((el) => el === category)) {
-            console.info('adding', value)
             totals = (totals || 0) + value
         }
     })
@@ -49,7 +49,6 @@ export function calculateAverageSpendingFromMonthlySummarys(
     includeAll: boolean = false,
     isDailyAverage: boolean = true
 ): Record<string, number> {
-    console.log('calculation')
     return spendingSummaries.reduce((totals: Record<string, number>, summary) => {
         const dateOfSummary = new Date((summary as any).date)
         const currentDate = new Date()
