@@ -220,8 +220,21 @@ export type PaginatedBudgets = {
   budgets?:  Array<BudgetPlan | null > | null,
 };
 
+export type ExpandFinancialSimulation = {
+  message?: string | null,
+  s3Key?: string | null,
+};
+
+export type FinancialSimulationExpansion = {
+  __typename: "FinancialSimulationExpansion",
+  s3Key?: string | null,
+  newInputs?: Array< string | null > | null,
+  description?: string | null,
+};
+
 export type ChatQuery = {
   prompt?: string | null,
+  chatHistory?: ChatHistory | null,
   chatFocus?: ChatFocus | null,
   accountIds?: Array< string > | null,
   requiresLiveData?: boolean | null,
@@ -232,6 +245,17 @@ export type ChatQuery = {
   currentDateRange?: Array< string | null > | null,
   cacheIdentifiers?: Array< CacheIdentifer > | null,
 };
+
+export type ChatHistory = {
+  message?: string | null,
+  role?: Role | null,
+};
+
+export enum Role {
+  Assistant = "Assistant",
+  User = "User",
+}
+
 
 export enum ChatFocus {
   All = "All",
@@ -248,6 +272,7 @@ export enum ChatType {
   FinancialAnalysisQuery = "FinancialAnalysisQuery",
   TransactionRecommendation = "TransactionRecommendation",
   GeneralRecommendation = "GeneralRecommendation",
+  SimulationExpansion = "SimulationExpansion",
 }
 
 
@@ -514,6 +539,19 @@ export type GetBudgetsQuery = {
       specificPayeeRegex?: string | null,
       recommendationTitle?: string | null,
     } | null > | null,
+  },
+};
+
+export type GetFinancialSimulationExpansionQueryVariables = {
+  chat?: ExpandFinancialSimulation | null,
+};
+
+export type GetFinancialSimulationExpansionQuery = {
+  getFinancialSimulationExpansion:  {
+    __typename: "FinancialSimulationExpansion",
+    s3Key?: string | null,
+    newInputs?: Array< string | null > | null,
+    description?: string | null,
   },
 };
 

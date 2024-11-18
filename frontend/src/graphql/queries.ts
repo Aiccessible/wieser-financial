@@ -143,6 +143,18 @@ export const getBudgets = /* GraphQL */ `query GetBudgets($id: ID!, $limit: Int,
   APITypes.GetBudgetsQueryVariables,
   APITypes.GetBudgetsQuery
 >;
+export const getFinancialSimulationExpansion = /* GraphQL */ `query GetFinancialSimulationExpansion($chat: ExpandFinancialSimulation) {
+  getFinancialSimulationExpansion(chat: $chat) {
+    s3Key
+    newInputs
+    description
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetFinancialSimulationExpansionQueryVariables,
+  APITypes.GetFinancialSimulationExpansionQuery
+>;
 export const getFinancialRecommendations = /* GraphQL */ `query GetFinancialRecommendations($chat: ChatQuery) {
   getFinancialRecommendations(chat: $chat) {
     explanation
