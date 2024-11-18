@@ -19,10 +19,10 @@ export async function custom_headers() {
 interface SidebarProps {
     isSidebarOpen: boolean
     setIsSidebarOpen: (arg: boolean) => void
-    id: string
+    activeTab: string
 }
 
-const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, id }: SidebarProps) => {
+const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) => {
     const dispatch = useAppDispatch()
     const isChatLoading = useAppSelector((state) => state.chat.loadingChat)
     const chatFocus = useAppSelector((state) => state.chat.currentScope)
