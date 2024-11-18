@@ -164,6 +164,26 @@ Resources:
       - Key: Environment
         Value:
           Ref: Environment
+  AnalysisS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${Stage}-wieser-analysis-scripts-bucket
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+        - Id: ExpireOldFiles
+          Status: Enabled
+          ExpirationInDays: 365
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    Metadata:
+      SamResourceId: AnalysisS3Bucket
   WebhookDeadLetterQueue:
     Type: AWS::SQS::Queue
     UpdateReplacePolicy: Delete
@@ -420,7 +440,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda2/5b23201ee55b549c5beed919d0c54bd0
+      ContentUri: s3://sam-s3-bucket-for-lambda2/7acd173ac85bf1ec8072c0df8c7fd7b6
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -720,6 +740,26 @@ Resources:
       Type: AMAZON_DYNAMODB
     Metadata:
       SamResourceId: DynamoDBDataSource
+  GetFinancialSimulationExpansionDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Name: GetFinancialSimulationExpansionDataSource
+      Type: AWS_LAMBDA
+      LambdaConfig:
+        LambdaFunctionArn:
+          Fn::GetAtt:
+          - GetFinancialSimulationExpansionLambda
+          - Arn
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - AppSyncLambdaInvokeRole
+        - Arn
+    Metadata:
+      SamResourceId: GetFinancialSimulationExpansionDataSource
   GetFinancialRecommendationsDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -798,7 +838,7 @@ Resources:
         Fn::GetAtt:
         - GraphQLApi
         - ApiId
-      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/0aa88db0baa88b6ce99a6353ed6cae26
+      DefinitionS3Location: s3://sam-s3-bucket-for-lambda2/1cb56e026ac6f9d79d1c7385775386d3
     Metadata:
       SamResourceId: GraphQLSchema
   GetItemsResolver:
@@ -1081,6 +1121,46 @@ Resources:
         RuntimeVersion: 1.0.0
     Metadata:
       SamResourceId: GetFinancialRecommendationsFunctionConfiguration
+  GetFinancialSimulationExpansionResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      Code: "export function request(ctx) {\n  return {};\n}\n\nexport function response(ctx)\
+        \ {\n  return ctx.prev.result;\n}"
+      FieldName: getFinancialSimulationExpansion
+      Kind: PIPELINE
+      PipelineConfig:
+        Functions:
+        - Fn::GetAtt:
+          - GetFinancialSimulationExpansionFunctionConfiguration
+          - FunctionId
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+      TypeName: Query
+    Metadata:
+      SamResourceId: GetFinancialSimulationExpansionResolver
+  GetFinancialSimulationExpansionFunctionConfiguration:
+    Type: AWS::AppSync::FunctionConfiguration
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - GraphQLApi
+        - ApiId
+      CodeS3Location: s3://sam-s3-bucket-for-lambda2/b888b6b0bda0d1f0cd9d68d5dfcf7743
+      DataSourceName:
+        Fn::GetAtt:
+        - GetFinancialSimulationExpansionDataSource
+        - Name
+      Name: GET_FINANCIAL_SIMULATION
+      Runtime:
+        Name: APPSYNC_JS
+        RuntimeVersion: 1.0.0
+    Metadata:
+      SamResourceId: GetFinancialSimulationExpansionFunctionConfiguration
   GetFinancialCoversationResponseResolver:
     Type: AWS::AppSync::Resolver
     Properties:
@@ -1641,6 +1721,13 @@ Resources:
             - Arn
         - Effect: Allow
           Action:
+          - s3:GetObject
+          - s3:PutObject
+          Resource:
+          - Fn::Sub: arn:aws:s3:::${AnalysisS3Bucket}/*
+          - Fn::Sub: arn:aws:s3:::${AnalysisS3Bucket}
+        - Effect: Allow
+          Action:
           - dynamodb:BatchWriteItem
           - dynamodb:DeleteItem
           - dynamodb:DescribeTable
@@ -1689,7 +1776,7 @@ Resources:
         - id: W92
           reason: Ignoring Reserved Concurrency
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/d46479f02874ed4f83b667ff35e0a15e
+      CodeUri: s3://sam-s3-bucket-for-lambda2/5826f816113dd79c8d399f920aa6569d
       Description:
         Fn::Sub: Plaid (${Environment}) - API
       Environment:
@@ -1705,6 +1792,8 @@ Resources:
             Fn::GetAtt:
             - EncryptionKey
             - Arn
+          S3_BUCKET:
+            Ref: AnalysisS3Bucket
       MemorySize: 256
       Role:
         Fn::GetAtt:
@@ -1850,7 +1939,7 @@ Resources:
       SamResourceId: GetFinancialRecommendationsLogGroup
     Properties:
       LogGroupName:
-        Fn::Sub: /aws/lambda/${GetFinancialRecommendationsLambda}
+        Fn::Sub: /aws/lambda/${GetFinancialSimulationExpansionLambda}
       RetentionInDays: 3
       Tags:
       - Key: aws-cloudformation:stack-name
@@ -1883,7 +1972,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -1910,6 +1999,48 @@ Resources:
         - Arn
       Runtime: nodejs18.x
       Timeout: 61
+  GetFinancialSimulationExpansionLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W58
+          reason: Ignoring CloudWatch
+        - id: W89
+          reason: Ignoring VPC
+        - id: W92
+          reason: Ignoring Reserved Concurrency
+      SamResourceId: GetFinancialSimulationExpansionLambda
+    Properties:
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      Handler: buildLambda/getFinancialSimulationExpansion.getFinancialSimulationExpansion
+      Description:
+        Fn::Sub: Get Financial Simulation Expansion Lambda
+      Environment:
+        Variables:
+          GptSecretKey:
+            Ref: GptSecretKey
+          PerplexitySecretKey:
+            Ref: PerplexitySecretKey
+          KEY_ARN:
+            Fn::GetAtt:
+            - EncryptionKey
+            - Arn
+          TABLE_NAME:
+            Ref: Table
+          APPSYNC_URL:
+            Fn::GetAtt:
+            - GraphQLApi
+            - GraphQLUrl
+          S3_BUCKET:
+            Ref: AnalysisS3Bucket
+      MemorySize: 256
+      Role:
+        Fn::GetAtt:
+        - ApiFunctionRole
+        - Arn
+      Runtime: nodejs18.x
+      Timeout: 61
   GetFinancialConversationResponseLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -1923,7 +2054,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -2041,7 +2172,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: UpdatorLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
       Handler: buildLambda/updator.updator
       Description:
         Fn::Sub: Triggers updates of users
@@ -2085,7 +2216,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: SnapShotNetWorthLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
       Handler: buildLambda/snapShotNetWorth.snapShotNetWorth
       Description:
         Fn::Sub: Snapshots the networth of users
@@ -2125,7 +2256,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: CalculateIncomeAndSpendingLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/4a14e63ff633ecd2e8ee393f93874e8d
+      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
       Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
       Description:
         Fn::Sub: Calculate the income and spending for users
