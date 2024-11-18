@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import DropdownUser from './DropdownUser'
 import { MenuIcon } from 'lucide-react'
 import { useSidebar } from '../Sidebar/use-sidebar'
@@ -9,6 +9,7 @@ import { sendChatToLLM, setIsChatOpen, setNewChatVal } from '../../../src/featur
 import { generateClient } from 'aws-amplify/api'
 import { ChatFocus } from '../../../src/API'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
+import { getFinancialSimulationExpansionThunk } from '../../../src/features/analysis'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -21,7 +22,12 @@ const Header = (props: {
     const dispatch = useAppDispatch()
     const client = generateClient()
     const projection = useDefaultValuesForProjection({})
+    const activeSimulationKey = useAppSelector((state) => state.analysis.activeSimulationKey)
     const accounts = useAppSelector((state) => state.accounts.accounts)
+    const location = useLocation() // Access the current route
+    console.info(location.pathname.includes('analyze'))
+    let activeTab = location.pathname.includes('analyze') ? 'Plan' : 'unknown'
+    console.info(activeTab)
     return (
         <header
             style={{ zIndex: 800 }}
@@ -46,25 +52,37 @@ const Header = (props: {
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
-                            dispatch(setIsChatOpen(true))
-                            dispatch(
-                                sendChatToLLM({
-                                    newChat: newChat,
-                                    client,
-                                    focus: ChatFocus.All,
-                                    ids: accounts?.map((el) => el.account_id) ?? [],
-                                    highLevelSpendingCategory: undefined,
-                                    currentDateRange: undefined,
-                                    projection,
-                                })
-                            )
+                            if (activeTab === 'Plan') {
+                                dispatch(
+                                    getFinancialSimulationExpansionThunk({
+                                        client: client,
+                                        input: {
+                                            message: newChat,
+                                            s3Key: activeSimulationKey,
+                                        },
+                                    })
+                                )
+                            } else {
+                                dispatch(setIsChatOpen(true))
+                                dispatch(
+                                    sendChatToLLM({
+                                        newChat: newChat,
+                                        client,
+                                        focus: ChatFocus.All,
+                                        ids: accounts?.map((el) => el.account_id) ?? [],
+                                        highLevelSpendingCategory: undefined,
+                                        currentDateRange: undefined,
+                                        projection,
+                                    })
+                                )
+                            }
                         }}
                         method="POST"
                     >
                         <div className="relative flex">
                             <input
                                 type="text"
-                                placeholder="Chat with Wieser"
+                                placeholder={activeTab === 'Plan' ? 'Tell Wieser what to simulate' : 'Chat with Wieser'}
                                 className="w-full flex-grow bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl"
                                 value={newChat}
                                 onChange={(e) => dispatch(setNewChatVal(e.currentTarget.value))}

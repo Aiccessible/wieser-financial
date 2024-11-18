@@ -22,7 +22,7 @@ import { store } from './store'
 
 try {
     Highcharts.setOptions({
-        colors: Highcharts.map(Highcharts.getOptions().colors ?? [], function (color: any) {
+        colors: Highcharts.map(Highcharts.getOptions().colors ?? [], function (color) {
             return {
                 radialGradient: {
                     cx: 0.5,

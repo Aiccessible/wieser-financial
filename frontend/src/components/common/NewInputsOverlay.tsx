@@ -66,7 +66,7 @@ export const NewInputsOverlay = ({
                                     }}
                                 />
                             </Dialog.Overlay>
-                            <Dialog.Content className="fixed inset-0 flex items-center justify-center p-4 z-9999">
+                            <Dialog.Content className="fixed inset-0 flex  justify-center p-4 z-9999">
                                 <animated.div
                                     className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden"
                                     style={styles}
@@ -75,13 +75,19 @@ export const NewInputsOverlay = ({
                                         style={{
                                             width: Dimensions.get('screen').width,
                                             height: Dimensions.get('screen').height,
+                                            top: 10,
                                         }}
-                                        className="relative flex  dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl bg-black align-center"
+                                        className="relative flex flex-col  dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl bg-black align-center"
                                     >
                                         <div className=" items-center justify-between p-4 bg-gray-100 dark:bg-gray-900 hide-scrollbar border-b border-gray-300 dark:border-gray-700">
                                             <Dialog.Close onClick={() => setOpen(false)} asChild>
                                                 <Button
-                                                    style={{ alignSelf: 'flex-end' }}
+                                                    style={{
+                                                        alignSelf: 'flex-end',
+                                                        position: 'absolute',
+                                                        right: 20,
+                                                        top: 10,
+                                                    }}
                                                     className="text-red-500 hover:text-red-700 text-4xl"
                                                 >
                                                     <X size={36} />
@@ -107,7 +113,6 @@ export const NewInputsOverlay = ({
                                                     value={(inputs as any)?.[field] ?? ''}
                                                     className="w-[90%] p-2 text-primary text-primary border rounded ml-4"
                                                 />
-                                                521200
                                             </div>
                                         ))}
                                         <div style={{ marginTop: 10 }}>
@@ -118,9 +123,9 @@ export const NewInputsOverlay = ({
                                             className="bg-gradient-to-r text-center bg-primary active:scale-95 text-black py-4 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out mt-4"
                                             onClick={getProjection}
                                         >
-                                            <CustomTextBox className="text-xl text-center font-bold tracking-wider text-black">
+                                            <p className="text-xl text-center font-bold tracking-wider text-black">
                                                 Run Wieser Simulation
-                                            </CustomTextBox>
+                                            </p>
                                         </Button>
                                     </div>
                                 </animated.div>
