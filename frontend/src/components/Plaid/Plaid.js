@@ -1,12 +1,8 @@
-import { useState } from 'react';
-import { get, post } from 'aws-amplify/api';
+import {  post } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
-import { useAppDispatch } from '../hooks'
-import { setPublicToken } from '../features/auth';
-import PlaidLink from './PlaidLink';
-import { usePlaidHooks } from './hooks/usePlaidHooks';
-import { View, TouchableOpacity, Text, Dimensions } from 'react-native';
-const logger = new ConsoleLogger("Plaid");
+import PlaidLink from '../Plaid/PlaidLink';
+import { usePlaidHooks } from '../hooks/usePlaidHooks';
+import { View, TouchableOpacity, Text } from 'react-native';
 
 const apiName = "plaidapi";
 

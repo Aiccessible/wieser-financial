@@ -1,8 +1,8 @@
-import { useAppSelector } from '../../hooks'
+import { useAppSelector } from '../../../hooks'
 import React, { useCallback, useMemo, useRef } from 'react'
-import { Spending } from './Spending'
+import { Spending } from '../Spending/Charts/Spending'
 import { current } from '@reduxjs/toolkit'
-import { calculateAverageSpendingFromMonthlySummarys, calculateTotalSpending } from './spendingUtils'
+import { calculateAverageSpendingFromMonthlySummarys, calculateTotalSpending } from '../../../libs/spendingUtils'
 interface Props {
     width: number
     isIncomeAndTransfers?: boolean

@@ -5,7 +5,7 @@ import { generateClient } from 'aws-amplify/api'
 import Loader from '../../components/common/Loader'
 import { useDataLoading } from '../../hooks/useDataLoading'
 import { useAppSelector } from '../../hooks'
-import { CustomTextBox } from '../common/CustomTextBox'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
 import { useEffect, useState } from 'react'
 import {
     codeInterperterForAnalysis,

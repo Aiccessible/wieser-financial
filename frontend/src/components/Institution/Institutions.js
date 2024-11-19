@@ -1,6 +1,6 @@
 import { Table, TableHead, TableRow, TableCell, TableBody } from '@aws-amplify/ui-react';
 import Institution from './Institution';
-import { CustomTextBox } from './common/CustomTextBox';
+import { CustomTextBox } from '../common/Custom/CustomTextBox';
 export default function Institutions({ institutions = []}) {
   return (
       <Table highlightOnHover={true} >

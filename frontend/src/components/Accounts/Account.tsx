@@ -1,11 +1,11 @@
 import { TableCell } from '@tremor/react'
-import Currency from './Currency'
-import { CustomTextBox } from './common/CustomTextBox'
-import { Account } from '../API'
-import { useAppSelector } from '../hooks'
-import { selectMostRecentNetWorth } from '../features/networth'
-import { PercentChange } from './PercentChange'
-import { getAccountBalanceMultipler } from '../features/accounts'
+import Currency from '../common/Custom/Currency'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
+import { Account } from '../../API'
+import { useAppSelector } from '../../hooks'
+import { selectMostRecentNetWorth } from '../../features/networth'
+import { PercentChange } from '../common/Custom/PercentChange'
+import { getAccountBalanceMultipler } from '../../features/accounts'
 
 export default function AccountComponent({ account }: { account: Account }) {
     const mostRecentNetWorth = useAppSelector(selectMostRecentNetWorth)

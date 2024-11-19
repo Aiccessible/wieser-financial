@@ -3,7 +3,7 @@ import { Button, ButtonGroup, Heading } from '@aws-amplify/ui-react'
 import Loader from '../../components/common/Loader'
 import React from 'react'
 import { Transfer } from '../../libs/gpt'
-import { CustomTextBox } from './CustomTextBox'
+import { CustomTextBox } from './Custom/CustomTextBox'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setAuthError, getTransferTokenAsync } from '../../features/auth'
 import {

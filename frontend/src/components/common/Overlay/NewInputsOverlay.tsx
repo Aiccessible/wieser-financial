@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import * as Dialog from '../../components/native/Dialog'
+import { useAppDispatch, useAppSelector } from '../../../hooks'
+import * as Dialog from '../../native/Dialog'
 import { X } from 'lucide-react'
 import { useTransition, animated, config } from 'react-spring'
 import { Dimensions } from 'react-native'
-import { CustomTextBox } from './CustomTextBox'
-import { financialProjectionKeys } from '../hooks/useDefaultValuesForProjection'
+import { CustomTextBox } from '../Custom/CustomTextBox'
+import { financialProjectionKeys } from '../../hooks/useDefaultValuesForProjection'
 import { generateClient } from 'aws-amplify/api'
-import { getFinancialProjection } from '../../../src/features/analysis'
+import { getFinancialProjection } from '../../../features/analysis'
 import { Button, ButtonGroup } from '@aws-amplify/ui-react'
 
 export const NewInputsOverlay = ({

@@ -14,7 +14,7 @@ import { useSidebar } from './use-sidebar'
 import { cn } from '../../libs/utlis'
 import LinkItem from './LinkItem'
 import ExpandMenu from './ExpandMenu'
-import { CustomTextBox } from '../common/CustomTextBox'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
 
 const iconClass = 'bg-black rounded-full text-white p-1 h-7 w-7 hover:text-white'
 interface SidebarProps {}

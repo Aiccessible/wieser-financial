@@ -3,8 +3,8 @@ import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
 import Account from './Account';
 import {  Heading } from '@aws-amplify/ui-react'
-import { CustomTextBox } from './common/CustomTextBox';
-import {  useAppSelector } from '../hooks'
+import { CustomTextBox } from '../common/Custom/CustomTextBox';
+import {  useAppSelector } from '../../hooks'
 
 const logger = new ConsoleLogger("Accounts");
 

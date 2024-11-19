@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { CustomTextBox } from './common/CustomTextBox'
+import { CustomTextBox } from './CustomTextBox'
 
 const WordByWordRender = ({ text, typingSpeed = 300 }: any) => {
     const [displayedText, setDisplayedText] = useState('')

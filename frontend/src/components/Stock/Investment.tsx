@@ -1,14 +1,12 @@
-import { TableCell, TableRow } from '@aws-amplify/ui-react'
+import { TableRow } from '@aws-amplify/ui-react'
 import { InvestmentViewModel } from './Investments'
-import Currency from './Currency'
-import { CustomTableCell } from './common/CustomTableCell'
-import { CustomTextBox } from './common/CustomTextBox'
-import { InvestmentKnoweldgeViewModel } from '../features/investments'
-import ExpandableTextWithModal from './ExpandableTextWithModal'
-import { ChevronDownIcon, Loader } from 'lucide-react'
-import { setActiveStock } from '../features/investments'
-import { useAppDispatch } from '../hooks'
-import { getIdFromSecurity } from '../libs/utlis'
+import Currency from '../common/Custom/Currency'
+import { CustomTableCell } from '../common/Custom/CustomTableCell'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
+import { InvestmentKnoweldgeViewModel } from '../../features/investments'
+import { setActiveStock } from '../../features/investments'
+import { useAppDispatch } from '../../hooks'
+import { getIdFromSecurity } from '../../libs/utlis'
 export default function Investment({
     investment,
     knoweldge,

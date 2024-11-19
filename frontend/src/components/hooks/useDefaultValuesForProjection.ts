@@ -1,6 +1,6 @@
 import { useAppSelector } from '../../../src/hooks'
 import { useMemo } from 'react'
-import { calculateAverageSpendingFromMonthlySummarys, daysInMonth } from '../common/spendingUtils'
+import { calculateAverageSpendingFromMonthlySummarys, daysInMonth } from '../../libs/spendingUtils'
 import { calculateAverageTaxRate, identifyAccountType } from '../Analysis/PersonalFinance'
 import { reduceAccounts } from '../../../src/features/accounts'
 import { HighLevelTransactionCategory } from '../../../src/API'

@@ -1,4 +1,4 @@
-import { useAppSelector } from '../hooks'
+import { useAppSelector } from '../../../hooks'
 export default function Currency({ amount, currency = 'USD' }: any) {
     const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
 

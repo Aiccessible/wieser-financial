@@ -1,6 +1,6 @@
-import { useAppSelector } from '../../hooks'
+import { useAppSelector } from '../../../hooks'
 import React, { useRef } from 'react'
-import { Spending } from './Spending'
+import { Spending } from '../Spending/Charts/Spending'
 interface Props {
     width: number
     isIncomeAndTransfers?: boolean

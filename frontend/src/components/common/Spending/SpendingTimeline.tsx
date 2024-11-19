@@ -4,9 +4,9 @@ import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 
-import './graph.css'
+import '../graph.css'
 import { SpendingSummary } from '@/src/API'
-import { calculateTotalSpendingInCategoriesAsTotal } from './spendingUtils'
+import { calculateTotalSpendingInCategoriesAsTotal } from '../../../libs/spendingUtils'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 interface Props {

@@ -1,6 +1,4 @@
-import { HighLevelTransactionCategory, SpendingSummary } from '../../../src/API'
-import { CustomTextBox } from './CustomTextBox'
-import { useCallback } from 'react'
+import { HighLevelTransactionCategory, SpendingSummary } from '../../src/API'
 
 const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
 const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))

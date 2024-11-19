@@ -1,7 +1,7 @@
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { setBalancesVisible } from '../features/auth'
-import { CustomTextBox } from '../components/common/CustomTextBox'
+import { CustomTextBox } from '../components/common/Custom/CustomTextBox'
 
 const BalanceVisibilitySwitcher = () => {
     const balancesVisible = useAppSelector((state) => state.auth.balancesVisible)

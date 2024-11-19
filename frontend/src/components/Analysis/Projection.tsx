@@ -2,14 +2,14 @@ import { getFinancialProjection } from '../../../src/features/analysis'
 import { useAppDispatch, useAppSelector } from '../../..//src/hooks'
 import { useDataLoading } from '../../..//src/hooks/useDataLoading'
 import { generateClient } from 'aws-amplify/api'
-import { CustomTextBox } from '../common/CustomTextBox'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
 import { useEffect, useState } from 'react'
 import * as Accordion from '../../components/native/Accordion'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { NetWorthChart } from './NetworthChart'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
 import { TextInput, Text } from 'react-native'
-import { NewInputsOverlay } from '../common/NewInputsOverlay'
+import { NewInputsOverlay } from '../common/Overlay/NewInputsOverlay'
 import Loader from '../common/Loader'
 import { Button } from '@aws-amplify/ui-react'
 const Projection = () => {
@@ -218,11 +218,11 @@ const Projection = () => {
                     </div>
                 </Accordion.Root>
                 <Button
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 10, maxHeight: 120 }}
                     className="bg-gradient-to-r text-center bg-primary active:scale-95 text-black py-4 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out mt-4"
                     onClick={getProjection}
                 >
-                    <Text>Run Wieser Simulation</Text>
+                    <p className="text-xl text-center font-bold tracking-wider text-black">Run Wieser Simulation</p>
                 </Button>
             </div>
             {projectedBalances && <NetWorthChart accountBalances={projectedBalances} title="Networth Expirement" />}

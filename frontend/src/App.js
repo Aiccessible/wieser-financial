@@ -8,9 +8,9 @@ import RequireAuth from './RequireAuth';
 import Profile from './components/Profile';
 
 import './App.css';
-import Transactions from './components/Transactions';
-import Investments from './components/Investments';
-import Accounts from './components/Accounts';
+import Transactions from './components/Transactions/Transactions';
+import Investments from './components/Stock/Investments';
+import Accounts from './components/Accounts/Accounts';
 import Projection from './components/Analysis/Projection'
 import RootLayout from './RootLayout';
 import AnalyzeRecommendation from './components/Analysis/AnalyzeRecommendation'

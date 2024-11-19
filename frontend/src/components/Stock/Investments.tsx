@@ -3,25 +3,25 @@ import { generateClient } from 'aws-amplify/api'
 import { ConsoleLogger } from 'aws-amplify/utils'
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell, Title } from '@tremor/react'
 import RefreshHoldings from './RefreshHoldings'
-import { Holding, Investment as InvestmentType, Security } from '../../src/API'
+import { Holding, Investment as InvestmentType, Security } from '../../API'
 import Investment from './Investment'
-import Loader from '../components/common/Loader'
+import Loader from '../common/Loader'
 import { Alert, Button } from '@aws-amplify/ui-react'
-import { CustomTextBox } from './common/CustomTextBox'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
 import { useParams } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../hooks'
+import { useAppDispatch, useAppSelector } from '../../hooks'
 import {
     getInvestementsAsync,
     getInvestmentAnalysis,
     getInvestmentNews,
     getInvestmentNewsSummary,
     setActiveStock,
-} from '../features/investments'
-import Markdown from '../components/native/Markdown'
-import ExpandableTextWithModal from './ExpandableTextWithModal'
-import StockOverlayComponent from './common/StockOverlayComponent'
-import { getIdFromSecurity } from '../libs/utlis'
-import { useDataLoading } from '../hooks/useDataLoading'
+} from '../../features/investments'
+import Markdown from '../native/Markdown'
+import ExpandableTextWithModal from '../common/Custom/ExpandableTextWithModal'
+import StockOverlayComponent from '../common/Overlay/StockOverlayComponent'
+import { getIdFromSecurity } from '../../libs/utlis'
+import { useDataLoading } from '../../hooks/useDataLoading'
 const ID_SEPERATOR = '-'
 const logger = new ConsoleLogger('Holdings')
 

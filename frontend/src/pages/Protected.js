@@ -3,12 +3,12 @@ import { generateClient } from 'aws-amplify/api';
 import { ConsoleLogger } from 'aws-amplify/utils';
 import { View, Heading, Flex } from '@aws-amplify/ui-react';
 import { getItems as GetItems } from '../graphql/queries';
-import Plaid from '../components/Plaid';
-import Institutions from '../components/Institutions';
-import { CustomTextBox } from '../components/common/CustomTextBox';
+import Plaid from '../components/Plaid/Plaid';
+import Institutions from '../components/Institution/Institutions';
+import { CustomTextBox } from '../components/common/Custom/CustomTextBox';
 import WelcomePage from '../components/WelcomePage';
 import { usePlaidHooks } from '../components/hooks/usePlaidHooks';
-import PlaidLink from '../components/PlaidLink';
+import PlaidLink from '../components/Plaid/PlaidLink';
 const logger = new ConsoleLogger("Protected");
 
 export default function Protected() {

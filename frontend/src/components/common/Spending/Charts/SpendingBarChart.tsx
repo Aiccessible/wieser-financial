@@ -4,10 +4,10 @@ import * as Highcharts from 'highcharts'
 import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 import HighchartsExporting from 'highcharts/modules/exporting'
-import './graph.css'
-import { HighLevelTransactionCategory, SpendingSummary } from '../../../src/API'
+import '../../graph.css'
+import { HighLevelTransactionCategory, SpendingSummary } from '../../../../API'
 import { Button, ButtonGroup } from '@aws-amplify/ui-react'
-import { CustomTextBox } from './CustomTextBox'
+import { CustomTextBox } from '../../Custom/CustomTextBox'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 interface Props {

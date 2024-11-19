@@ -1,78 +1,78 @@
 import { TableCell, TableRow } from '@aws-amplify/ui-react'
-import { CustomTextBox } from './common/CustomTextBox';
-import { useState } from 'react';
-import { useAppSelector } from '../hooks';
-import { selectNetWorth } from '../features/accounts';
+import { CustomTextBox } from './common/Custom/CustomTextBox'
+import { useState } from 'react'
+import { useAppSelector } from '../hooks'
+import { selectNetWorth } from '../features/accounts'
 
 const Profile = () => {
-    const [riskTolerance, setRiskTolerance] = useState('');
-    const [expectedRetirementYear, setExpectedRetirementYear] = useState<number>();
-    const [retirementYearError, setRetirementYearError] = useState<string>('');
-    const networth = useAppSelector(selectNetWorth);
+    const [riskTolerance, setRiskTolerance] = useState('')
+    const [expectedRetirementYear, setExpectedRetirementYear] = useState<number>()
+    const [retirementYearError, setRetirementYearError] = useState<string>('')
+    const networth = useAppSelector(selectNetWorth)
     const handleRiskToleranceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        console.log('Risk tolerance changed:', e.target.value);
-        setRiskTolerance(e.target.value);
-    };
+        console.log('Risk tolerance changed:', e.target.value)
+        setRiskTolerance(e.target.value)
+    }
 
     const handleRetirementYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const input = e.target.value;
-        
+        const input = e.target.value
+
         if (input.length === 4) {
-            console.log('Validating complete year:', input);
-            const year = parseInt(input);
-            const currentYear = new Date().getFullYear();
+            console.log('Validating complete year:', input)
+            const year = parseInt(input)
+            const currentYear = new Date().getFullYear()
 
             if (isNaN(year)) {
-                setRetirementYearError('Please enter a valid year');
-                setExpectedRetirementYear(undefined);
-                return;
+                setRetirementYearError('Please enter a valid year')
+                setExpectedRetirementYear(undefined)
+                return
             }
 
             if (year <= currentYear) {
-                setRetirementYearError('Retirement year must be in the future');
-                setExpectedRetirementYear(undefined);
-                return;
+                setRetirementYearError('Retirement year must be in the future')
+                setExpectedRetirementYear(undefined)
+                return
             }
 
             if (year > currentYear + 100) {
-                setRetirementYearError('Please enter a reasonable retirement year');
-                setExpectedRetirementYear(undefined);
-                return;
+                setRetirementYearError('Please enter a reasonable retirement year')
+                setExpectedRetirementYear(undefined)
+                return
             }
 
-            setRetirementYearError('');
-            setExpectedRetirementYear(year);
+            setRetirementYearError('')
+            setExpectedRetirementYear(year)
         } else if (input === '') {
-            setRetirementYearError('');
-            setExpectedRetirementYear(undefined);
+            setRetirementYearError('')
+            setExpectedRetirementYear(undefined)
         } else {
-            setExpectedRetirementYear(parseInt(input));
+            setExpectedRetirementYear(parseInt(input))
         }
-    };
+    }
 
-    const monthlyChange = 5230.45;
-    const monthlyChangePercent = 2.1;
-    const ytdReturn = 12500.00;
-    const ytdReturnPercent = 5.0;
-    const overallReturn = 25000.00;
-    const overallReturnPercent = 10.0;
+    const monthlyChange = 5230.45
+    const monthlyChangePercent = 2.1
+    const ytdReturn = 12500.0
+    const ytdReturnPercent = 5.0
+    const overallReturn = 25000.0
+    const overallReturnPercent = 10.0
 
-    console.log('Monthly change:', monthlyChange, monthlyChangePercent);
-    console.log('YTD return:', ytdReturn, ytdReturnPercent);
-    console.log('Overall return:', overallReturn, overallReturnPercent);
+    console.log('Monthly change:', monthlyChange, monthlyChangePercent)
+    console.log('YTD return:', ytdReturn, ytdReturnPercent)
+    console.log('Overall return:', overallReturn, overallReturnPercent)
 
     const getValueColor = (value: number) => {
-        const color = value >= 0 ? 'text-emerald-500' : 'text-red-500';
-        console.log('Value color for', value, ':', color);
-        return color;
-    };
+        const color = value >= 0 ? 'text-emerald-500' : 'text-red-500'
+        console.log('Value color for', value, ':', color)
+        return color
+    }
 
     const formatChange = (value: number, percent: number) => {
-        const sign = value >= 0 ? '+' : '';
-        const formatted = `${sign}$${Math.abs(value).toFixed(2)} (${sign}${percent}%)`;
-        console.log('Formatted change:', formatted);
-        return formatted;
-    };
+        const sign = value >= 0 ? '+' : ''
+        const formatted = `${sign}$${Math.abs(value).toFixed(2)} (${sign}${percent}%)`
+        console.log('Formatted change:', formatted)
+        return formatted
+    }
 
     return (
         <div className="w-full h-full rounded-xl shadow-lg p-6">
@@ -123,7 +123,13 @@ const Profile = () => {
                     <CustomTextBox>Investment Preferences</CustomTextBox>
                 </h2>
                 <div className="rounded-lg p-4 mb-6">
-                    <p className="text-sm leading-relaxed">Your investment style shapes your financial future. Conservative investors focus on preserving capital through stable, low-risk investments like bonds and GICs. Moderate investors balance growth and security with a mix of stocks and fixed-income securities. Aggressive investors pursue maximum returns through growth-oriented investments, primarily stocks and alternative assets.</p>
+                    <p className="text-sm leading-relaxed">
+                        Your investment style shapes your financial future. Conservative investors focus on preserving
+                        capital through stable, low-risk investments like bonds and GICs. Moderate investors balance
+                        growth and security with a mix of stocks and fixed-income securities. Aggressive investors
+                        pursue maximum returns through growth-oriented investments, primarily stocks and alternative
+                        assets.
+                    </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -133,7 +139,8 @@ const Profile = () => {
                         <select
                             className="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 transition-all"
                             onChange={handleRiskToleranceChange}
-                            value={riskTolerance}>
+                            value={riskTolerance}
+                        >
                             <option value="">Select risk level</option>
                             <option value="conservative">Conservative</option>
                             <option value="moderate">Moderate</option>
@@ -148,14 +155,14 @@ const Profile = () => {
                             type="text"
                             pattern="\d*"
                             maxLength={4}
-                            className={`w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 transition-all ${retirementYearError ? 'border-red-500' : ''}`}
+                            className={`w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 transition-all ${
+                                retirementYearError ? 'border-red-500' : ''
+                            }`}
                             onChange={handleRetirementYearChange}
                             value={expectedRetirementYear || ''}
                             placeholder="Enter year (e.g. 2045)"
                         />
-                        {retirementYearError && (
-                            <p className="mt-1 text-sm text-red-500">{retirementYearError}</p>
-                        )}
+                        {retirementYearError && <p className="mt-1 text-sm text-red-500">{retirementYearError}</p>}
                     </div>
                 </div>
             </div>
@@ -201,7 +208,7 @@ const Profile = () => {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
-export default Profile;
+export default Profile

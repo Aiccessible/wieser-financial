@@ -1,6 +1,6 @@
 import React from 'react'
-import Currency from './Currency'
-import { PercentChange } from './PercentChange'
+import Currency from '../common/Custom/Currency'
+import { PercentChange } from '../common/Custom/PercentChange'
 
 interface TreasuryYieldProps {
     todayPrice: number

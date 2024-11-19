@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from '../Link'
+import { Link } from '../Plaid/Link'
 import { useSidebar } from './use-sidebar'
 
 type Props = {

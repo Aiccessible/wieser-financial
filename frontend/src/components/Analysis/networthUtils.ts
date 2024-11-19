@@ -1,5 +1,5 @@
 import { NetWorth } from '@/src/API'
-import { greenShades } from '../common/Spending'
+import { greenShades } from '../common/Spending/Charts/Spending'
 import { AccountBalances } from './NetworthChart'
 
 export const prepareSeriesForTimeframe = (

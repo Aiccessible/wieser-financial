@@ -1,6 +1,6 @@
 import React, { useState, ReactNode } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { CustomTextBox } from './common/CustomTextBox'
+import { CustomTextBox } from './CustomTextBox'
 
 interface ExpandableTextWithModalProps {
     maxHeight?: string // Max height for the preview, e.g., '4rem' or '80px'

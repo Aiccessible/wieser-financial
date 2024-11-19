@@ -4,7 +4,7 @@ import { ConsoleLogger } from 'aws-amplify/utils'
 import { Button, Flex } from '@aws-amplify/ui-react'
 import { useAppDispatch } from '../../hooks'
 import { setPublicToken } from '../../features/auth'
-import PlaidLink from '../../components/PlaidLink'
+import PlaidLink from '../Plaid/PlaidLink'
 const apiName = 'plaidapi'
 const logger = new ConsoleLogger('Plaid')
 

@@ -13,7 +13,7 @@ import {
 } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { RootState } from '../store'
-import { calculateTotalSpending, calculateTotalSpendingInCategories } from '../components/common/spendingUtils'
+import { calculateTotalSpending, calculateTotalSpendingInCategories } from '../libs/spendingUtils'
 import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 // Define a type for the slice state
 interface TransactionsState {

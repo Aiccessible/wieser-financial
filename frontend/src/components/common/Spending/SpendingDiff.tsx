@@ -1,9 +1,8 @@
 import { SpendingSummary } from '@/src/API'
-import { CustomTextBox } from './CustomTextBox'
+import { CustomTextBox } from '../Custom/CustomTextBox'
 import { useCallback } from 'react'
-import { calculateAverageSpendingFromMonthlySummarys, calculateTotalSpending } from './spendingUtils'
-import Loader from '../../components/common/Loader'
-import { useAppSelector } from '../../../src/hooks'
+import { calculateAverageSpendingFromMonthlySummarys, calculateTotalSpending } from '../../../libs/spendingUtils'
+import { useAppSelector } from '../../../hooks'
 
 export const SpendingDiff = ({
     dailySpending,

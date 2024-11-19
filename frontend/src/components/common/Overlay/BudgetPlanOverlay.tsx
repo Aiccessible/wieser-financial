@@ -1,11 +1,11 @@
 import React from 'react'
-import { useAppDispatch, useAppSelector } from '../../hooks'
+import { useAppDispatch, useAppSelector } from '../../../hooks'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { useTransition, animated, config } from 'react-spring'
-import { setActiveBudgetPlan } from '../../../src/features/analysis'
-import { AccountBalances, NetWorthChart } from '../Analysis/NetworthChart'
-import Loader from './Loader'
+import { setActiveBudgetPlan } from '../../../../src/features/analysis'
+import { AccountBalances, NetWorthChart } from '../../Analysis/NetworthChart'
+import Loader from '../Loader'
 
 export const BudgetPlanOverlay = () => {
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
