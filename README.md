@@ -1,4 +1,6 @@
-# AWS Plaid Demo
+# Wieser Financial
+
+### This project was started using the AWS template Plaid integration see below for details
 
 ### Table of contents
 
