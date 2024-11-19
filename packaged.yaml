@@ -440,7 +440,7 @@ Resources:
       - x86_64
       CompatibleRuntimes:
       - python3.12
-      ContentUri: s3://sam-s3-bucket-for-lambda2/7acd173ac85bf1ec8072c0df8c7fd7b6
+      ContentUri: s3://sam-s3-bucket-for-lambda2/fce293e88197d9e2058400dedf703fc1
       Description:
         Fn::Sub: Plaid API - ${Environment} - Dependency Layer
       RetentionPolicy: Delete
@@ -1972,7 +1972,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialRecommendationsLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/getFinancialRecommendations.getFinancialRecommendations
       Description:
         Fn::Sub: Get Financial Recommendation Lambda
@@ -2012,7 +2012,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialSimulationExpansionLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/getFinancialSimulationExpansion.getFinancialSimulationExpansion
       Description:
         Fn::Sub: Get Financial Simulation Expansion Lambda
@@ -2054,7 +2054,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: GetFinancialConversationResponseLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/getResponseUsingFinancialContext.getResponseUsingFinancialContext
       Description:
         Fn::Sub: Get Financial response for Lambda
@@ -2172,7 +2172,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: UpdatorLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/updator.updator
       Description:
         Fn::Sub: Triggers updates of users
@@ -2216,7 +2216,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: SnapShotNetWorthLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/snapShotNetWorth.snapShotNetWorth
       Description:
         Fn::Sub: Snapshots the networth of users
@@ -2256,7 +2256,7 @@ Resources:
           reason: Ignoring Reserved Concurrency
       SamResourceId: CalculateIncomeAndSpendingLambda
     Properties:
-      CodeUri: s3://sam-s3-bucket-for-lambda2/611cd010ec65dadf92c5269e2f98d56f
+      CodeUri: s3://sam-s3-bucket-for-lambda2/10cf34f9d82e3d04808d2bf48acf21eb
       Handler: buildLambda/calculateIncomeAndSpending.calculateIncomeAndSpending
       Description:
         Fn::Sub: Calculate the income and spending for users
