@@ -6,7 +6,7 @@ import { ChatFocus, ChatInput, ChatType, HighLevelTransactionCategory } from './
 import { createChat } from './graphql/mutations'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import * as aws4 from 'aws4'
-import { expansionPrompt, newsPrompt, technicalPrompt } from './stockPrompts'
+import { expansionPrompt, newsPrompt, preExpansionPrompt, technicalPrompt } from './stockPrompts'
 const appsyncUrl = process.env.APPSYNC_URL as string
 const apiKey = process.env.APPSYNC_API_KEY as string
 
@@ -43,15 +43,26 @@ const transactionRecommendationAction = z.object({
 })
 
 const SimulationExpansionResponseFormat = z.object({
-    highLevelDescriptionOfIdeaWithoutMentioningCode: z.string(),
     newCode: z.string(),
-    inputKeys: z.array(z.string()),
+})
+
+const SimulationPreExpansionResponseFormat = z.object({
+    highLevelDescriptionOfIdeaWithoutMentioningCode: z.string(),
+    inputKeys: z.array(z.object({ name: z.string(), defaultValue: z.string() })),
+    title: z.string(),
 })
 
 export interface SimulationExpansionResponseInterface {
-    highLevelDescriptionOfIdeaWithoutMentioningCode: string
     newCode: string
-    inputKeys: string[]
+}
+
+export interface SimulationPreExpansionResponseInterface {
+    highLevelDescriptionOfIdeaWithoutMentioningCode: string
+    inputKeys: {
+        name: string
+        defaultValue: string
+    }[]
+    title: string
 }
 
 const Recommendations = z.object({
@@ -170,7 +181,14 @@ export const completeChatFromPrompt = async (
     requiresLiveData: boolean,
     chatType: ChatType
 ) => {
-    console.log('Sending', prompt, ' to gpt')
+    const doesStreamRes =
+        chatType !== ChatType.FinancialNewsQuery &&
+        chatType !== ChatType.FinancialAnalysisQuery &&
+        chatType !== ChatType.TransactionRecommendation &&
+        chatType !== ChatType.SimulationExpansion &&
+        chatType !== ChatType.GeneralRecommendation &&
+        chatType !== ChatType.SimulationPreExpansion &&
+        chatType !== ChatType.RetryCodeBuild // stream to get faster
     const systemPrompt =
         chatType === ChatType.FinancialNewsQuery
             ? newsPrompt
@@ -178,13 +196,17 @@ export const completeChatFromPrompt = async (
             ? technicalPrompt
             : chatType === ChatType.SimulationExpansion
             ? expansionPrompt
+            : chatType === ChatType.SimulationPreExpansion
+            ? preExpansionPrompt
+            : chatType === ChatType.RetryCodeBuild
+            ? 'Fix the error from the attached code files, also fix any other potential errors, do not use any backticks in your python code'
             : chatType === ChatType.TransactionRecommendation
             ? `You are a personal spending assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide spending recommendations which are highly useful.`
             : chatType === ChatType.GeneralRecommendation
             ? 'You are a personal finance assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. Leave the transfer information empty if no transfer is needed'
             : `You are a personal ${
                   type && type !== ChatFocus.All ? type : 'Finance'
-              } assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. `
+              } assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You are currently being used in a chat context, you must provide very concise replies to not bore the human you are talking to. `
     const model =
         chatType === ChatType.FinancialNewsQuery || chatType === ChatType.FinancialAnalysisQuery
             ? 'llama-3.1-sonar-large-128k-online'
@@ -205,11 +227,13 @@ export const completeChatFromPrompt = async (
                 ? zodResponseFormat(TransactionRecommendation, 'recommendations')
                 : chatType === ChatType.GeneralRecommendation
                 ? zodResponseFormat(Recommendations, 'recommendations')
-                : chatType === ChatType.SimulationExpansion
+                : chatType === ChatType.SimulationExpansion || chatType === ChatType.RetryCodeBuild
                 ? zodResponseFormat(SimulationExpansionResponseFormat, 'simulationExpansion')
+                : chatType === ChatType.SimulationPreExpansion
+                ? zodResponseFormat(SimulationPreExpansionResponseFormat, 'simulationPreExpansion')
                 : undefined,
         model,
-        stream: true,
+        stream: doesStreamRes ? true : false,
     }
     const stream = requiresLiveData
         ? await makePerplexityCall(messageBody)
@@ -221,7 +245,7 @@ export const completeChatFromPrompt = async (
     const batchSize = 100 // Then combine 10 chunks at a time
     const messageId = userId + '#' + Date.now().toString()
 
-    if (!requiresLiveData) {
+    if (!requiresLiveData && doesStreamRes) {
         for await (const chunk of stream as any) {
             const content = chunk.choices[0]?.delta?.content || ''
 
@@ -229,7 +253,7 @@ export const completeChatFromPrompt = async (
             if (count < firstFewLimit) {
                 console.info('Got:', content)
                 message.push(content)
-                sendChatToUI(userId, count.toString(), content, false, messageId)
+                doesStreamRes && sendChatToUI(userId, count.toString(), content, false, messageId)
                 count = count + 1
             } else {
                 // After the first few, accumulate chunks in a buffer
@@ -239,7 +263,7 @@ export const completeChatFromPrompt = async (
                 if (buffer.length === batchSize) {
                     const combinedMessage = buffer.join('')
                     console.info('Sending combined message:', combinedMessage)
-                    sendChatToUI(userId, count.toString(), combinedMessage, false, messageId)
+                    doesStreamRes && sendChatToUI(userId, count.toString(), combinedMessage, false, messageId)
                     message.push(combinedMessage)
 
                     // Reset the buffer after sending
@@ -257,11 +281,12 @@ export const completeChatFromPrompt = async (
     if (buffer.length > 0) {
         const combinedMessage = buffer.join('')
         console.info('Sending final combined message:', combinedMessage)
-        sendChatToUI(userId, count.toString(), combinedMessage, true, messageId)
+        doesStreamRes && sendChatToUI(userId, count.toString(), combinedMessage, true, messageId)
         message.push(combinedMessage)
     } else {
-        sendChatToUI(userId, count.toString(), '', true, messageId)
+        doesStreamRes && sendChatToUI(userId, count.toString(), '', true, messageId)
     }
+
     return message.join('')
 }
 

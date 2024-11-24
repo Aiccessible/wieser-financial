@@ -3,6 +3,9 @@ type GeneratedQuery<InputType, OutputType> = string & {
     __generatedQueryInput: InputType;
     __generatedQueryOutput: OutputType;
 };
+export declare const retryCodeBuild: GeneratedQuery<APITypes.RetryCodeBuildQueryVariables, APITypes.RetryCodeBuildQuery>;
+export declare const getUserAnalysis: GeneratedQuery<APITypes.GetUserAnalysisQueryVariables, APITypes.GetUserAnalysisQuery>;
+export declare const getUserAnalysisFields: GeneratedQuery<APITypes.GetUserAnalysisFieldsQueryVariables, APITypes.GetUserAnalysisFieldsQuery>;
 export declare const getItems: GeneratedQuery<APITypes.GetItemsQueryVariables, APITypes.GetItemsQuery>;
 export declare const getAccounts: GeneratedQuery<APITypes.GetAccountsQueryVariables, APITypes.GetAccountsQuery>;
 export declare const getTransactions: GeneratedQuery<APITypes.GetTransactionsQueryVariables, APITypes.GetTransactionsQuery>;

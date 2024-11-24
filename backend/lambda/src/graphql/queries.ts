@@ -8,6 +8,40 @@ type GeneratedQuery<InputType, OutputType> = string & {
   __generatedQueryOutput: OutputType;
 };
 
+export const retryCodeBuild = /* GraphQL */ `query RetryCodeBuild($build: RetryCodeBuildInput) {
+  retryCodeBuild(build: $build)
+}
+` as GeneratedQuery<
+  APITypes.RetryCodeBuildQueryVariables,
+  APITypes.RetryCodeBuildQuery
+>;
+export const getUserAnalysis = /* GraphQL */ `query GetUserAnalysis {
+  getUserAnalysis {
+    analysisName
+    s3Key
+    currentDescription
+    currentProjection
+    currentInputs
+    titles
+    descriptions
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetUserAnalysisQueryVariables,
+  APITypes.GetUserAnalysisQuery
+>;
+export const getUserAnalysisFields = /* GraphQL */ `query GetUserAnalysisFields {
+  getUserAnalysisFields {
+    inputName
+    inputValue
+    __typename
+  }
+}
+` as GeneratedQuery<
+  APITypes.GetUserAnalysisFieldsQueryVariables,
+  APITypes.GetUserAnalysisFieldsQuery
+>;
 export const getItems = /* GraphQL */ `query GetItems($limit: Int, $cursor: String) {
   getItems(limit: $limit, cursor: $cursor) {
     cursor

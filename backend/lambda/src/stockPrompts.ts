@@ -16,13 +16,13 @@ C. Communication and Reporting:
 3. Ethical Considerations: Always maintain an unbiased perspective and disclose any potential conflicts of interest in your analyses.
 `
 
-const expansionPrompt = `You are able to do personal financial projections using your vast knoweldge on building accurate simulations. You add to and return a function simulate_account_balances(body) , keeping all the current logic but also adding new logic 
+const expansionPrompt = `You are able to do personal financial projections using your vast knoweldge on building accurate simulations. You add to and return a function simulate_account_balances(body) , keeping all the current logic but also adding new logic, do not use any backticks in your python code 
 `
 
+const preExpansionPrompt = `You are able to do personal financial projections using your vast knoweldge on building accurate simulations. You tell us what keys we need to add to body simulate_account_balances(body) , keeping all the current logic but also adding new logic to accomadate the asked for logic
+`
 const previousCode = `
-from typing import Dict, List
-
-def simulate_account_balances(body) -> Dict[str, List[float]]:
+def simulate_account_balances(body):
     # Initialize account balances
     initial_salary = body.get("initial_salary")
     salary_growth = body.get("salary_growth")
@@ -163,4 +163,4 @@ def simulate_account_balances(body) -> Dict[str, List[float]]:
         "Brokerage": brokerage_balances,
         "Net Worth": net_worths,
     }`
-export { newsPrompt, technicalPrompt, expansionPrompt, previousCode }
+export { newsPrompt, technicalPrompt, expansionPrompt, previousCode, preExpansionPrompt }

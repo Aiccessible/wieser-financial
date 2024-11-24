@@ -26,9 +26,11 @@ def load_analysis_function(bucket_name: str, object_key: str):
         response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
         script = response['Body'].read().decode('utf-8')
         namespace = {}
+        logger.info('Execution ', script)
         exec(script, namespace)
         return namespace.get("simulate_account_balances", None)  # Ensure the analyze function is present
     except Exception as e:
+        logger.exception(e)
         logger.exception("Failed to load or execute the analysis function")
         raise InternalServerError(f"Error loading the function from S3: {str(e)}")
 
@@ -41,7 +43,7 @@ def analyze_handler():
     s3_key = body.get("s3_key")
 
     # S3 bucket and key for the analysis script
-    s3_bucket = os.environ.get("BUCKET_NAME")
+    s3_bucket = os.environ.get("S3_BUCKET")
 
 
     # Load the function from S3
@@ -53,12 +55,13 @@ def analyze_handler():
     try:
         # Run the analyze function with the provided inputs
         result = analyze(inputs)
+        print(result)
         return {
-            "RRSP": result.rrsp_balances,
-            "FHSA": result.fhsa_balances,
-            "TFSA": result.tfsa_balances,
-            "Brokerage": result.brokerage_balances,
-            "Net Worth": result.net_worths,
+            "RRSP": result.get('rrsp_balances'),
+            "FHSA": result.get('fhsa_balances'),
+            "TFSA": result.get('tfsa_balances'),
+            "Brokerage": result.get('brokerage_balances'),
+            "Net Worth": result.get('net_worths'),
             **result  # Add all other keys dynamically
         }
     except Exception as e:

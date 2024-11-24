@@ -1,6 +1,11 @@
 import { AppSyncIdentityCognito, AppSyncResolverEvent, AppSyncResolverHandler, Context } from 'aws-lambda'
 import { ChatFocus, ChatType, ExpandFinancialSimulation, FinancialSimulationExpansion } from './API'
-import { completeChatFromPrompt, SimulationExpansionResponseInterface } from './gpt'
+import {
+    completeChatFromPrompt,
+    sendChatToUI,
+    SimulationExpansionResponseInterface,
+    SimulationPreExpansionResponseInterface,
+} from './gpt'
 import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { previousCode } from './stockPrompts'
 const s3 = new S3Client({ region: process.env.AWS_REGION })
@@ -35,11 +40,48 @@ export const getFinancialSimulationExpansion: AppSyncResolverHandler<any, Financ
             throw new Error('Failed to retrieve S3 file.')
         }
     }
-    const message = `${previousCodeRun} Expand the script, do not rename the function, input keys is every key we expect in the body parameter. ${event.arguments.chat.message}`
+    const message1 = `${previousCodeRun} \nBased on the code and the following prompt, tell us what inputs we will need to add to accomadate, do not rewrite the code. ${event.arguments.chat.message}`
+    const response1 = await completeChatFromPrompt(
+        message1,
+        ChatFocus.All,
+        user,
+        false,
+        ChatType.SimulationPreExpansion
+    )
+    const parsedSimulationPreExpansionResponse = JSON.parse(response1 || '') as SimulationPreExpansionResponseInterface
+
+    await sendChatToUI(
+        user,
+        'SimulationPreExpansionMessage',
+        JSON.stringify({
+            __typename: 'FinancialSimulationPreExpansion',
+            inputs: parsedSimulationPreExpansionResponse.inputKeys,
+            description: parsedSimulationPreExpansionResponse.highLevelDescriptionOfIdeaWithoutMentioningCode,
+            title: parsedSimulationPreExpansionResponse.title,
+        }),
+        true,
+        user + Date.now().toString()
+    )
+    const message = `${previousCodeRun} Expand the script, do not rename the function, the input set in body will now include the keys ${parsedSimulationPreExpansionResponse.inputKeys
+        .map((el) => `${el.name}: ${el.defaultValue}, `)
+        .join(
+            ', '
+        )} All users are in Canada and use the registered Accounts: FHSA, RSPs, TFSAs. Output the updated script as runnable code`
     const response = await completeChatFromPrompt(message, ChatFocus.All, user, false, ChatType.SimulationExpansion)
     const recommentations = JSON.parse(response || '') as SimulationExpansionResponseInterface
     const newCode = recommentations.newCode
     const newFileKey = user + '-' + Math.floor(Math.random() * 1000000)
+
+    await sendChatToUI(
+        user,
+        'SimulationExpansionMessage',
+        JSON.stringify({
+            __typename: 'FinancialSimulationExpansion',
+            s3Key: newFileKey,
+        }),
+        true,
+        user + Date.now().toString()
+    )
     try {
         // Upload new code to S3
         const putCommand = new PutObjectCommand({
@@ -61,7 +103,5 @@ export const getFinancialSimulationExpansion: AppSyncResolverHandler<any, Financ
     return {
         __typename: 'FinancialSimulationExpansion',
         s3Key: newFileKey,
-        newInputs: recommentations.inputKeys,
-        description: recommentations.highLevelDescriptionOfIdeaWithoutMentioningCode,
     }
 }

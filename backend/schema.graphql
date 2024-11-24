@@ -7,6 +7,36 @@ type Account {
     mask: String
 }
 
+type Analysis {
+    analysisName: String!
+    s3Key: String!
+    currentDescription: String
+    currentProjection: String
+    currentInputs: [String]
+    titles: [String]
+    descriptions: [String]
+}
+
+input AnalysisInput {
+    analysisName: String!
+    s3Key: String!
+    currentDescription: String
+    currentProjection: String
+    currentInputs: [String]
+    titles: [String]
+    descriptions: [String]
+}
+
+input AnalysisFieldInput {
+    inputName: String!
+    inputValue: String!
+}
+
+type AnalysisField {
+    inputName: String!
+    inputValue: String!
+}
+
 type Balances {
     current: String
     iso_currency_code: String
@@ -118,6 +148,8 @@ enum ChatType {
     TransactionRecommendation
     GeneralRecommendation
     SimulationExpansion
+    SimulationPreExpansion
+    RetryCodeBuild
 }
 
 type GraphType {
@@ -329,6 +361,8 @@ type Transfer {
 }
 
 type Mutation {
+    createAnalysis(analysis: AnalysisInput): Analysis
+    createAnalysisField(analysisField: AnalysisFieldInput): AnalysisField
     createChat(chat: ChatInput!): Chat @aws_iam
     createBudget(budget: BudgetPlanInput!): BudgetPlan
 }
@@ -339,12 +373,20 @@ type FinancialSimulationExpansion {
     description: String
 }
 
+input RetryCodeBuildInput {
+    error: String
+    s3Key: String
+}
+
 input ExpandFinancialSimulation {
     message: String
     s3Key: String
 }
 
 type Query {
+    retryCodeBuild(build: RetryCodeBuildInput): String
+    getUserAnalysis: [Analysis]!
+    getUserAnalysisFields: [AnalysisField]!
     getItems(limit: Int, cursor: String): PaginatedItems!
     getAccounts(id: ID!): [Account!]!
     getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!

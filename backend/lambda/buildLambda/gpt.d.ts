@@ -1,9 +1,15 @@
 import OpenAI from 'openai';
 import { ChatFocus, ChatType } from './API';
 export interface SimulationExpansionResponseInterface {
-    highLevelDescriptionOfIdeaWithoutMentioningCode: string;
     newCode: string;
-    inputKeys: string[];
+}
+export interface SimulationPreExpansionResponseInterface {
+    highLevelDescriptionOfIdeaWithoutMentioningCode: string;
+    inputKeys: {
+        name: string;
+        defaultValue: string;
+    }[];
+    title: string;
 }
 export interface Transfer {
     fromAccountName: string;
