@@ -5,13 +5,16 @@ import { generateClient } from 'aws-amplify/api'
 import { CustomTextBox } from '../common/Custom/CustomTextBox'
 import { useEffect, useState } from 'react'
 import * as Accordion from '../../components/native/Accordion'
-import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
+import { financialProjectionKeys, useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { NetWorthChart } from './NetworthChart'
 import { selectRegisteredSavingsPerAccounts } from '../../../src/features/transactions'
-import { TextInput, Text } from 'react-native'
+import { TextInput, View } from 'react-native'
 import { NewInputsOverlay } from '../common/Overlay/NewInputsOverlay'
 import Loader from '../common/Loader'
 import { Button } from '@aws-amplify/ui-react'
+import { getUserAnalysesAsync, getUserAnalysesFieldsAsync } from '../../../src/features/simulations'
+import { useSimulatedExperiment } from '../../../src/hooks/useSimulatedExperiment'
+
 const Projection = () => {
     const client = generateClient()
     const dispatch = useAppDispatch()
@@ -32,9 +35,31 @@ const Projection = () => {
         monthlySpendings: monthlySpendings,
         estimatedSavings,
     })
-    const [inputs, setInputs] = useState(defaultParams)
-    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
+    const newInputs = useAppSelector((state) => state.analysis.activeSimulationInputs)
+    const newNewInputs = useAppSelector((state) => state.analysis.newSimulationInputs)
 
+    const filteredInputs = newInputs?.filter((key) => !financialProjectionKeys.has(key as any))
+    const analysisFields = useAppSelector((state) => state.simulations.analysisFields)
+
+    const [inputs, setInputs] = useState({ ...defaultParams })
+    console.info(inputs)
+    useEffect(() => {
+        const filteredInputsMap: Record<any, any> = {}
+        analysisFields?.forEach((input) => {
+            filteredInputsMap[input?.inputName ?? ''] = input?.inputValue
+        })
+        setInputs((inputs) => ({ ...inputs, ...filteredInputsMap }))
+    }, [analysisFields])
+    const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
+    const simulations = useAppSelector((state) => state.analysis.simulationProjections)
+    const activeSimulationKey = useAppSelector((state) => state.analysis.activeSimulationKey)
+    const activeSimulationName = useAppSelector((state) => state.analysis.activeSimulationName)
+    const isWaiting = useAppSelector((state) => state.analysis.waitingForCodeGeneration)
+    useEffect(() => {
+        dispatch(getUserAnalysesAsync({ client }))
+        dispatch(getUserAnalysesFieldsAsync({ client }))
+    }, [])
+    const error = useAppSelector((state) => state.analysis.loadingProjectionsError)
     useEffect(() => {
         setInputs((val) => ({
             ...val,
@@ -46,29 +71,49 @@ const Projection = () => {
         const { name, value } = e.target
         setInputs((prevInputs) => ({
             ...prevInputs,
-            [name]: parseFloat(value),
+            [name]: value,
         }))
     }
     const getProjection = () => {
+        const parsedInputs = Object.fromEntries(
+            Object.entries(inputs).map(([key, value]) => {
+                console.info(value, typeof value === 'string', parseFloat(value as any), typeof value)
+                return [key, typeof value === 'string' && !isNaN(parseFloat(value)) ? parseFloat(value) : value]
+            })
+        ) as any
         dispatch(
             getFinancialProjection({
                 client,
                 input: {
-                    ...inputs,
+                    ...parsedInputs,
                 },
             })
         )
     }
+    const { getProjection: getSimulationExperiment } = useSimulatedExperiment({ inputs })
+
     if (generatingSimulation || loadingProjection) {
         return (
-            <div className="flex flex-1  bg-black">
+            <div className="flex flex-1  justify-self-center bg-black">
                 <Loader />
             </div>
         )
     }
     return (
         <div className="flex flex-1 flex-col bg-black">
-            <NewInputsOverlay inputs={inputs} handleInputChange={handleInputChange} />
+            {newNewInputs && <NewInputsOverlay inputs={inputs} handleInputChange={handleInputChange} />}
+            {error && (
+                <CustomTextBox className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md mb-10">
+                    <p className="font-bold text-red-700">Error:</p>
+                    <p className="font-bold text-red-700">There was an issue loading the projection</p>
+                </CustomTextBox>
+            )}
+            {isWaiting && (
+                <CustomTextBox className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded shadow-md mb-10">
+                    <p className="font-bold text-red-700">Regenerating simulation...</p>
+                </CustomTextBox>
+            )}
+
             <div className="flex  justify-between bg-black">
                 <Accordion.Root
                     type="multiple"
@@ -209,23 +254,65 @@ const Projection = () => {
                                         <TextInput
                                             onChangeText={(e) => handleInputChange({ name: field, value: e })}
                                             keyboardType="numeric"
-                                            value={(inputs as any)[field].toFixed(2)}
+                                            value={(inputs as any)[field]}
                                         />
                                     </div>
                                 ))}
                             </Accordion.Content>
                         </Accordion.Item>
+                        <div className="col-span-2">
+                            {filteredInputs && (
+                                <Accordion.Item value="Wieser Inputs" className="border-b">
+                                    <Accordion.Header className="py-2">
+                                        <Accordion.Trigger className="text-lg font-semibold">
+                                            <CustomTextBox>Wieser Inputs</CustomTextBox>
+                                        </Accordion.Trigger>
+                                    </Accordion.Header>
+                                    <Accordion.Content className="px-4 py-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {filteredInputs.map((field) => (
+                                            <div key={field}>
+                                                <div className="block text-sm font-medium capitalize">
+                                                    <CustomTextBox>{field?.replace(/_/g, ' ')}</CustomTextBox>
+                                                </div>
+                                                <TextInput
+                                                    onChangeText={(e) =>
+                                                        handleInputChange({ target: { name: field, value: e } })
+                                                    }
+                                                    keyboardType="numeric"
+                                                    value={(inputs as any)[field]}
+                                                />
+                                            </div>
+                                        ))}
+                                    </Accordion.Content>
+                                </Accordion.Item>
+                            )}
+                        </div>
                     </div>
                 </Accordion.Root>
                 <Button
                     style={{ marginTop: 10, maxHeight: 120 }}
-                    className="bg-gradient-to-r text-center bg-primary active:scale-95 text-black py-4 px-6 rounded-lg shadow-lg transform transition duration-300 ease-in-out mt-4"
-                    onClick={getProjection}
+                    className="bg-gradient-to-r text-center bg-primary active:scale-95 text-black py-4 px-6 rounded-lg shadow-lg transform transition duration-300 hover:bg-green-700 ease-in-out mt-4"
+                    onClick={activeSimulationName ? getSimulationExperiment : getProjection}
+                    isLoading={isWaiting}
                 >
-                    <p className="text-xl text-center font-bold tracking-wider text-black">Run Wieser Simulation</p>
+                    <p className="text-xl text-center font-bold tracking-wider text-black ">Run Wieser Simulation</p>
                 </Button>
             </div>
-            {projectedBalances && <NetWorthChart accountBalances={projectedBalances} title="Networth Expirement" />}
+            {projectedBalances && simulations?.[activeSimulationKey ?? ''] && (
+                <View style={{ marginTop: 10 }}>
+                    <NetWorthChart
+                        comparativeBalances={simulations?.[activeSimulationKey ?? '']}
+                        comparativeKey="Net Worth"
+                        overrideTimeFrame={'Future'}
+                        accountBalances={projectedBalances}
+                        title="Simulation"
+                    />
+                </View>
+            )}
+
+            {projectedBalances && !simulations?.[activeSimulationKey ?? ''] && (
+                <NetWorthChart accountBalances={projectedBalances} title="Networth Experiment" />
+            )}
         </div>
     )
 }

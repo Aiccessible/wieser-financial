@@ -1,8 +1,8 @@
 import { HighLevelTransactionCategory, SpendingSummary } from '../../src/API'
 
-const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
-const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
-const transferOutKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_OUT'))
+export const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
+export const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
+export const transferOutKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_OUT'))
 export const nonSpendingKeys = [
     ...incomeKeys,
     ...transferInKeys,
@@ -22,11 +22,25 @@ export function calculateTotalSpendingInCategories(
     }, {})
 }
 
+export function calculateTotalsInCategoriesAsTotal(
+    summary: SpendingSummary,
+    categories: HighLevelTransactionCategory[]
+) {
+    let totals = 0
+    Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
+        if (categories.find((el) => el === category)) {
+            console.log(category, value)
+            totals = (totals || 0) + value
+        }
+    })
+    return totals
+}
 // TODO: This is being called alot
 export function calculateTotalSpendingInCategoriesAsTotal(summary: SpendingSummary) {
     let totals = 0
     Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
         if (!nonSpendingKeys.find((el) => el === category)) {
+            console.log(category, value)
             totals = (totals || 0) + value
         }
     })

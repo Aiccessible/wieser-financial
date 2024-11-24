@@ -16,6 +16,7 @@ import { RefreshCwIcon } from 'lucide-react'
 import RecommendationsAccordion from '../common/RecommendationAcordion'
 import ScoreReview from '../common/Spending/SpendingScore'
 import { BudgetPlanOverlay } from '../common/Overlay/BudgetPlanOverlay'
+import { TransferTimeline } from '../common/Spending/TransferTimeline'
 const logger = new ConsoleLogger('Transactions')
 
 export default function Transactions({}) {
@@ -75,9 +76,10 @@ export default function Transactions({}) {
                         <div className="flex flex-row justify-between">
                             <div className="flex flex-col w-2/3 flex-grow">
                                 <div className="flex flex-row  flex-grow max-h-[50vh]   p-3">
-                                    <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Spending'} />
+                                    <SpendingTimeline spending={monthlySpending ?? []} title={'Monthly Timeline'} />
                                     <DailySpending width={50} />
                                 </div>
+                                <TransferTimeline spending={monthlySpending ?? []} title={'Transfer Timeline'} />
                                 <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
                             </div>
                         </div>

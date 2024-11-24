@@ -11,6 +11,7 @@ import { X } from 'lucide-react'
 import { useTransition, animated, config } from 'react-spring'
 import { Button } from '@aws-amplify/ui-react'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
+import { setActiveSimulationParams, setActiveSimulationS3Params } from '../../../src/features/analysis'
 
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
@@ -32,7 +33,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
     const [chunks, setChunks] = useState<Chat[]>()
     const [lastRecievedChat, setLastReceivedChat] = useState(0)
     const ids = useAppSelector((state) => state.idsSlice.institutions?.map((el) => el.item_id))
-    const chatContainerRef = useRef(null)
     const projection = useDefaultValuesForProjection({})
 
     const getSortedChunks = useMemo(() => {
@@ -41,13 +41,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
         return chunksOfConcern?.map((chunks) => chunks.message).join('')
     }, [chunks])
 
-    const [wordIndex, setWordIndex] = useState(0)
-
-    const typingSpeed = 150
-
     useEffect(() => {
         const createSub = async () => {
-            console.log(await fetchAuthSession())
             const headers = await custom_headers()
             client
                 .graphql(
@@ -62,6 +57,20 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                 .subscribe({
                     next: ({ data }) => {
                         const chunk = data.onCreateChat
+                        console.info('Chunk is', chunk)
+                        if (chunk.sk === 'SimulationPreExpansionMessage') {
+                            const message = JSON.parse(chunk.message ?? '')
+                            dispatch(setActiveSimulationParams({ simulationExpansion: message }))
+                        }
+                        if (chunk.sk === 'SimulationExpansionMessage') {
+                            const message = JSON.parse(chunk.message ?? '')
+                            dispatch(setActiveSimulationS3Params({ simulationExpansion: message }))
+                        }
+                        if (chunk.sk === 'FinancialSimulationRepair') {
+                            console.info('Repaired', chunk.message)
+                            const message = JSON.parse(chunk.message ?? '')
+                            dispatch(setActiveSimulationS3Params({ simulationExpansion: message }))
+                        }
                         if (chunk.isLastChunk) {
                             dispatch(setLoadingChat(false))
                             setChunks([])
@@ -69,9 +78,6 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                         }
                         setLastReceivedChat(Date.now())
                         setChunks((prevState: Chat[] | undefined) => {
-                            if (!prevState) {
-                                setWordIndex(0)
-                            }
                             return [...(prevState ?? []), chunk]
                         })
                     },

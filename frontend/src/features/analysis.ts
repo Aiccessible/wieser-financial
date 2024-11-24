@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
-import { CacheType, ChatFocus, ChatType, ExpandFinancialSimulation, Recommendation } from '../API'
+import { CacheType, ChatFocus, ChatType, ExpandFinancialSimulation, Recommendation, RetryCodeBuildInput } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { post } from 'aws-amplify/api'
 import { AccountBalances } from '../components/Analysis/NetworthChart'
-import { getFinancialConversationResponse, getFinancialSimulationExpansion } from '../graphql/queries'
+import { getFinancialConversationResponse, getFinancialSimulationExpansion, retryCodeBuild } from '../graphql/queries'
 import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
 import storage from './storage'
 
@@ -19,10 +19,18 @@ interface AnalysisState {
     budgetPlanProjections: Record<string, AccountBalances | { loading: true }>
     activeBudgetPlan: string | undefined
     generatingSimulation: boolean
-    newSimulationInputs: string[] | undefined
+    newSimulationInputs: { name: string; defaultValue: string }[] | undefined
+    activeSimulationInputs: string[] | undefined
     activeSimulationKey: string | undefined
     activeSimulationDescription: string | undefined
+    activeSimulationName: string | undefined
     generationError: string | undefined
+    simulationProjections: Record<string, AccountBalances> | undefined
+    waitingForCodeGeneration: boolean
+    activeSimulationDescriptions: string[] | undefined
+    activeSimulationTitles: string[] | undefined
+    activeSimulationTitle: string | undefined
+    retryCount: number
 }
 
 export interface FinancialInputs {
@@ -59,6 +67,14 @@ const initialState: AnalysisState = {
     newSimulationInputs: undefined,
     generatingSimulation: false,
     generationError: '',
+    simulationProjections: undefined,
+    activeSimulationName: undefined,
+    activeSimulationInputs: undefined,
+    waitingForCodeGeneration: false,
+    activeSimulationDescriptions: undefined,
+    activeSimulationTitles: undefined,
+    activeSimulationTitle: undefined,
+    retryCount: 0,
 }
 
 export interface GetFullPictureRecommendationInput {
@@ -83,6 +99,11 @@ export interface GetFinancialSimulationExpansionInput {
     input: ExpandFinancialSimulation
 }
 
+export interface RetryCodeBuildThunkInput {
+    client: { graphql: GraphQLMethod }
+    input: RetryCodeBuildInput
+}
+
 export const financialProjectionToChatInput = (projection: FinancialProjection) => {
     return `my estimated annual post tax income is ${projection.incomeAnnualize} ,
                  my estimated annualized expenses are ${projection.initial_expenses} 
@@ -90,7 +111,27 @@ export const financialProjectionToChatInput = (projection: FinancialProjection) 
                 (balance: ${projection.initial_rrsp_balance} room ${projection.initial_rrsp_room})
                 (balance: ${projection.initial_fhsa_balance} room ${projection.initial_fhsa_room})`
 }
-export const getProjection = async (input: FinancialInputs, path = `/v1/analyze/projection`) => {
+
+export const retryCodeBuildAsyncThunk = createAsyncThunk<
+    any, // Return type
+    RetryCodeBuildThunkInput, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('analysis/retry-code-build', async (input: RetryCodeBuildThunkInput, getThunkApi) => {
+    console.info('invoking')
+    const res = await input.client.graphql({
+        query: retryCodeBuild,
+        variables: { build: input.input },
+    })
+
+    return { res }
+})
+
+export const getProjection = async (
+    input: FinancialInputs,
+    path = `/v1/analyze/projection`,
+    simulationId: string | undefined = undefined
+) => {
+    console.info('invoking')
     const { body } = await post({
         apiName: 'plaidapi',
         path: path,
@@ -102,7 +143,7 @@ export const getProjection = async (input: FinancialInputs, path = `/v1/analyze/
     }).response
     const data = await body.json()
 
-    return { projection: data }
+    return { projection: data, simulationId }
 }
 
 export const getFinancialProjection = createAsyncThunk<
@@ -110,7 +151,7 @@ export const getFinancialProjection = createAsyncThunk<
     GetFinancialProjectionInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-financial-projection', async (input: GetFinancialProjectionInput, getThunkApi) => {
-    return await getProjection(input.input, input.path ?? '/v1/analyze/projection')
+    return await getProjection(input.input, input.path ?? '/v1/analyze/projection', input.path ?? undefined)
 })
 
 export const getFinancialSimulationExpansionThunk = createAsyncThunk<
@@ -118,7 +159,6 @@ export const getFinancialSimulationExpansionThunk = createAsyncThunk<
     GetFinancialSimulationExpansionInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-financial-simulation-expansion', async (input: GetFinancialSimulationExpansionInput, getThunkApi) => {
-    console.info('sending ', input.input)
     try {
         const response = await input.client.graphql({
             query: getFinancialSimulationExpansion,
@@ -126,7 +166,6 @@ export const getFinancialSimulationExpansionThunk = createAsyncThunk<
                 chat: input.input,
             },
         })
-        console.info(response)
         const recs = response.data.getFinancialSimulationExpansion
         return { simulationExpansion: recs }
     } catch (e) {
@@ -149,9 +188,7 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
     GetFullPictureRecommendationInput, // Input type
     { state: RootState } // ThunkAPI type that includes the state
 >('analysis/get-analysis', async (input: GetFullPictureRecommendationInput, getThunkApi) => {
-    console.info('getting storage item')
     const storedItem = await storage.getItem(getStorageKey('full-picture-recommendation'))
-    console.info(storedItem)
     if (storedItem) {
         return {
             fullPictureRecommendations: JSON.parse(storedItem || ''),
@@ -162,7 +199,6 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             .getState()
             .idsSlice.institutions?.map((account) => account.item_id)
             .slice(0, 25) ?? []
-    console.info('Calling graphql')
     const res = await input.client.graphql({
         query: getFinancialConversationResponse,
         variables: {
@@ -185,7 +221,6 @@ export const getFullPictureRecommendationAsync = createAsyncThunk<
             },
         },
     })
-    console.info('got back ', res)
     const recs = res.data.getFinancialConversationResponse.response
     storage.setItem(getStorageKey('full-picture-recommendation'), JSON.stringify(recs))
     return { fullPictureRecommendations: recs }
@@ -204,6 +239,53 @@ export const analysisSlice = createSlice({
         removeError: (state) => (state.error = undefined),
         setActiveBudgetPlan: (state, action) => {
             state.activeBudgetPlan = action.payload
+            return
+        },
+        setActiveSimulationName: (state, action) => {
+            state.activeSimulationName = action.payload
+            if (!action.payload) {
+                state.newSimulationInputs = undefined
+                state.activeSimulationKey = undefined
+                state.activeSimulationInputs = undefined
+            }
+            return
+        },
+        setActiveSimulationParams: (state, action) => {
+            state.activeSimulationDescription = action.payload.simulationExpansion.description
+            state.newSimulationInputs = action.payload.simulationExpansion.inputs
+            state.generatingSimulation = false
+            state.waitingForCodeGeneration = true
+            if (!state.activeSimulationDescriptions) {
+                state.activeSimulationDescriptions = [action.payload.simulationExpansion.description]
+                state.activeSimulationTitles = [action.payload.simulationExpansion.title]
+            } else {
+                state.activeSimulationDescriptions.push(action.payload.simulationExpansion.description)
+                state.activeSimulationTitles?.push(action.payload.simulationExpansion.title)
+            }
+            state.activeSimulationName = state.activeSimulationName ?? action.payload.simulationExpansion.title
+            state.activeSimulationInputs = state.activeSimulationInputs
+                ? [
+                      ...state.activeSimulationInputs,
+                      ...action.payload.simulationExpansion.inputs?.map((el: any) => el.name),
+                  ]
+                : state.activeSimulationInputs
+            return
+        },
+        setActiveSimulationS3Params: (state, action) => {
+            state.activeSimulationKey = action.payload.simulationExpansion.s3Key
+            state.waitingForCodeGeneration = false
+            state.loadingProjectionsError = undefined
+            return
+        },
+        setActiveSimulation: (state, action) => {
+            state.activeSimulationDescription = action.payload.currentDescription
+            state.activeSimulationKey = action.payload.s3Key
+            state.activeSimulationInputs = action.payload.currentInputs
+            state.activeSimulationName = action.payload.analysisName
+            state.activeSimulationDescriptions = action.payload.descriptions
+            state.activeSimulationTitles = action.payload.titles
+            state.generatingSimulation = false
+            return
         },
     },
     extraReducers(builder) {
@@ -238,8 +320,21 @@ export const analysisSlice = createSlice({
             }
         })
         builder.addCase(getFinancialProjection.fulfilled, (state, action) => {
-            state.projectedAccountBalances = action.payload.projection || undefined
-            state.loadingProjections = false
+            if (action.payload.simulationId) {
+                if (!state.simulationProjections) {
+                    state.simulationProjections = {}
+                }
+                state.simulationProjections[state.activeSimulationKey!] = action.payload.projection
+                state.activeSimulationInputs = state.activeSimulationInputs
+                    ? [...state.activeSimulationInputs, ...(state.newSimulationInputs?.map((el: any) => el.name) ?? [])]
+                    : state.newSimulationInputs?.map((el: any) => el.name) ?? []
+                state.newSimulationInputs = undefined
+                state.loadingProjections = false
+            } else {
+                state.projectedAccountBalances = action.payload.projection || undefined
+                state.loadingProjections = false
+            }
+            state.retryCount = 0
         })
         builder.addCase(getFinancialProjection.rejected, (state, action) => {
             state.loadingProjectionsError = 'Failed to get projections because ' + action.error.message
@@ -249,25 +344,28 @@ export const analysisSlice = createSlice({
             state.loadingProjectionsError = undefined
             state.loadingProjections = true
         })
-        builder.addCase(getFinancialSimulationExpansionThunk.fulfilled, (state, action) => {
-            state.activeSimulationDescription = action.payload.simulationExpansion.description
-            state.activeSimulationKey = action.payload.simulationExpansion.s3Key
-            state.newSimulationInputs = action.payload.simulationExpansion.newInputs
-            state.generatingSimulation = false
-        })
-        builder.addCase(getFinancialSimulationExpansionThunk.rejected, (state, action) => {
-            console.error(action.error)
-            state.generationError = 'Failed to get projections because ' + action.error.message
-            state.generatingSimulation = false
-        })
+        builder.addCase(getFinancialSimulationExpansionThunk.fulfilled, (state, action) => {})
+        builder.addCase(getFinancialSimulationExpansionThunk.rejected, (state, action) => {})
         builder.addCase(getFinancialSimulationExpansionThunk.pending, (state, action) => {
             state.generatingSimulation = true
             state.generationError = undefined
         })
+        builder.addCase(retryCodeBuildAsyncThunk.pending, (state, action) => {
+            state.waitingForCodeGeneration = true
+            state.generationError = undefined
+            state.retryCount += 1
+        })
     },
 })
 
-export const { removeError, setActiveBudgetPlan } = analysisSlice.actions
+export const {
+    removeError,
+    setActiveBudgetPlan,
+    setActiveSimulationName,
+    setActiveSimulationParams,
+    setActiveSimulation,
+    setActiveSimulationS3Params,
+} = analysisSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

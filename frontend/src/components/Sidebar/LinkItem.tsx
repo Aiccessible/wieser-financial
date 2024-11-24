@@ -7,6 +7,7 @@ type Props = {
     title: string
     href: string
     disabled?: Boolean
+    onClick?: () => void | undefined
 }
 
 const LinkItem = (props: Props) => {
@@ -16,6 +17,7 @@ const LinkItem = (props: Props) => {
         if (disabled) {
             event.preventDefault()
         }
+        props.onClick && props.onClick()
     }
     return (
         <Link

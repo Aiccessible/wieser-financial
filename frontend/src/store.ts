@@ -8,9 +8,21 @@ import chat from './features/chat'
 import idsSlice from './features/items'
 import netWorthSlice from './features/networth'
 import budgetSlice from './features/budgets'
+import simulations from './features/simulations'
 // ...
 export const store = configureStore({
-    reducer: { accounts, investments, analysis, auth, chat, transactions, idsSlice, netWorthSlice, budgetSlice },
+    reducer: {
+        accounts,
+        investments,
+        analysis,
+        auth,
+        chat,
+        transactions,
+        idsSlice,
+        netWorthSlice,
+        budgetSlice,
+        simulations,
+    },
 })
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

@@ -184,11 +184,10 @@ const processSummaryResult = (res: any) => {
 export const getMonthlySummariesAsyncThunk = createAsyncThunk(
     'transaction/get-transactions-summary-monthly',
     async (input: GetSummaryInput, getThunk: any) => {
-        console.log('here')
         const endDate = new Date() // Current date
         const startDate = new Date()
         startDate.setFullYear(endDate.getFullYear() - 1)
-        console.log('here2')
+        endDate.setMonth(endDate.getMonth() + 2)
         const res = await input.client.graphql({
             query: getSpendingSummary,
             variables: {
@@ -198,7 +197,6 @@ export const getMonthlySummariesAsyncThunk = createAsyncThunk(
                 id: 'v0',
             },
         })
-        console.log('h232')
         return processSummaryResult(res)
     }
 )

@@ -5,7 +5,7 @@ interface Props {
     width: number
     isIncomeAndTransfers?: boolean
 }
-const monthNames = [
+export const monthNames = [
     'January',
     'February',
     'March',

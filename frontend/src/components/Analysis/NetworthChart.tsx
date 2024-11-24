@@ -66,7 +66,8 @@ export const NetWorthChart = ({
         comparativeKey
     )
     const comparativeSeries =
-        comparativeBalances && prepareSeriesForTimeframe(selectedTimeframe, comparativeBalances, historicalNetWorth)
+        comparativeBalances &&
+        prepareSeriesForTimeframe(selectedTimeframe, comparativeBalances, historicalNetWorth, undefined, comparativeKey)
     return (
         <div>
             <div className="absolute right-5 z-999">

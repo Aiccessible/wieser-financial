@@ -39,7 +39,7 @@ export const prepareSeriesForTimeframe = (
         case 'Future':
             const entries = Object.entries(accountBalances)
             const compareData =
-                comparativeBalances && comparativeKey ? entries.filter((entry) => entry[0] === comparativeKey) : entries
+                comparativeKey && entries ? entries.filter((entry) => entry[0] === comparativeKey) : entries
             return compareData.map(([name, data], index) => ({
                 name: `${name} (Future)`,
                 data,

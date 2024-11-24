@@ -57,6 +57,7 @@ const useDefaultValuesForProjection = ({}: any) => {
     const accounts = useAppSelector((state) => state.accounts.accounts)
     const monthlySpendings = useAppSelector((state) => state.transactions.monthlySummaries)
     const estimatedSavings = useAppSelector(selectRegisteredSavingsPerAccounts)
+    const analysisFields = useAppSelector((state) => state.simulations.analysisFields)
     return useMemo(() => {
         const averageSpending = calculateAverageSpendingFromMonthlySummarys(monthlySpendings ?? [], true, false)
         const accountBalances = () => {
@@ -99,29 +100,36 @@ const useDefaultValuesForProjection = ({}: any) => {
             }, 0)
             return totalIncome * multipleier
         }
-        return {
-            initial_salary: income(),
-            salary_growth: 5 / 100,
-            initial_bonus: 0,
-            bonus_growth: 0,
-            initial_expenses: totalSpending - income() - transfersOut,
-            expenses_growth: 5 / 100,
-            investment_yield: 15 / 100,
-            tax_rate: calculateAverageTaxRate(income(), 'British Columbia') / 100,
-            years: 12,
-            initial_rrsp_balance: accountBalances().rsp,
-            initial_fhsa_balance: accountBalances().fhsa,
-            initial_tfsa_balance: accountBalances().tfsa,
-            initial_brokerage_balance: accountBalances().others,
-            initial_rrsp_room: estimatedSavings?.estimatedRsp ?? 0,
-            initial_fhsa_room: estimatedSavings?.estimatedFhsa ?? 0,
-            initial_tfsa_room: estimatedSavings?.estimatedTfsa ?? 0,
-            totalSpendingAnnualized: totalSpending,
-            incomeAnnualize: income(),
-            transfersOutAnnualized: transfersOut,
-            annualizedSpendingPerCategory,
-            multipleier,
-        } as FinancialProjection
+        const fieldsMap = {
+            initial_salary: income,
+            salary_growth: () => 5 / 100,
+            initial_bonus: () => 0,
+            bonus_growth: () => 0,
+            initial_expenses: () => totalSpending - income() - transfersOut,
+            expenses_growth: () => 5 / 100,
+            investment_yield: () => 15 / 100,
+            tax_rate: () => calculateAverageTaxRate(income(), 'British Columbia') / 100,
+            years: () => 12,
+            initial_rrsp_balance: () => accountBalances().rsp,
+            initial_fhsa_balance: () => accountBalances().fhsa,
+            initial_tfsa_balance: () => accountBalances().tfsa,
+            initial_brokerage_balance: () => accountBalances().others,
+            initial_rrsp_room: () => estimatedSavings?.estimatedRsp ?? 0,
+            initial_fhsa_room: () => estimatedSavings?.estimatedFhsa ?? 0,
+            initial_tfsa_room: () => estimatedSavings?.estimatedTfsa ?? 0,
+            totalSpendingAnnualized: () => totalSpending,
+        }
+        const result = Object.fromEntries(
+            Object.entries(fieldsMap).map(([key, fallback]) => {
+                return [
+                    key,
+                    analysisFields?.find((el) => el?.inputName === key)?.inputValue
+                        ? parseFloat(analysisFields?.find((el) => el?.inputName === key)?.inputValue!)
+                        : fallback(),
+                ]
+            })
+        )
+        return result as any as FinancialProjection
     }, [accounts, monthlySpendings])
 }
 

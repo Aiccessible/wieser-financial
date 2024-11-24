@@ -8,6 +8,33 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
+export const createAnalysis = /* GraphQL */ `mutation CreateAnalysis($analysis: AnalysisInput) {
+  createAnalysis(analysis: $analysis) {
+    analysisName
+    s3Key
+    currentDescription
+    currentProjection
+    currentInputs
+    titles
+    descriptions
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateAnalysisMutationVariables,
+  APITypes.CreateAnalysisMutation
+>;
+export const createAnalysisField = /* GraphQL */ `mutation CreateAnalysisField($analysisField: AnalysisFieldInput) {
+  createAnalysisField(analysisField: $analysisField) {
+    inputName
+    inputValue
+    __typename
+  }
+}
+` as GeneratedMutation<
+  APITypes.CreateAnalysisFieldMutationVariables,
+  APITypes.CreateAnalysisFieldMutation
+>;
 export const createChat = /* GraphQL */ `mutation CreateChat($chat: ChatInput!) {
   createChat(chat: $chat) {
     pk

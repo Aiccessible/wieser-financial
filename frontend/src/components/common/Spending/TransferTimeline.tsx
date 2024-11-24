@@ -14,6 +14,7 @@ import {
     transferOutKeys,
 } from '../../../libs/spendingUtils'
 import { monthNames } from './MonthlySpending'
+import { greenShades } from './Charts/Spending'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
     isIncomeAndTransfers?: boolean
 }
 
-export const SpendingTimeline = (props: Props) => {
+export const TransferTimeline = (props: Props) => {
     const { spending } = props
     const copy = [...spending]
 
@@ -30,17 +31,26 @@ export const SpendingTimeline = (props: Props) => {
     const currentMonthData = copy.sort(
         (el: any, el2: any) => new Date(el.date).getTime() - new Date(el2.date).getTime()
     )
+    let datas: any[] = []
 
-    const spendingData = currentMonthData.map((spending) => ({
-        name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
-        y: calculateTotalSpendingInCategoriesAsTotal(spending),
-    }))
-
-    const incomeData = currentMonthData.map((spending) => ({
-        name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
-        y: calculateTotalsInCategoriesAsTotal(spending, incomeKeys as any),
-    }))
-
+    const combined = [...transferInKeys, ...transferOutKeys]
+    combined.map((el) => {
+        let hasNonZero = false
+        const data = currentMonthData.map((spending) => ({
+            name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
+            y: calculateTotalsInCategoriesAsTotal(el as any, [el as any]),
+            category: el,
+        }))
+        data.forEach((el) => {
+            if (el.y > 0) {
+                hasNonZero = true
+            }
+        })
+        hasNonZero && datas.push(data)
+    })
+    if (!datas?.length) {
+        return <></>
+    }
     return (
         <HighchartsReact
             highcharts={Highcharts}
@@ -51,11 +61,11 @@ export const SpendingTimeline = (props: Props) => {
                         plotBackgroundColor: undefined,
                     },
                     title: {
-                        text: 'Average Spending', // Chart title
+                        text: 'Transfer Timeline', // Chart title
                         align: 'left',
                     },
                     xAxis: {
-                        categories: spendingData.map((data) => data.name), // Use categories for x-axis
+                        categories: datas[0]?.map((data: any) => data.name) ?? [], // Use categories for x-axis
                         lineColor: 'transparent', // Hide x-axis line
                         tickColor: 'transparent',
                         labels: {
@@ -81,20 +91,12 @@ export const SpendingTimeline = (props: Props) => {
                             },
                         },
                     },
-                    series: [
-                        {
-                            name: 'Spending',
-                            data: spendingData.map((data) => data.y),
-                            color: '#a5d6a7', // Light green for spending
-                            type: 'line',
-                        },
-                        {
-                            name: 'Income',
-                            data: incomeData.map((data) => data.y),
-                            color: '#81c784', // Medium green for income
-                            type: 'line',
-                        },
-                    ],
+                    series: datas.map((data: any, index) => ({
+                        name: data.category,
+                        data: data.map((elx: any) => elx.y),
+                        color: greenShades[index % greenShades.length], // Light green for spending
+                        type: 'line',
+                    })),
                 } as Highcharts.Options
             }
         />

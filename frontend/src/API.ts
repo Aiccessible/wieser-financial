@@ -2,6 +2,38 @@
 /* eslint-disable */
 //  This file was automatically generated and should not be edited.
 
+export type AnalysisInput = {
+  analysisName: string,
+  s3Key: string,
+  currentDescription?: string | null,
+  currentProjection?: string | null,
+  currentInputs?: Array< string | null > | null,
+  titles?: Array< string | null > | null,
+  descriptions?: Array< string | null > | null,
+};
+
+export type Analysis = {
+  __typename: "Analysis",
+  analysisName: string,
+  s3Key: string,
+  currentDescription?: string | null,
+  currentProjection?: string | null,
+  currentInputs?: Array< string | null > | null,
+  titles?: Array< string | null > | null,
+  descriptions?: Array< string | null > | null,
+};
+
+export type AnalysisFieldInput = {
+  inputName: string,
+  inputValue: string,
+};
+
+export type AnalysisField = {
+  __typename: "AnalysisField",
+  inputName: string,
+  inputValue: string,
+};
+
 export type ChatInput = {
   pk?: string | null,
   sk?: string | null,
@@ -101,6 +133,11 @@ export type BudgetPlan = {
   createdAt?: string | null,
   specificPayeeRegex?: string | null,
   recommendationTitle?: string | null,
+};
+
+export type RetryCodeBuildInput = {
+  error?: string | null,
+  s3Key?: string | null,
 };
 
 export type PaginatedItems = {
@@ -273,6 +310,8 @@ export enum ChatType {
   TransactionRecommendation = "TransactionRecommendation",
   GeneralRecommendation = "GeneralRecommendation",
   SimulationExpansion = "SimulationExpansion",
+  SimulationPreExpansion = "SimulationPreExpansion",
+  RetryCodeBuild = "RetryCodeBuild",
 }
 
 
@@ -358,6 +397,35 @@ export type NetWorth = {
   balances?: string | null,
 };
 
+export type CreateAnalysisMutationVariables = {
+  analysis?: AnalysisInput | null,
+};
+
+export type CreateAnalysisMutation = {
+  createAnalysis?:  {
+    __typename: "Analysis",
+    analysisName: string,
+    s3Key: string,
+    currentDescription?: string | null,
+    currentProjection?: string | null,
+    currentInputs?: Array< string | null > | null,
+    titles?: Array< string | null > | null,
+    descriptions?: Array< string | null > | null,
+  } | null,
+};
+
+export type CreateAnalysisFieldMutationVariables = {
+  analysisField?: AnalysisFieldInput | null,
+};
+
+export type CreateAnalysisFieldMutation = {
+  createAnalysisField?:  {
+    __typename: "AnalysisField",
+    inputName: string,
+    inputValue: string,
+  } | null,
+};
+
 export type CreateChatMutationVariables = {
   chat: ChatInput,
 };
@@ -390,6 +458,41 @@ export type CreateBudgetMutation = {
     specificPayeeRegex?: string | null,
     recommendationTitle?: string | null,
   } | null,
+};
+
+export type RetryCodeBuildQueryVariables = {
+  build?: RetryCodeBuildInput | null,
+};
+
+export type RetryCodeBuildQuery = {
+  retryCodeBuild?: string | null,
+};
+
+export type GetUserAnalysisQueryVariables = {
+};
+
+export type GetUserAnalysisQuery = {
+  getUserAnalysis:  Array< {
+    __typename: "Analysis",
+    analysisName: string,
+    s3Key: string,
+    currentDescription?: string | null,
+    currentProjection?: string | null,
+    currentInputs?: Array< string | null > | null,
+    titles?: Array< string | null > | null,
+    descriptions?: Array< string | null > | null,
+  } | null >,
+};
+
+export type GetUserAnalysisFieldsQueryVariables = {
+};
+
+export type GetUserAnalysisFieldsQuery = {
+  getUserAnalysisFields:  Array< {
+    __typename: "AnalysisField",
+    inputName: string,
+    inputValue: string,
+  } | null >,
 };
 
 export type GetItemsQueryVariables = {
