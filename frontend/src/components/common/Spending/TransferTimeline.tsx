@@ -36,11 +36,14 @@ export const TransferTimeline = (props: Props) => {
     const combined = [...transferInKeys, ...transferOutKeys]
     combined.map((el) => {
         let hasNonZero = false
+        console.info(spending, el)
         const data = currentMonthData.map((spending) => ({
             name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
             y: calculateTotalsInCategoriesAsTotal(el as any, [el as any]),
             category: el,
         }))
+        console.info(data)
+
         data.forEach((el) => {
             if (el.y > 0) {
                 hasNonZero = true
