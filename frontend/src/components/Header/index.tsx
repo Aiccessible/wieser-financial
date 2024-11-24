@@ -5,11 +5,10 @@ import { useSidebar } from '../Sidebar/use-sidebar'
 import BalanceVisibilitySwitcher from '../../../src/utils/EyeSwitcher'
 import ScoreIndicators from '../Scores'
 import { useAppDispatch, useAppSelector } from '../../../src/hooks'
-import { sendChatToLLM, setIsChatOpen, setNewChatVal } from '../../../src/features/chat'
-import { generateClient } from 'aws-amplify/api'
-import { ChatFocus } from '../../../src/API'
-import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
-import { getFinancialSimulationExpansionThunk } from '../../../src/features/analysis'
+import { setNewChatVal } from '../../../src/features/chat'
+
+import { Button } from '@aws-amplify/ui-react'
+import { usePostChat } from '../hooks/usePostChat'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -20,18 +19,15 @@ const Header = (props: {
     const { toggleSidebar, isSidebarOpen } = useSidebar((state) => state)
     const newChat = useAppSelector((state) => state.chat.newChat)
     const dispatch = useAppDispatch()
-    const client = generateClient()
-    const projection = useDefaultValuesForProjection({})
-    const activeSimulationKey = useAppSelector((state) => state.analysis.activeSimulationKey)
-    const accounts = useAppSelector((state) => state.accounts.accounts)
+
+    const activeSimulationName = useAppSelector((state) => state.analysis.activeSimulationName)
     const location = useLocation() // Access the current route
-    console.info(location.pathname.includes('analyze'))
     let activeTab = location.pathname.includes('analyze') ? 'Plan' : 'unknown'
-    console.info(activeTab)
+    const { postChat } = usePostChat()
     return (
         <header
             style={{ zIndex: 800 }}
-            className="sticky top-0 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none"
+            className="sticky top-0 flex flex-col w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none"
         >
             <div className="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
                 <div className="flex items-center gap-2 sm:gap-4 ">
@@ -52,41 +48,30 @@ const Header = (props: {
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
-                            if (activeTab === 'Plan') {
-                                dispatch(
-                                    getFinancialSimulationExpansionThunk({
-                                        client: client,
-                                        input: {
-                                            message: newChat,
-                                            s3Key: activeSimulationKey,
-                                        },
-                                    })
-                                )
-                            } else {
-                                dispatch(setIsChatOpen(true))
-                                dispatch(
-                                    sendChatToLLM({
-                                        newChat: newChat,
-                                        client,
-                                        focus: ChatFocus.All,
-                                        ids: accounts?.map((el) => el.account_id) ?? [],
-                                        highLevelSpendingCategory: undefined,
-                                        currentDateRange: undefined,
-                                        projection,
-                                    })
-                                )
-                            }
+                            console.info(activeSimulationName)
+                            postChat(e.currentTarget.value)
                         }}
                         method="POST"
                     >
                         <div className="relative flex">
-                            <input
-                                type="text"
-                                placeholder={activeTab === 'Plan' ? 'Tell Wieser what to simulate' : 'Chat with Wieser'}
-                                className="w-full flex-grow bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl"
-                                value={newChat}
-                                onChange={(e) => dispatch(setNewChatVal(e.currentTarget.value))}
-                            />
+                            <div className="">
+                                <input
+                                    type="text"
+                                    placeholder={
+                                        activeTab === 'Plan'
+                                            ? activeSimulationName
+                                                ? 'Tell Wieser how to change the simulation'
+                                                : 'Tell Wieser what to simulate'
+                                            : 'Chat with Wieser'
+                                    }
+                                    className="w-full flex-grow bg-transparent pl-9 pr-4 font-medium focus:outline-none xl:w-125 text-black dark:placeholder-whiten dark:text-whiten dark:bg-secondary rounded-3xl"
+                                    value={newChat}
+                                    style={{ minHeight: 60 }}
+                                    onChange={(e) => {
+                                        dispatch(setNewChatVal(e.currentTarget.value))
+                                    }}
+                                />
+                            </div>
                             <ScoreIndicators />
                         </div>
                     </form>
@@ -103,6 +88,27 @@ const Header = (props: {
                     {/* <!-- User Area --> */}
                 </div>
             </div>
+            {activeTab === 'Plan' && !activeSimulationName && (
+                <div className="flex flex-wrap gap-2 p-4">
+                    {[
+                        'Simulate me buying a house using money from my FHSA and RRSP',
+                        'Simulate me getting promoted at work',
+                        'Simulate me starting a side-business',
+                    ].map((question, index) => (
+                        <Button
+                            key={index}
+                            className="bg-primary text-black px-4 py-2 rounded-full hover:bg-green-700 transition ease-in-out"
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                postChat(question)
+                            }}
+                        >
+                            {question}
+                        </Button>
+                    ))}
+                </div>
+            )}
         </header>
     )
 }

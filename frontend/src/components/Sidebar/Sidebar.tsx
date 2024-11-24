@@ -1,20 +1,14 @@
 import React from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import {
-    MenuIcon,
-    ShoppingBag,
-    User2Icon,
-    BarChart2,
-    Settings,
-    HomeIcon,
-    ActivityIcon,
-    BrainCircuitIcon,
-} from 'lucide-react'
+import { MenuIcon, BarChart2, HomeIcon, ActivityIcon, BrainCircuitIcon } from 'lucide-react'
 import { useSidebar } from './use-sidebar'
 import { cn } from '../../libs/utlis'
 import LinkItem from './LinkItem'
 import ExpandMenu from './ExpandMenu'
 import { CustomTextBox } from '../common/Custom/CustomTextBox'
+import { UserAnalyses } from '../Analysis/UserAnalyses'
+import { useAppDispatch } from '../../../src/hooks'
+import { setActiveSimulationName, setActiveSimulationS3Params } from '../../../src/features/analysis'
 
 const iconClass = 'bg-black rounded-full text-white p-1 h-7 w-7 hover:text-white'
 interface SidebarProps {}
@@ -29,7 +23,7 @@ const Sidebar = ({}: SidebarProps) => {
     const checkIsActive = (path: string) => {
         return location.pathname === path
     }
-    console.info(checkIsActive(`/institution/${id}/transactions`))
+    const dispatch = useAppDispatch()
     return (
         <aside
             className={cn(
@@ -62,7 +56,7 @@ const Sidebar = ({}: SidebarProps) => {
             </div>
             {/* <!-- SIDEBAR HEADER --> */}
 
-            <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+            <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear hide-scrollbar">
                 {/* <!-- Sidebar Menu --> */}
                 <nav className="px-4 py-4  lg:px-6">
                     {/* <!-- Menu Group --> */}
@@ -135,8 +129,13 @@ const Sidebar = ({}: SidebarProps) => {
                                             <BrainCircuitIcon className={iconClass} />
                                         </CustomTextBox>
                                     }
+                                    onClick={() => {
+                                        dispatch(setActiveSimulationName(undefined))
+                                        dispatch(setActiveSimulationS3Params({ simulationExpansion: {} }))
+                                    }}
                                 ></LinkItem>
                             </li>
+                            {checkIsActive(`/analyze/${id}`) ? <UserAnalyses /> : <></>}
 
                             {/* <!-- Menu Item Tables --> */}
 
