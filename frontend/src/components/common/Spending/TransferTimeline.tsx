@@ -36,13 +36,11 @@ export const TransferTimeline = (props: Props) => {
     const combined = [...transferInKeys, ...transferOutKeys]
     combined.map((el) => {
         let hasNonZero = false
-        console.info(spending, el)
         const data = currentMonthData.map((spending) => ({
             name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
-            y: calculateTotalsInCategoriesAsTotal(el as any, [el as any]),
+            y: calculateTotalsInCategoriesAsTotal(spending, [el as any]),
             category: el,
         }))
-        console.info(data)
 
         data.forEach((el) => {
             if (el.y > 0) {
@@ -95,7 +93,7 @@ export const TransferTimeline = (props: Props) => {
                         },
                     },
                     series: datas.map((data: any, index) => ({
-                        name: data.category,
+                        name: data[0].category,
                         data: data.map((elx: any) => elx.y),
                         color: greenShades[index % greenShades.length], // Light green for spending
                         type: 'line',
