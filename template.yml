@@ -17,7 +17,7 @@ Parameters:
     GitHubRepo:
         Type: String
         Description: GitHub Repository
-        Default: aws-plaid-demo-app
+        Default: wieser-financial
     PlaidClientId:
         Type: String
         Description: Plaid Client ID

@@ -49,15 +49,15 @@ The architecture consists of a [React](https://reactjs.org/) application hosted 
 
 #### Parameters
 
-| Parameter         |  Type  |      Default       | Description                        |
-| ----------------- | :----: | :----------------: | ---------------------------------- |
-| Environment       | String |        dev         | Environment tag                    |
-| GitHubOrg         | String |    aws-samples     | Source code GitHub organization    |
-| GitHubRepo        | String | aws-plaid-demo-app | Source code GitHub repository      |
-| PlaidClientId     | String |                    | Plaid Client ID                    |
-| PlaidSecretKey    | String |                    | Plaid Secret Key                   |
-| PlaidEnvironment  | String |      sandbox       | Plaid Environment                  |
-| GitHubAccessToken | String |                    | GitHub Personal Access Token (PAT) |
+| Parameter         |  Type  |     Default      | Description                        |
+| ----------------- | :----: | :--------------: | ---------------------------------- |
+| Environment       | String |       dev        | Environment tag                    |
+| GitHubOrg         | String |   aws-samples    | Source code GitHub organization    |
+| GitHubRepo        | String | wieser-financial | Source code GitHub repository      |
+| PlaidClientId     | String |                  | Plaid Client ID                    |
+| PlaidSecretKey    | String |                  | Plaid Secret Key                   |
+| PlaidEnvironment  | String |     sandbox      | Plaid Environment                  |
+| GitHubAccessToken | String |                  | GitHub Personal Access Token (PAT) |
 
 #### Installation
 
@@ -67,15 +67,15 @@ The architecture consists of a [React](https://reactjs.org/) application hosted 
    Basic commands
 
 ```
-git clone https://github.com/<GitHubUserName>/aws-plaid-demo-app
-cd aws-plaid-demo-app
+git clone https://github.com/<GitHubUserName>/wieser-financial
+cd wieser-financial
 sam build --use-container --parallel --cached
 cd lambda
 zip -r lambda-code.zip .
 sam package --s3-bucket sam-s3-bucket-for-lambda --output-template-file packaged.yaml
 sam deploy \
   --guided \
-  --tags "GITHUB_ORG=<GitHubUserName> GITHUB_REPO=aws-plaid-demo-app" \
+  --tags "GITHUB_ORG=<GitHubUserName> GITHUB_REPO=wieser-financial" \
   --template-file packaged.yaml
 ```
 
@@ -84,11 +84,11 @@ SAM will then prompt you to provide values for the missing parameters listed abo
 ```
 Setting default arguments for 'sam deploy'
 =========================================
-Stack Name [sam-app]: aws-plaid-demo-app
+Stack Name [sam-app]: wieser-financial
 AWS Region [us-east-1]:
 Parameter Environment [dev]:
 Parameter GitHubOrg: <GitHubUserName>
-Parameter GitHubRepo [aws-plaid-demo-app]:
+Parameter GitHubRepo [wieser-financial]:
 Parameter PlaidClientId: *************
 Parameter PlaidSecretKey: *************
 Parameter PlaidEnvironment [sandbox]:
