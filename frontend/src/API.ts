@@ -542,6 +542,10 @@ export type GetTransactionsQueryVariables = {
   id: string,
   limit?: number | null,
   cursor?: string | null,
+  personalFinanceCategory?: Array< string | null > | null,
+  personalFinanceKey?: string | null,
+  minDate?: string | null,
+  maxDate?: string | null,
 };
 
 export type GetTransactionsQuery = {

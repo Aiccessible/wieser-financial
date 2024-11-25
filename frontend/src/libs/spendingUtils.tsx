@@ -9,7 +9,9 @@ export const nonSpendingKeys = [
     ...transferOutKeys,
     HighLevelTransactionCategory.LOAN_PAYMENTS_CREDIT_CARD_PAYMENT,
 ]
-
+export const spendingKeys = Object.keys(HighLevelTransactionCategory).filter(
+    (key) => !nonSpendingKeys.find((el) => el === key)
+)
 export function calculateTotalSpendingInCategories(
     spendingSummaries: SpendingSummary[],
     categories: HighLevelTransactionCategory[]

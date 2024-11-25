@@ -207,7 +207,7 @@ export const useDataLoading = (input: DataLoadingInput) => {
         }
     }, [defaultParams, monthlySummaries, accounts, projectedBalances, loadingBalances, loadingProjectionError])
     useEffect(() => {
-        !institutions?.length && dispatch(getIdsAsync({ client }))
+        !institutions && dispatch(getIdsAsync({ client }))
     }, [institutions])
     return {
         accounts,

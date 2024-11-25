@@ -11,7 +11,7 @@ import { usePlaidHooks } from '../components/hooks/usePlaidHooks';
 import PlaidLink from '../components/Plaid/PlaidLink';
 const logger = new ConsoleLogger("Protected");
 
-export default function Protected() {
+export default function Protected({ overrideWelcome }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false)
   const [done, setIsDone] = useState(false)
@@ -24,7 +24,6 @@ export default function Protected() {
       const res = await client.graphql({
         query: GetItems
       });
-      const ids = res.data.getItems.items.map((item) => item.item_id)
       logger.info(res);
       setLoading(false)
       setItems(res.data.getItems.items);
@@ -48,11 +47,13 @@ export default function Protected() {
     }
   }, [items, loading, fetchingToken, setFetchingToken])
 
-  if (!items?.length && !loading) {
+  if ((!items?.length && !loading) || overrideWelcome) {
       return (
           <>
               <WelcomePage setIsDone={setIsDone} />{' '}
-              {token && done && <PlaidLink token={token} onSuccess={handleSuccess} onExit={() => setConnecting(false)} />}
+              {token && done && (
+                  <PlaidLink token={token} onSuccess={handleSuccess} onExit={() => setConnecting(false)} />
+              )}
           </>
       )
   }

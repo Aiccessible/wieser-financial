@@ -12,6 +12,9 @@ import { useTransition, animated, config } from 'react-spring'
 import { Button } from '@aws-amplify/ui-react'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { setActiveSimulationParams, setActiveSimulationS3Params } from '../../../src/features/analysis'
+import Transactions from '../Transactions/Transactions'
+import { CustomTextBox } from '../common/Custom/CustomTextBox'
+import Currency from '../common/Custom/Currency'
 
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
@@ -131,6 +134,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
         ...chats,
         ...(getSortedChunks?.split('\n**')?.map((el: string) => ({ message: el, role: 'Assistant' })) ?? ([] as any)),
     ]
+    const activeTransactions = useAppSelector((state) => state.transactions.activeTransactions)
     return (
         <Dialog.Root open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
             <Dialog.Portal>
@@ -147,7 +151,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                             </Dialog.Overlay>
                             <Dialog.Content className="fixed inset-0 flex items-center justify-center p-4 z-9999">
                                 <animated.div
-                                    className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden"
+                                    className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden flex flex-row"
                                     style={styles}
                                 >
                                     <div className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden hide-scrollbar">
@@ -212,6 +216,31 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                                                 Send
                                             </Button>
                                         </form>
+                                    </div>
+                                    <div className="flex flex-col hide-scrollbar overflow-auto h-[65vh] p-4 bg-black rounded-lg text-white">
+                                        <p className="text-bold text-lg mb-2">Current Transactions</p>
+                                        <div className="grid grid-cols-3 gap-4 border-b pb-2 font-semibold text-gray-700">
+                                            <div>Transaction</div>
+                                            <div>Amount</div>
+                                            <div>Date</div>
+                                        </div>
+                                        <div className="divide-y">
+                                            {activeTransactions.map((transaction, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="grid grid-cols-3 gap-4 py-2 text-gray-600 text-sm"
+                                                >
+                                                    <div>{transaction.name}</div>
+                                                    <div>
+                                                        <Currency
+                                                            amount={transaction.amount}
+                                                            currency={transaction.iso_currency_code}
+                                                        />
+                                                    </div>
+                                                    <div>{transaction.date}</div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </animated.div>
                             </Dialog.Content>

@@ -17,7 +17,7 @@ import Loader from '../components/common/Loader'
 import Currency from '../components/common/Custom/Currency'
 import * as Accordion from '@radix-ui/react-accordion'
 import { RefreshCwIcon } from 'lucide-react'
-import { selectTopMovingStocks } from '../features/investments'
+import Protected from '../pages/Protected'
 import StockSummary from '../components/Stock/StockSummary'
 
 const logger = new ConsoleLogger('Instituions')
@@ -85,9 +85,8 @@ export default function Institution() {
     const transactions = useAppSelector((state) => state.transactions.transactions)
     const areTransactionsLoading = useAppSelector((state) => state.transactions.loading)
     const projectedBalances = useAppSelector((state) => state.analysis.projectedAccountBalances)
-    const netWorths = useAppSelector((state) => state.netWorthSlice.networths)
-    const topMovingStocks = useAppSelector(selectTopMovingStocks)
-    console.info(netWorths)
+    const institutions = useAppSelector((state) => state.idsSlice.institutions)
+    const institutionsLoading = useAppSelector((state) => state.idsSlice.loading)
     useDataLoading({
         id: id || '',
         client: client,
@@ -100,6 +99,9 @@ export default function Institution() {
         loadTopStockAnalysis: true,
     })
     const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
+    if (!institutionsLoading && !institutions?.length) {
+        return <Protected overrideWelcome={true} />
+    }
     return (
         <Flex direction="column" className="h-full">
             {!transactions?.length && !areTransactionsLoading && (

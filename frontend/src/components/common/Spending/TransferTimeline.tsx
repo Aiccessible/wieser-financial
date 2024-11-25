@@ -5,16 +5,14 @@ import HighchartsExportData from 'highcharts/modules/export-data'
 import HighchartsAccessibility from 'highcharts/modules/accessibility'
 
 import '../graph.css'
-import { SpendingSummary } from '@/src/API'
-import {
-    calculateTotalsInCategoriesAsTotal,
-    calculateTotalSpendingInCategoriesAsTotal,
-    incomeKeys,
-    transferInKeys,
-    transferOutKeys,
-} from '../../../libs/spendingUtils'
+import { ChatFocus, SpendingSummary } from '../../../../src/API'
+import { calculateTotalsInCategoriesAsTotal, transferInKeys, transferOutKeys } from '../../../libs/spendingUtils'
 import { monthNames } from './MonthlySpending'
 import { greenShades } from './Charts/Spending'
+import { useAppDispatch } from '../../../../src/hooks'
+import { generateClient } from 'aws-amplify/api'
+import { setChatParams } from '../../../../src/features/chat'
+import { getActiveTransactionsAsync } from '../../../../src/features/transactions'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 interface Props {
@@ -49,9 +47,12 @@ export const TransferTimeline = (props: Props) => {
         })
         hasNonZero && datas.push(data)
     })
+    const dispatch = useAppDispatch()
+    const client = generateClient()
     if (!datas?.length) {
         return <></>
     }
+
     return (
         <HighchartsReact
             highcharts={Highcharts}
@@ -91,10 +92,45 @@ export const TransferTimeline = (props: Props) => {
                                 lineWidth: 2,
                             },
                         },
+                        point: {
+                            events: {
+                                click: function (e: any) {
+                                    const md = (this as any)?.options.metadata
+                                    const monthName = md.month
+                                    const category = md.category
+                                    const monthIndex = monthNames.findIndex((el) => el === monthName)
+                                    // Assume a fixed year or dynamic year (e.g., current year)
+                                    const year = new Date().getFullYear()
+
+                                    // Get the start and end date of the month
+                                    const startOfMonth = new Date(year, monthIndex, 1) // First day of the month
+                                    const endOfMonth = new Date(year, monthIndex + 1, 0) // Last day of the month
+                                    dispatch(
+                                        setChatParams({
+                                            scope: ChatFocus.Transaction,
+                                            dateRange: [startOfMonth.getTime(), endOfMonth.getTime()],
+                                            highLevelTransactionCategory: [category],
+                                        })
+                                    )
+                                    dispatch(
+                                        getActiveTransactionsAsync({
+                                            client: client,
+                                            id: 'v0',
+                                            highLevelPersonalCategory: [category],
+                                            minDate: startOfMonth.getTime().toString() ?? '',
+                                            maxDate: endOfMonth.getTime().toString() ?? '',
+                                        })
+                                    )
+                                },
+                            },
+                        },
                     },
                     series: datas.map((data: any, index) => ({
                         name: data[0].category,
-                        data: data.map((elx: any) => elx.y),
+                        data: data.map((elx: any) => ({
+                            y: elx.y,
+                            metadata: { category: data[0].category, month: data[0].name },
+                        })),
                         color: greenShades[index % greenShades.length], // Light green for spending
                         type: 'line',
                     })),

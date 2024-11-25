@@ -11,7 +11,6 @@ const logger = new ConsoleLogger('Plaid')
 export const usePlaidHooks = ({ getItems, getPath = '/v1/tokens' }: { getItems: () => any; getPath: string }) => {
     const [connecting, setConnecting] = useState(false)
     const [token, setToken] = useState(null)
-    const appDispatch = useAppDispatch()
 
     const handleGetToken = async () => {
         setConnecting(true)

@@ -9,6 +9,9 @@ import { setNewChatVal } from '../../../src/features/chat'
 
 import { Button } from '@aws-amplify/ui-react'
 import { usePostChat } from '../hooks/usePostChat'
+import Plaid from '../Plaid/Plaid'
+import { getIdsAsync } from '../../../src/features/items'
+import { generateClient } from 'aws-amplify/api'
 
 const Header = (props: {
     sidebarOpen: string | boolean | undefined
@@ -19,11 +22,14 @@ const Header = (props: {
     const { toggleSidebar, isSidebarOpen } = useSidebar((state) => state)
     const newChat = useAppSelector((state) => state.chat.newChat)
     const dispatch = useAppDispatch()
-
+    const client = generateClient()
     const activeSimulationName = useAppSelector((state) => state.analysis.activeSimulationName)
     const location = useLocation() // Access the current route
     let activeTab = location.pathname.includes('analyze') ? 'Plan' : 'unknown'
     const { postChat } = usePostChat()
+    const getItems = () => {
+        dispatch(getIdsAsync({ client: client }))
+    }
     return (
         <header
             style={{ zIndex: 800 }}
@@ -76,6 +82,7 @@ const Header = (props: {
                         </div>
                     </form>
                 </div>
+                <Plaid getItems={getItems} />
 
                 <div className="flex items-center gap-3 2xsm:gap-7">
                     <ul className="flex items-center gap-2 2xsm:gap-4">

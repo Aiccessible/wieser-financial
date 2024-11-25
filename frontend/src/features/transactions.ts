@@ -19,8 +19,10 @@ import { identifyAccountType } from '../components/Analysis/PersonalFinance'
 interface TransactionsState {
     acccountRecommendation: string
     transactions: Transaction[] | undefined
+    activeTransactions: Transaction[]
     cursor: string | undefined
     loading: boolean
+    loadingActive: boolean
     loadingDailySummary: boolean
     loadingMonthlySummary: boolean
     loadingRecommendations: boolean
@@ -29,6 +31,7 @@ interface TransactionsState {
     monthlySummaries: SpendingSummary[] | undefined
     currentDateRange: number[] | undefined
     transactionRecommendations: Recommendation[] | undefined
+    activeTransactionCursor: string | undefined
 }
 
 const firstOfMonth = new Date()
@@ -39,6 +42,8 @@ oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
 // Define the initial state using that type
 const initialState: TransactionsState = {
     acccountRecommendation: '',
+    activeTransactions: [],
+    activeTransactionCursor: undefined,
     error: undefined,
     loading: false,
     transactions: undefined,
@@ -50,12 +55,21 @@ const initialState: TransactionsState = {
     currentDateRange: [firstOfMonth.getTime(), new Date().getTime()],
     transactionRecommendations: undefined,
     loadingRecommendations: false,
+    loadingActive: false,
 }
 
 export interface GetTransactionInput {
     client: { graphql: GraphQLMethod }
     id: string
     append: boolean
+}
+
+export interface GetActiveTransactionInput {
+    client: { graphql: GraphQLMethod }
+    id: string
+    highLevelPersonalCategory: string[]
+    minDate: string
+    maxDate: string
 }
 
 export interface GetTransactionRecommendations {
@@ -72,6 +86,37 @@ export interface GetSummaryInput {
 export interface GetTransactionRecommendation {
     id: string
 }
+
+export const getActiveTransactionsAsync = createAsyncThunk(
+    'transaction/get-active-transactions',
+    async (input: GetActiveTransactionInput, getThunk: any) => {
+        const detailedPrefixes = ['INCOME_', 'TRANSFER_IN_', 'TRANSFER_OUT_', 'LOAN_PAYMENTS_', 'RENT_AND_UTILITIES_']
+        let key = 'primary'
+        if (detailedPrefixes.find((el) => input.highLevelPersonalCategory.find((x) => x.startsWith(el)))) {
+            key = 'detailed'
+        }
+        const res = await input.client.graphql({
+            query: getTransactions,
+            variables: {
+                id: input.id,
+                cursor: (getThunk.getState() as any).transactions.activeTransactionCursor,
+                minDate: input.minDate,
+                maxDate: input.maxDate,
+                personalFinanceCategory: input.highLevelPersonalCategory,
+                personalFinanceKey: key,
+            },
+        })
+        const errors = res.errors
+        if (errors && errors.length > 0) {
+            return { errors, transactions: res.data.getTransactions }
+        }
+        return {
+            activeTransactions: res.data.getTransactions.transactions,
+            activeTransactionCursor: res.data.getTransactions.cursor,
+            loading: false,
+        }
+    }
+)
 
 export const getTransactionsAsync = createAsyncThunk(
     'transaction/get-transactions',
@@ -213,7 +258,6 @@ export const transactionSlice = createSlice({
     },
     extraReducers(builder) {
         builder.addCase(getTransactionsAsync.fulfilled, (state, action) => {
-            console.log(action.payload)
             state.error = action.payload.errors ? action.payload.errors.toString() : undefined
             state.transactions = (action.payload.transactions as any) ?? []
             state.cursor = action.payload.cursor || undefined
@@ -227,6 +271,21 @@ export const transactionSlice = createSlice({
         builder.addCase(getTransactionsAsync.pending, (state, action) => {
             state.error = undefined
             state.loading = true
+        })
+        builder.addCase(getActiveTransactionsAsync.pending, (state, action) => {
+            state.error = undefined
+            state.loadingActive = true
+        })
+        builder.addCase(getActiveTransactionsAsync.rejected, (state, action) => {
+            state.error = 'Failed to fetch accounts because ' + action.error.message
+            state.activeTransactions = (action.payload as any)?.activeTransactions ?? []
+            state.loadingActive = false
+        })
+        builder.addCase(getActiveTransactionsAsync.fulfilled, (state, action) => {
+            state.error = action.payload.errors ? action.payload.errors.toString() : undefined
+            state.activeTransactions = action.payload.activeTransactions ?? []
+            state.activeTransactionCursor = action.payload.activeTransactionCursor || undefined
+            state.loadingActive = false
         })
         builder.addCase(getYesterdaySummaryAsyncThunk.fulfilled, (state, action) => {
             console.log(action.payload)

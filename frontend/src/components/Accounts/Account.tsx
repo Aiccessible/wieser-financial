@@ -9,7 +9,10 @@ import { getAccountBalanceMultipler } from '../../features/accounts'
 
 export default function AccountComponent({ account }: { account: Account }) {
     const mostRecentNetWorth = useAppSelector(selectMostRecentNetWorth)
-    const oldBalances = JSON.parse(JSON.parse(mostRecentNetWorth.balances ?? '{}'))
+    let oldBalances = {} as any
+    try {
+        oldBalances = JSON.parse(JSON.parse(mostRecentNetWorth.balances ?? '{}'))
+    } catch (e) {}
     const lastAccountBal = parseFloat(account?.balances?.current ?? '0') * getAccountBalanceMultipler(account)
     const oldBal = oldBalances[account?.account_id ?? '']?.N ?? 0
     const change = (100 * (oldBal - lastAccountBal)) / oldBal

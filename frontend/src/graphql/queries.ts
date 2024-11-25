@@ -79,8 +79,24 @@ export const getAccounts = /* GraphQL */ `query GetAccounts($id: ID!) {
   APITypes.GetAccountsQueryVariables,
   APITypes.GetAccountsQuery
 >;
-export const getTransactions = /* GraphQL */ `query GetTransactions($id: ID!, $limit: Int, $cursor: String) {
-  getTransactions(id: $id, limit: $limit, cursor: $cursor) {
+export const getTransactions = /* GraphQL */ `query GetTransactions(
+  $id: ID!
+  $limit: Int
+  $cursor: String
+  $personalFinanceCategory: [String]
+  $personalFinanceKey: String
+  $minDate: String
+  $maxDate: String
+) {
+  getTransactions(
+    id: $id
+    limit: $limit
+    cursor: $cursor
+    personalFinanceCategory: $personalFinanceCategory
+    personalFinanceKey: $personalFinanceKey
+    minDate: $minDate
+    maxDate: $maxDate
+  ) {
     cursor
     transactions {
       transaction_id

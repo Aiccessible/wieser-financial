@@ -1,1 +1,1 @@
-npx @aws-amplify/cli codegen add --apiId po3yhvkiavc3rptmzxmpfm3s64 --region ca-central-1
+npx @aws-amplify/cli codegen add --apiId 5gnglfdb36kbc9vjf8iple6jvr --region ca-central-1

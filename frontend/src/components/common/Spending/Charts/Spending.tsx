@@ -8,6 +8,8 @@ import HighchartsAccessibility from 'highcharts/modules/accessibility'
 import '../../graph.css'
 import { ChatFocus } from '../../../../API'
 import { setChatParams } from '../../../../features/chat'
+import { getActiveTransactionsAsync } from '../../../../../src/features/transactions'
+import { generateClient } from 'aws-amplify/api'
 HighchartsAccessibility(Highcharts)
 HighchartsExportData(Highcharts)
 interface Props {
@@ -60,6 +62,9 @@ export const Spending = (props: Props) => {
     const total = spendingData.reduce((acc, newVal) => acc + newVal.y, 0)
     const areBalancesVisible = useAppSelector((state) => state.auth.balancesVisible)
     const dispatch = useAppDispatch()
+    const client = generateClient()
+    const currentDateRange = useAppSelector((state) => state.chat.currentDateRange)
+
     return (
         <HighchartsReact
             highcharts={Highcharts}
@@ -113,6 +118,15 @@ export const Spending = (props: Props) => {
                                                 scope: ChatFocus.Transaction,
                                                 highLevelTransactionCategory: e.point.name,
                                                 dateRange: dateRange,
+                                            })
+                                        )
+                                        dispatch(
+                                            getActiveTransactionsAsync({
+                                                client: client,
+                                                id: 'v0',
+                                                highLevelPersonalCategory: [e.point.name],
+                                                minDate: currentDateRange?.[0]?.toString() ?? '',
+                                                maxDate: currentDateRange?.[0]?.toString() ?? '',
                                             })
                                         )
                                     },

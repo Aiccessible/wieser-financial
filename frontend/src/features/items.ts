@@ -1,8 +1,6 @@
-import { GetThunkAPI, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { getAccounts, getItems } from '../graphql/queries'
-import { Account, Item } from '../API'
-import { completeChatFromPrompt } from '../libs/gpt'
-import { RootState } from '../store'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { getItems } from '../graphql/queries'
+import { Item } from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 // Define a type for the slice state
 interface ItemsState {
