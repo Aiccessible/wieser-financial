@@ -35,13 +35,13 @@ export const SpendingTimeline = (props: Props) => {
     )
 
     const spendingData = currentMonthData.map((spending) => ({
-        name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
+        name: monthNames[parseInt(new Date((spending as any).date).toISOString().substring(5, 7), 10) - 1], // Use day of the month as label
         y: calculateTotalSpendingInCategoriesAsTotal(spending),
         categories: spendingKeys,
     }))
 
     const incomeData = currentMonthData.map((spending) => ({
-        name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
+        name: monthNames[parseInt(new Date((spending as any).date).toISOString().substring(5, 7), 10) - 1], // Use day of the month as label
         y: calculateTotalsInCategoriesAsTotal(spending, incomeKeys as any),
         categories: incomeKeys,
     }))
@@ -89,7 +89,7 @@ export const SpendingTimeline = (props: Props) => {
                                 events: {
                                     click: function (e) {
                                         const md = (this?.options as any).metadata
-                                        const monthName = e.point.name
+                                        const monthName = md.monthName
                                         const monthIndex = monthNames.findIndex((el) => el === monthName)
                                         // Assume a fixed year or dynamic year (e.g., current year)
                                         const year = new Date().getFullYear()
@@ -111,6 +111,7 @@ export const SpendingTimeline = (props: Props) => {
                                                 highLevelPersonalCategory: md.categories,
                                                 minDate: startOfMonth.getTime().toString() ?? '',
                                                 maxDate: endOfMonth.getTime().toString() ?? '',
+                                                nullInput: true,
                                             })
                                         )
                                     },
@@ -121,13 +122,19 @@ export const SpendingTimeline = (props: Props) => {
                     series: [
                         {
                             name: 'Spending',
-                            data: spendingData.map((data) => ({ y: data.y, metadata: { categories: spendingKeys } })),
+                            data: spendingData.map((data) => ({
+                                y: data.y,
+                                metadata: { categories: spendingKeys, monthName: data.name },
+                            })),
                             color: '#a5d6a7', // Light green for spending
                             type: 'line',
                         },
                         {
                             name: 'Income',
-                            data: incomeData.map((data) => ({ y: data.y, metadata: { categories: incomeKeys } })),
+                            data: incomeData.map((data) => ({
+                                y: data.y,
+                                metadata: { categories: incomeKeys, monthName: data.name },
+                            })),
                             color: '#81c784', // Medium green for income
                             type: 'line',
                         },

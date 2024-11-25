@@ -35,7 +35,7 @@ export const TransferTimeline = (props: Props) => {
     combined.map((el) => {
         let hasNonZero = false
         const data = currentMonthData.map((spending) => ({
-            name: monthNames[new Date((spending as any).date).getMonth()], // Use day of the month as label
+            name: monthNames[parseInt(new Date((spending as any).date).toISOString().substring(5, 7), 10) - 1], // Use day of the month as label
             y: calculateTotalsInCategoriesAsTotal(spending, [el as any]),
             category: el,
         }))

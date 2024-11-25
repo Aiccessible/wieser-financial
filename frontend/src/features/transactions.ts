@@ -70,6 +70,7 @@ export interface GetActiveTransactionInput {
     highLevelPersonalCategory: string[]
     minDate: string
     maxDate: string
+    nullInput?: boolean
 }
 
 export interface GetTransactionRecommendations {
@@ -91,9 +92,12 @@ export const getActiveTransactionsAsync = createAsyncThunk(
     'transaction/get-active-transactions',
     async (input: GetActiveTransactionInput, getThunk: any) => {
         const detailedPrefixes = ['INCOME_', 'TRANSFER_IN_', 'TRANSFER_OUT_', 'LOAN_PAYMENTS_', 'RENT_AND_UTILITIES_']
-        let key = 'primary'
+        let key: string | null = 'primary'
         if (detailedPrefixes.find((el) => input.highLevelPersonalCategory.find((x) => x.startsWith(el)))) {
             key = 'detailed'
+        }
+        if (input.nullInput) {
+            key = null
         }
         try {
             const res = await input.client.graphql({
