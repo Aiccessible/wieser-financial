@@ -91,36 +91,36 @@ export const TransferTimeline = (props: Props) => {
                                 fillColor: '#ffffff', // White marker
                                 lineWidth: 2,
                             },
-                        },
-                        point: {
-                            events: {
-                                click: function (e: any) {
-                                    const md = (this as any)?.options.metadata
-                                    const monthName = md.month
-                                    const category = md.category
-                                    const monthIndex = monthNames.findIndex((el) => el === monthName)
-                                    // Assume a fixed year or dynamic year (e.g., current year)
-                                    const year = new Date().getFullYear()
+                            point: {
+                                events: {
+                                    click: function (e: any) {
+                                        const md = (this as any)?.options.metadata
+                                        const monthName = md.month
+                                        const category = md.category
+                                        const monthIndex = monthNames.findIndex((el) => el === monthName)
+                                        // Assume a fixed year or dynamic year (e.g., current year)
+                                        const year = new Date().getFullYear()
 
-                                    // Get the start and end date of the month
-                                    const startOfMonth = new Date(year, monthIndex, 1) // First day of the month
-                                    const endOfMonth = new Date(year, monthIndex + 1, 0) // Last day of the month
-                                    dispatch(
-                                        setChatParams({
-                                            scope: ChatFocus.Transaction,
-                                            dateRange: [startOfMonth.getTime(), endOfMonth.getTime()],
-                                            highLevelTransactionCategory: [category],
-                                        })
-                                    )
-                                    dispatch(
-                                        getActiveTransactionsAsync({
-                                            client: client,
-                                            id: 'v0',
-                                            highLevelPersonalCategory: [category],
-                                            minDate: startOfMonth.getTime().toString() ?? '',
-                                            maxDate: endOfMonth.getTime().toString() ?? '',
-                                        })
-                                    )
+                                        // Get the start and end date of the month
+                                        const startOfMonth = new Date(year, monthIndex, 1) // First day of the month
+                                        const endOfMonth = new Date(year, monthIndex + 1, 0) // Last day of the month
+                                        dispatch(
+                                            setChatParams({
+                                                scope: ChatFocus.Transaction,
+                                                dateRange: [startOfMonth.getTime(), endOfMonth.getTime()],
+                                                highLevelTransactionCategory: [category],
+                                            })
+                                        )
+                                        dispatch(
+                                            getActiveTransactionsAsync({
+                                                client: client,
+                                                id: 'v0',
+                                                highLevelPersonalCategory: [category],
+                                                minDate: startOfMonth.getTime().toString() ?? '',
+                                                maxDate: endOfMonth.getTime().toString() ?? '',
+                                            })
+                                        )
+                                    },
                                 },
                             },
                         },
