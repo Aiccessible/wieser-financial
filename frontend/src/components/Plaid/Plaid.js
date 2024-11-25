@@ -16,22 +16,24 @@ export default function Plaid({ getItems }) {
   } = usePlaidHooks({ getItems, getPath: '/v1/tokens/get_investment_token' })
   return (
       <View style={{ alignItems: 'center' }}>
-          <Button
-              className="bg-white px-4 w-[90%] py-3 rounded-lg items-center transition duration-300 hover:bg-green-700 ease-in-out justify-center mb-4"
-              variation="primary"
-              isLoading={connecting}
-              onPress={handleGetToken}
-          >
-              <p className="text-black">ADD BANK ACCOUNT </p>
-          </Button>
-          <Button
-              className="bg-white px-4 py-3 w-[90%] rounded-lg items-center transition duration-300 hover:bg-green-700 ease-in-out justify-center mb-4"
-              variation="primary"
-              isLoading={connecting}
-              onPress={handleGetStockToken}
-          >
-              <p className="text-black whitespace-nowrap">ADD INVESTMENT ACCOUNT </p>
-          </Button>
+          <div className="flex flex-col gap-2 mr-2">
+              <Button
+                  className="bg-black border border-white text-white text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-blue-600 ease-in-out transition duration-300 w-full"
+                  variation="primary"
+                  isLoading={connecting}
+                  onPress={handleGetToken}
+              >
+                  <p className="text-white">Add Spending Account</p>
+              </Button>
+              <Button
+                  className="bg-black border border-white text-white text-center font-medium py-2 px-4 rounded-lg shadow hover:bg-blue-600 ease-in-out transition duration-300 w-full"
+                  variation="primary"
+                  isLoading={connecting}
+                  onPress={handleGetStockToken}
+              >
+                  <p className="text-white whitespace-nowrap">Add Investment Account</p>
+              </Button>
+          </div>
           {token ? <PlaidLink token={token} onSuccess={handleSuccess} onExit={() => setConnecting(false)} /> : null}
           {stockToken ? (
               <PlaidLink
