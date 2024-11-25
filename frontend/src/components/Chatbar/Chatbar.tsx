@@ -157,7 +157,10 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                                     style={styles}
                                 >
                                     {activeTransactions && (
-                                        <div className="flex flex-col hide-scrollbar overflow-auto h-[65vh] p-4 bg-black rounded-lg text-white">
+                                        <div
+                                            style={{ minWidth: 300 }}
+                                            className="flex flex-col hide-scrollbar overflow-auto h-[65vh] w-[20vw] p-4 bg-black rounded-lg text-white"
+                                        >
                                             <p className="text-bold text-lg mb-2">Current Transactions</p>
                                             <div className="grid grid-cols-3 gap-4 border-b pb-2 font-semibold text-gray-700">
                                                 <div>Transaction</div>

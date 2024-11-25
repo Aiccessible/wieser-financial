@@ -17,6 +17,9 @@ interface ChatState {
     newChat: string
     chatOpen: boolean
 }
+const firstOfMonth = new Date()
+firstOfMonth.setDate(1)
+firstOfMonth.setHours(0, 0, 0, 0) // Clear time to start at midnight for consistency
 
 // Define the initial state using that type
 const initialState: ChatState = {
@@ -24,7 +27,7 @@ const initialState: ChatState = {
     error: undefined,
     loadingChat: false,
     currentScope: undefined,
-    currentDateRange: undefined,
+    currentDateRange: [firstOfMonth.getTime(), Date.now()],
     highLevelSpendingCategory: undefined,
     newChat: '',
     chatOpen: false,

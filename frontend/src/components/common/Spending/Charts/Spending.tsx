@@ -126,7 +126,7 @@ export const Spending = (props: Props) => {
                                                 id: 'v0',
                                                 highLevelPersonalCategory: [e.point.name],
                                                 minDate: currentDateRange?.[0]?.toString() ?? '',
-                                                maxDate: currentDateRange?.[0]?.toString() ?? '',
+                                                maxDate: currentDateRange?.[1]?.toString() ?? '',
                                             })
                                         )
                                     },

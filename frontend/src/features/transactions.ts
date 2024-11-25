@@ -95,24 +95,29 @@ export const getActiveTransactionsAsync = createAsyncThunk(
         if (detailedPrefixes.find((el) => input.highLevelPersonalCategory.find((x) => x.startsWith(el)))) {
             key = 'detailed'
         }
-        const res = await input.client.graphql({
-            query: getTransactions,
-            variables: {
-                id: input.id,
-                minDate: input.minDate,
-                maxDate: input.maxDate,
-                personalFinanceCategory: input.highLevelPersonalCategory,
-                personalFinanceKey: key,
-            },
-        })
-        const errors = res.errors
-        if (errors && errors.length > 0) {
-            return { errors, transactions: res.data.getTransactions }
-        }
-        return {
-            activeTransactions: res.data.getTransactions.transactions,
-            activeTransactionCursor: res.data.getTransactions.cursor,
-            loading: false,
+        try {
+            const res = await input.client.graphql({
+                query: getTransactions,
+                variables: {
+                    id: input.id,
+                    minDate: new Date(parseInt(input.minDate)).toISOString().slice(0, 10),
+                    maxDate: new Date(parseInt(input.maxDate)).toISOString().slice(0, 10),
+                    personalFinanceCategory: input.highLevelPersonalCategory,
+                    personalFinanceKey: key,
+                },
+            })
+            const errors = res.errors
+            if (errors && errors.length > 0) {
+                return { errors, transactions: res.data.getTransactions }
+            }
+            return {
+                activeTransactions: res.data.getTransactions.transactions,
+                activeTransactionCursor: res.data.getTransactions.cursor,
+                loading: false,
+            }
+        } catch (e) {
+            console.error(e)
+            return {}
         }
     }
 )
