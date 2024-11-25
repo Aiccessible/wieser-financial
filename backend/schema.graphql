@@ -389,7 +389,15 @@ type Query {
     getUserAnalysisFields: [AnalysisField]!
     getItems(limit: Int, cursor: String): PaginatedItems!
     getAccounts(id: ID!): [Account!]!
-    getTransactions(id: ID!, limit: Int, cursor: String): PaginatedTransactions!
+    getTransactions(
+        id: ID!
+        limit: Int
+        cursor: String
+        personalFinanceCategory: [String]
+        personalFinanceKey: String
+        minDate: String
+        maxDate: String
+    ): PaginatedTransactions!
     getInvestments(id: ID!, limit: Int, cursor: String): PaginatedInvestments!
     getBudgets(id: ID!, limit: Int, cursor: String): PaginatedBudgets!
     getFinancialSimulationExpansion(chat: ExpandFinancialSimulation): FinancialSimulationExpansion!

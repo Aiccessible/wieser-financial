@@ -7,9 +7,9 @@ import { util } from '@aws-appsync/utils';
  */
 export function request(ctx) {
   const { username } = ctx.identity;
-  const { id, limit = 20, cursor: nextToken } = ctx.arguments;
+  const { id, limit = 20, cursor: nextToken, date, personalFinanceCategory, personalFinanceKey, minDate, maxDate } = ctx.arguments;
 
-  return {
+  let query = {
     operation: 'Query',
     query: {
       expression: '#pk = :pk AND begins_with(#sk, :sk)',
@@ -27,6 +27,34 @@ export function request(ctx) {
     limit,
     nextToken,
   };
+  if (date) {
+      const filter =  {
+        expression: '#date BETWEEN :minDate AND :maxDate',
+        expressionNames: {
+          '#date': 'date',
+        },
+        expressionValues: util.dynamodb.toMapValues({
+          ':minDate': minDate,
+          ':maxDate': maxDate,
+        }),
+      }
+      query['filter'] = filter
+  } else if (personalFinanceCategory && date && personalFinanceKey) {
+      const filter =  {
+        expression: '(#date BETWEEN :minDate AND :maxDate) AND (personal_finance_category.#detailed IN (:categories))',
+        expressionNames: {
+          '#date': 'date',
+          "#detailed": personalFinanceKey 
+        },
+        expressionValues: util.dynamodb.toMapValues({
+          ':minDate': minDate,
+          ':maxDate': maxDate,
+          ":categories": personalFinanceCategory
+        }),
+      }
+      query['filter']  = filter
+  }
+  return query
 }
 
 /**

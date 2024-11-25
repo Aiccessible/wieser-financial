@@ -30,7 +30,7 @@ export function request(ctx) {
           ':minDate': minDate,
           ':maxDate': maxDate,
         }),
-        },
+      },
       scanIndexForward: false,
     };
 }

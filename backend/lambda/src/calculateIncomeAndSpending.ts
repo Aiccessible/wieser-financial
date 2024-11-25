@@ -51,7 +51,9 @@ function aggregateSpendingByCategory(transactions: Transaction[]): AggregatedSpe
                 if (!dailySpendingMap[dateKey]) {
                     dailySpendingMap[dateKey] = {}
                 }
-
+                if (category === 'RENT_AND_UTILITIES_RENT') {
+                    console.info(transaction)
+                }
                 // Aggregate amounts for each category in daily, weekly, and monthly maps
                 dailySpendingMap[dateKey][category] = (dailySpendingMap[dateKey][category] || 0) + Math.abs(amount)
                 weeklySpending[category] = (weeklySpending[category] || 0) + Math.abs(amount)
@@ -152,7 +154,6 @@ async function processUsersInBatches(decryptedUserItemRecord: string[]) {
         await Promise.all(
             batch.map(async (item) => {
                 const startDay = getEarliestFirstOfMonthWithin90Days()
-                console.info(startDay)
                 const encryptedTransactions = await client.send(
                     GetEntities({
                         pk: item ?? '',
