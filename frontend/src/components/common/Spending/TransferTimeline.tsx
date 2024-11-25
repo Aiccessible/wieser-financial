@@ -129,7 +129,7 @@ export const TransferTimeline = (props: Props) => {
                         name: data[0].category,
                         data: data.map((elx: any) => ({
                             y: elx.y,
-                            metadata: { category: data[0].category, month: data[0].name },
+                            metadata: { category: elx.category, month: elx.name },
                         })),
                         color: greenShades[index % greenShades.length], // Light green for spending
                         type: 'line',
