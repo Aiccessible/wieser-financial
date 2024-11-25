@@ -99,7 +99,6 @@ export const getActiveTransactionsAsync = createAsyncThunk(
             query: getTransactions,
             variables: {
                 id: input.id,
-                cursor: (getThunk.getState() as any).transactions.activeTransactionCursor,
                 minDate: input.minDate,
                 maxDate: input.maxDate,
                 personalFinanceCategory: input.highLevelPersonalCategory,
