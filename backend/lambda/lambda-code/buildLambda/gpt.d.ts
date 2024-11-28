@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { ChatFocus, ChatHistory, ChatType } from './API';
+import { ChatFocus, ChatType } from './API';
 export interface SimulationExpansionResponseInterface {
     newCode: string;
 }
@@ -28,7 +28,7 @@ export interface Recommendation {
 }
 export declare const apiClient: OpenAI;
 export declare const getFinancialRecommendationsFromData: (prompt: string) => Promise<OpenAI.Chat.Completions.ChatCompletionMessage>;
-export declare const completeChatFromPrompt: (prompt: string, type: ChatFocus | null | undefined, userId: string, requiresLiveData: boolean, chatType: ChatType, messageHistory: (ChatHistory | null)[]) => Promise<string>;
+export declare const completeChatFromPrompt: (prompt: string, type: ChatFocus | null | undefined, userId: string, requiresLiveData: boolean, chatType: ChatType) => Promise<string>;
 export declare enum InformationOptions {
     'INVESTMENTS' = 0,
     'TRANSACTIONS' = 1,

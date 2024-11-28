@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { AssistantToolChoice } from 'openai/resources/beta/threads/threads'
-import { ChatFocus, ChatInput, ChatType, HighLevelTransactionCategory } from './API'
+import { ChatFocus, ChatHistory, ChatInput, ChatType, HighLevelTransactionCategory } from './API'
 import { createChat } from './graphql/mutations'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import * as aws4 from 'aws4'
@@ -179,7 +179,8 @@ export const completeChatFromPrompt = async (
     type: ChatFocus | null | undefined,
     userId: string,
     requiresLiveData: boolean,
-    chatType: ChatType
+    chatType: ChatType,
+    messageHistory: (ChatHistory | null)[]
 ) => {
     const doesStreamRes =
         chatType !== ChatType.FinancialNewsQuery &&
@@ -189,6 +190,7 @@ export const completeChatFromPrompt = async (
         chatType !== ChatType.GeneralRecommendation &&
         chatType !== ChatType.SimulationPreExpansion &&
         chatType !== ChatType.RetryCodeBuild // stream to get faster
+    const usesHistory = doesStreamRes
     const systemPrompt =
         chatType === ChatType.FinancialNewsQuery
             ? newsPrompt
@@ -202,6 +204,8 @@ export const completeChatFromPrompt = async (
             ? 'Fix the error from the attached code files, also fix any other potential errors, do not use any backticks in your python code'
             : chatType === ChatType.TransactionRecommendation
             ? `You are a personal spending assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide spending recommendations which are highly useful.`
+            : chatType === ChatType.RecommendBudget
+            ? `You are a personal spending assistant in Canada. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. You provide budget recommendations which are highly useful for longterm growth. Provide a budget for each relevant category from the monthly summarys.`
             : chatType === ChatType.GeneralRecommendation
             ? 'You are a personal finance assistant. You leverage detailed knoweldge of jurisdictional tax laws and financial optimization strategies to guide us to make better financial decisions. Leave the transfer information empty if no transfer is needed'
             : `You are a personal ${
@@ -217,13 +221,18 @@ export const completeChatFromPrompt = async (
                 role: 'system',
                 content: systemPrompt,
             },
+            ...(usesHistory
+                ? messageHistory
+                      ?.map((el) => ({ role: el?.role, content: el?.message?.substring(0, 20000) ?? '' }))
+                      ?.slice(0, 5)
+                : []),
             {
                 role: 'user',
                 content: prompt.substring(0, 20000),
             },
         ],
         response_format:
-            chatType === ChatType.TransactionRecommendation
+            chatType === ChatType.TransactionRecommendation || chatType === ChatType.RecommendBudget
                 ? zodResponseFormat(TransactionRecommendation, 'recommendations')
                 : chatType === ChatType.GeneralRecommendation
                 ? zodResponseFormat(Recommendations, 'recommendations')
@@ -235,6 +244,7 @@ export const completeChatFromPrompt = async (
         model,
         stream: doesStreamRes ? true : false,
     }
+    console.info(messageBody)
     const stream = requiresLiveData
         ? await makePerplexityCall(messageBody)
         : await chat.completions.create(messageBody as any)

@@ -271,7 +271,7 @@ export type FinancialSimulationExpansion = {
 
 export type ChatQuery = {
   prompt?: string | null,
-  chatHistory?: ChatHistory | null,
+  chatHistory?: Array< ChatHistory | null > | null,
   chatFocus?: ChatFocus | null,
   accountIds?: Array< string > | null,
   requiresLiveData?: boolean | null,
@@ -289,8 +289,8 @@ export type ChatHistory = {
 };
 
 export enum Role {
-  Assistant = "Assistant",
-  User = "User",
+  assistant = "assistant",
+  user = "user",
 }
 
 
@@ -312,6 +312,7 @@ export enum ChatType {
   SimulationExpansion = "SimulationExpansion",
   SimulationPreExpansion = "SimulationPreExpansion",
   RetryCodeBuild = "RetryCodeBuild",
+  RecommendBudget = "RecommendBudget",
 }
 
 
@@ -327,6 +328,7 @@ export enum CacheType {
   PortfolioAnalysis = "PortfolioAnalysis",
   TransactionRecommendation = "TransactionRecommendation",
   GeneralRecommendation = "GeneralRecommendation",
+  BudgetRecommendation = "BudgetRecommendation",
 }
 
 
@@ -542,6 +544,10 @@ export type GetTransactionsQueryVariables = {
   id: string,
   limit?: number | null,
   cursor?: string | null,
+  personalFinanceCategory?: Array< string | null > | null,
+  personalFinanceKey?: string | null,
+  minDate?: string | null,
+  maxDate?: string | null,
 };
 
 export type GetTransactionsQuery = {

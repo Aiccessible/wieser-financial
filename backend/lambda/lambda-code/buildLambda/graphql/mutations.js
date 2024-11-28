@@ -1,0 +1,54 @@
+"use strict";
+/* tslint:disable */
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createBudget = exports.createChat = exports.createAnalysisField = exports.createAnalysis = void 0;
+exports.createAnalysis = `mutation CreateAnalysis($analysis: AnalysisInput) {
+  createAnalysis(analysis: $analysis) {
+    analysisName
+    s3Key
+    currentDescription
+    currentProjection
+    currentInputs
+    titles
+    descriptions
+    __typename
+  }
+}
+`;
+exports.createAnalysisField = `mutation CreateAnalysisField($analysisField: AnalysisFieldInput) {
+  createAnalysisField(analysisField: $analysisField) {
+    inputName
+    inputValue
+    __typename
+  }
+}
+`;
+exports.createChat = `mutation CreateChat($chat: ChatInput!) {
+  createChat(chat: $chat) {
+    pk
+    sk
+    message
+    time
+    isLastChunk
+    messageId
+    __typename
+  }
+}
+`;
+exports.createBudget = `mutation CreateBudget($budget: BudgetPlanInput!) {
+  createBudget(budget: $budget) {
+    pk
+    sk
+    highLevelCategory
+    timeframe
+    spendingThreshold
+    createdAt
+    specificPayeeRegex
+    recommendationTitle
+    __typename
+  }
+}
+`;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibXV0YXRpb25zLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vc3JjL2dyYXBocWwvbXV0YXRpb25zLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7QUFBQSxvQkFBb0I7QUFDcEIsb0JBQW9CO0FBQ3BCLDJEQUEyRDs7O0FBUTlDLFFBQUEsY0FBYyxHQUFpQjs7Ozs7Ozs7Ozs7O0NBZTNDLENBQUM7QUFDVyxRQUFBLG1CQUFtQixHQUFpQjs7Ozs7OztDQVVoRCxDQUFDO0FBQ1csUUFBQSxVQUFVLEdBQWlCOzs7Ozs7Ozs7OztDQWN2QyxDQUFDO0FBQ1csUUFBQSxZQUFZLEdBQWlCOzs7Ozs7Ozs7Ozs7O0NBZ0J6QyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLyogdHNsaW50OmRpc2FibGUgKi9cbi8qIGVzbGludC1kaXNhYmxlICovXG4vLyB0aGlzIGlzIGFuIGF1dG8gZ2VuZXJhdGVkIGZpbGUuIFRoaXMgd2lsbCBiZSBvdmVyd3JpdHRlblxuXG5pbXBvcnQgKiBhcyBBUElUeXBlcyBmcm9tIFwiLi4vQVBJXCI7XG50eXBlIEdlbmVyYXRlZE11dGF0aW9uPElucHV0VHlwZSwgT3V0cHV0VHlwZT4gPSBzdHJpbmcgJiB7XG4gIF9fZ2VuZXJhdGVkTXV0YXRpb25JbnB1dDogSW5wdXRUeXBlO1xuICBfX2dlbmVyYXRlZE11dGF0aW9uT3V0cHV0OiBPdXRwdXRUeXBlO1xufTtcblxuZXhwb3J0IGNvbnN0IGNyZWF0ZUFuYWx5c2lzID0gLyogR3JhcGhRTCAqLyBgbXV0YXRpb24gQ3JlYXRlQW5hbHlzaXMoJGFuYWx5c2lzOiBBbmFseXNpc0lucHV0KSB7XG4gIGNyZWF0ZUFuYWx5c2lzKGFuYWx5c2lzOiAkYW5hbHlzaXMpIHtcbiAgICBhbmFseXNpc05hbWVcbiAgICBzM0tleVxuICAgIGN1cnJlbnREZXNjcmlwdGlvblxuICAgIGN1cnJlbnRQcm9qZWN0aW9uXG4gICAgY3VycmVudElucHV0c1xuICAgIHRpdGxlc1xuICAgIGRlc2NyaXB0aW9uc1xuICAgIF9fdHlwZW5hbWVcbiAgfVxufVxuYCBhcyBHZW5lcmF0ZWRNdXRhdGlvbjxcbiAgQVBJVHlwZXMuQ3JlYXRlQW5hbHlzaXNNdXRhdGlvblZhcmlhYmxlcyxcbiAgQVBJVHlwZXMuQ3JlYXRlQW5hbHlzaXNNdXRhdGlvblxuPjtcbmV4cG9ydCBjb25zdCBjcmVhdGVBbmFseXNpc0ZpZWxkID0gLyogR3JhcGhRTCAqLyBgbXV0YXRpb24gQ3JlYXRlQW5hbHlzaXNGaWVsZCgkYW5hbHlzaXNGaWVsZDogQW5hbHlzaXNGaWVsZElucHV0KSB7XG4gIGNyZWF0ZUFuYWx5c2lzRmllbGQoYW5hbHlzaXNGaWVsZDogJGFuYWx5c2lzRmllbGQpIHtcbiAgICBpbnB1dE5hbWVcbiAgICBpbnB1dFZhbHVlXG4gICAgX190eXBlbmFtZVxuICB9XG59XG5gIGFzIEdlbmVyYXRlZE11dGF0aW9uPFxuICBBUElUeXBlcy5DcmVhdGVBbmFseXNpc0ZpZWxkTXV0YXRpb25WYXJpYWJsZXMsXG4gIEFQSVR5cGVzLkNyZWF0ZUFuYWx5c2lzRmllbGRNdXRhdGlvblxuPjtcbmV4cG9ydCBjb25zdCBjcmVhdGVDaGF0ID0gLyogR3JhcGhRTCAqLyBgbXV0YXRpb24gQ3JlYXRlQ2hhdCgkY2hhdDogQ2hhdElucHV0ISkge1xuICBjcmVhdGVDaGF0KGNoYXQ6ICRjaGF0KSB7XG4gICAgcGtcbiAgICBza1xuICAgIG1lc3NhZ2VcbiAgICB0aW1lXG4gICAgaXNMYXN0Q2h1bmtcbiAgICBtZXNzYWdlSWRcbiAgICBfX3R5cGVuYW1lXG4gIH1cbn1cbmAgYXMgR2VuZXJhdGVkTXV0YXRpb248XG4gIEFQSVR5cGVzLkNyZWF0ZUNoYXRNdXRhdGlvblZhcmlhYmxlcyxcbiAgQVBJVHlwZXMuQ3JlYXRlQ2hhdE11dGF0aW9uXG4+O1xuZXhwb3J0IGNvbnN0IGNyZWF0ZUJ1ZGdldCA9IC8qIEdyYXBoUUwgKi8gYG11dGF0aW9uIENyZWF0ZUJ1ZGdldCgkYnVkZ2V0OiBCdWRnZXRQbGFuSW5wdXQhKSB7XG4gIGNyZWF0ZUJ1ZGdldChidWRnZXQ6ICRidWRnZXQpIHtcbiAgICBwa1xuICAgIHNrXG4gICAgaGlnaExldmVsQ2F0ZWdvcnlcbiAgICB0aW1lZnJhbWVcbiAgICBzcGVuZGluZ1RocmVzaG9sZFxuICAgIGNyZWF0ZWRBdFxuICAgIHNwZWNpZmljUGF5ZWVSZWdleFxuICAgIHJlY29tbWVuZGF0aW9uVGl0bGVcbiAgICBfX3R5cGVuYW1lXG4gIH1cbn1cbmAgYXMgR2VuZXJhdGVkTXV0YXRpb248XG4gIEFQSVR5cGVzLkNyZWF0ZUJ1ZGdldE11dGF0aW9uVmFyaWFibGVzLFxuICBBUElUeXBlcy5DcmVhdGVCdWRnZXRNdXRhdGlvblxuPjtcbiJdfQ==

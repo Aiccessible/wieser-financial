@@ -46,7 +46,8 @@ export const getFinancialSimulationExpansion: AppSyncResolverHandler<any, Financ
         ChatFocus.All,
         user,
         false,
-        ChatType.SimulationPreExpansion
+        ChatType.SimulationPreExpansion,
+        []
     )
     const parsedSimulationPreExpansionResponse = JSON.parse(response1 || '') as SimulationPreExpansionResponseInterface
 
@@ -67,7 +68,7 @@ export const getFinancialSimulationExpansion: AppSyncResolverHandler<any, Financ
         .join(
             ', '
         )} All users are in Canada and use the registered Accounts: FHSA, RSPs, TFSAs. Output the updated script as runnable code`
-    const response = await completeChatFromPrompt(message, ChatFocus.All, user, false, ChatType.SimulationExpansion)
+    const response = await completeChatFromPrompt(message, ChatFocus.All, user, false, ChatType.SimulationExpansion, [])
     const recommentations = JSON.parse(response || '') as SimulationExpansionResponseInterface
     const newCode = recommentations.newCode
     const newFileKey = user + '-' + Math.floor(Math.random() * 1000000)

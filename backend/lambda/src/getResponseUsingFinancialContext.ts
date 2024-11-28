@@ -27,6 +27,7 @@ const mapOfCacheTypeToExpiry: Record<CacheType, number> = {
     [CacheType.StockNews]: 60 * 60 * 1000 * 4,
     [CacheType.TransactionRecommendation]: 60 * 60 * 1000 * 24 * 5,
     [CacheType.GeneralRecommendation]: 60 * 60 * 1000 * 24,
+    [CacheType.BudgetRecommendation]: 60 * 60 * 1000 * 24 * 20,
 }
 
 export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatResponse> = async (
@@ -93,6 +94,10 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
         neededInfo.optionsForInformation = ['INVESTMENTS' as any, 'ACCOUNTS' as any, 'MONTHLYSUMMARY' as any]
     }
 
+    if (event.arguments.chat.chatType === ChatType.RecommendBudget) {
+        neededInfo.optionsForInformation = ['ACCOUNTS' as any, 'MONTHLYSUMMARY' as any]
+    }
+
     if (neededInfo.optionsForInformation?.length === 0) {
         neededInfo.optionsForInformation = ['ACCOUNTS' as any, 'MONTHLYSUMMARY' as any]
     }
@@ -149,7 +154,6 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
             })
         )
     ).flatMap((el: any) => [...el]) as any as [InformationOptions, QueryCommandOutput][]
-    console.info(tupleOfTypeToElements, 'good')
     /** Get the contextual data */
     const ddbResponses = await Promise.all(
         tupleOfTypeToElements.map(async (tuple) => {
@@ -184,7 +188,8 @@ export const getResponseUsingFinancialContext: AppSyncResolverHandler<any, ChatR
         event.arguments.chat.chatFocus,
         user,
         event.arguments.chat.requiresLiveData ?? false,
-        event.arguments.chat.chatType ?? ChatType.Regular
+        event.arguments.chat.chatType ?? ChatType.Regular,
+        event.arguments.chat.chatHistory ?? []
     )
     event.arguments.chat.cacheIdentifiers?.map((id) => {
         let cacheKey = getCacheKey(user, id)

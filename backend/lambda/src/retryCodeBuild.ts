@@ -37,7 +37,7 @@ export const retryCodeBuild: AppSyncResolverHandler<any, FinancialSimulationExpa
     }
 
     const message = `${previousCodeRun} Fix the following error ${event.arguments.build.error} Output the updated script as runnable code`
-    const response = await completeChatFromPrompt(message, ChatFocus.All, user, false, ChatType.RetryCodeBuild)
+    const response = await completeChatFromPrompt(message, ChatFocus.All, user, false, ChatType.RetryCodeBuild, [])
     const recommentations = JSON.parse(response || '') as SimulationExpansionResponseInterface
     const newCode = recommentations.newCode
     const newFileKey = user + '-' + Math.floor(Math.random() * 1000000)

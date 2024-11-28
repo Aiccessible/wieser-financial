@@ -8,7 +8,7 @@ export type AnalysisInput = {
     descriptions?: Array<string | null> | null;
 };
 export type Analysis = {
-    __typename: "Analysis";
+    __typename: 'Analysis';
     analysisName: string;
     s3Key: string;
     currentDescription?: string | null;
@@ -22,7 +22,7 @@ export type AnalysisFieldInput = {
     inputValue: string;
 };
 export type AnalysisField = {
-    __typename: "AnalysisField";
+    __typename: 'AnalysisField';
     inputName: string;
     inputValue: string;
 };
@@ -36,7 +36,7 @@ export type ChatInput = {
     expire_at?: string | null;
 };
 export type Chat = {
-    __typename: "Chat";
+    __typename: 'Chat';
     pk?: string | null;
     sk?: string | null;
     message?: string | null;
@@ -109,7 +109,7 @@ export declare enum BudgetTimeframe {
     MONTHLY = "MONTHLY"
 }
 export type BudgetPlan = {
-    __typename: "BudgetPlan";
+    __typename: 'BudgetPlan';
     pk?: string | null;
     sk?: string | null;
     highLevelCategory?: HighLevelTransactionCategory | null;
@@ -124,12 +124,12 @@ export type RetryCodeBuildInput = {
     s3Key?: string | null;
 };
 export type PaginatedItems = {
-    __typename: "PaginatedItems";
+    __typename: 'PaginatedItems';
     cursor?: string | null;
     items: Array<Item>;
 };
 export type Item = {
-    __typename: "Item";
+    __typename: 'Item';
     item_id: string;
     institution_id: string;
     institution_name: string;
@@ -138,7 +138,7 @@ export type Item = {
     pk?: string | null;
 };
 export type Account = {
-    __typename: "Account";
+    __typename: 'Account';
     account_id: string;
     type?: string | null;
     name?: string | null;
@@ -147,19 +147,19 @@ export type Account = {
     mask?: string | null;
 };
 export type Balances = {
-    __typename: "Balances";
+    __typename: 'Balances';
     current?: string | null;
     iso_currency_code?: string | null;
     available?: string | null;
     limit?: string | null;
 };
 export type PaginatedTransactions = {
-    __typename: "PaginatedTransactions";
+    __typename: 'PaginatedTransactions';
     cursor?: string | null;
     transactions: Array<Transaction>;
 };
 export type Transaction = {
-    __typename: "Transaction";
+    __typename: 'Transaction';
     transaction_id: string;
     account_id?: string | null;
     amount?: string | null;
@@ -171,19 +171,19 @@ export type Transaction = {
     personal_finance_category?: PersonalFinanceCategory | null;
 };
 export type PersonalFinanceCategory = {
-    __typename: "PersonalFinanceCategory";
+    __typename: 'PersonalFinanceCategory';
     detailed?: string | null;
     confidence_level?: string | null;
     primary?: HighLevelTransactionCategory | null;
 };
 export type PaginatedInvestments = {
-    __typename: "PaginatedInvestments";
+    __typename: 'PaginatedInvestments';
     cursor?: string | null;
     transactions: Array<Investment>;
 };
 export type Investment = Holding | Security;
 export type Holding = {
-    __typename: "Holding";
+    __typename: 'Holding';
     account_id?: string | null;
     cost_basis?: number | null;
     institution_price?: number | null;
@@ -197,7 +197,7 @@ export type Holding = {
     plaid_type?: string | null;
 };
 export type Security = {
-    __typename: "Security";
+    __typename: 'Security';
     close_price?: number | null;
     account_id?: string | null;
     close_price_as_of?: string | null;
@@ -223,7 +223,7 @@ export type Security = {
     plaid_type?: string | null;
 };
 export type PaginatedBudgets = {
-    __typename: "PaginatedBudgets";
+    __typename: 'PaginatedBudgets';
     cursor?: string | null;
     budgets?: Array<BudgetPlan | null> | null;
 };
@@ -232,14 +232,14 @@ export type ExpandFinancialSimulation = {
     s3Key?: string | null;
 };
 export type FinancialSimulationExpansion = {
-    __typename: "FinancialSimulationExpansion";
+    __typename: 'FinancialSimulationExpansion';
     s3Key?: string | null;
     newInputs?: Array<string | null> | null;
     description?: string | null;
 };
 export type ChatQuery = {
     prompt?: string | null;
-    chatHistory?: Array<ChatHistory | null> | null;
+    chatHistory?: ChatHistory | null;
     chatFocus?: ChatFocus | null;
     accountIds?: Array<string> | null;
     requiresLiveData?: boolean | null;
@@ -255,8 +255,8 @@ export type ChatHistory = {
     role?: Role | null;
 };
 export declare enum Role {
-    assistant = "assistant",
-    user = "user"
+    Assistant = "Assistant",
+    User = "User"
 }
 export declare enum ChatFocus {
     All = "All",
@@ -290,7 +290,7 @@ export declare enum CacheType {
     BudgetRecommendation = "BudgetRecommendation"
 }
 export type Recommendation = {
-    __typename: "Recommendation";
+    __typename: 'Recommendation';
     explanation?: string | null;
     action?: Action | null;
     title?: string | null;
@@ -298,23 +298,23 @@ export type Recommendation = {
 };
 export type Action = RecommendationAction | TransactionRecommendationAction;
 export type RecommendationAction = {
-    __typename: "RecommendationAction";
+    __typename: 'RecommendationAction';
     transfers?: Array<Transfer | null> | null;
     description?: string | null;
 };
 export type Transfer = {
-    __typename: "Transfer";
+    __typename: 'Transfer';
     fromAccountName?: string | null;
     toAccountName?: string | null;
     amount?: string | null;
 };
 export type TransactionRecommendationAction = {
-    __typename: "TransactionRecommendationAction";
+    __typename: 'TransactionRecommendationAction';
     budget?: Array<BudgetPlan | null> | null;
     description?: string | null;
 };
 export type ChatResponse = {
-    __typename: "ChatResponse";
+    __typename: 'ChatResponse';
     response?: string | null;
 };
 export declare enum SpendingSummaryType {
@@ -322,7 +322,7 @@ export declare enum SpendingSummaryType {
     DAILYSUMMARY = "DAILYSUMMARY"
 }
 export type SpendingSummary = {
-    __typename: "SpendingSummary";
+    __typename: 'SpendingSummary';
     sk?: string | null;
     spending?: string | null;
 };
@@ -332,7 +332,7 @@ export declare enum NetWorthSummaryType {
     NETWORTHMONTHLYSNAPSHOT = "NETWORTHMONTHLYSNAPSHOT"
 }
 export type NetWorth = {
-    __typename: "NetWorth";
+    __typename: 'NetWorth';
     pk?: string | null;
     sk?: string | null;
     netWorth?: string | null;
@@ -347,7 +347,7 @@ export type CreateAnalysisMutationVariables = {
 };
 export type CreateAnalysisMutation = {
     createAnalysis?: {
-        __typename: "Analysis";
+        __typename: 'Analysis';
         analysisName: string;
         s3Key: string;
         currentDescription?: string | null;
@@ -362,7 +362,7 @@ export type CreateAnalysisFieldMutationVariables = {
 };
 export type CreateAnalysisFieldMutation = {
     createAnalysisField?: {
-        __typename: "AnalysisField";
+        __typename: 'AnalysisField';
         inputName: string;
         inputValue: string;
     } | null;
@@ -372,7 +372,7 @@ export type CreateChatMutationVariables = {
 };
 export type CreateChatMutation = {
     createChat?: {
-        __typename: "Chat";
+        __typename: 'Chat';
         pk?: string | null;
         sk?: string | null;
         message?: string | null;
@@ -386,7 +386,7 @@ export type CreateBudgetMutationVariables = {
 };
 export type CreateBudgetMutation = {
     createBudget?: {
-        __typename: "BudgetPlan";
+        __typename: 'BudgetPlan';
         pk?: string | null;
         sk?: string | null;
         highLevelCategory?: HighLevelTransactionCategory | null;
@@ -406,7 +406,7 @@ export type RetryCodeBuildQuery = {
 export type GetUserAnalysisQueryVariables = {};
 export type GetUserAnalysisQuery = {
     getUserAnalysis: Array<{
-        __typename: "Analysis";
+        __typename: 'Analysis';
         analysisName: string;
         s3Key: string;
         currentDescription?: string | null;
@@ -419,7 +419,7 @@ export type GetUserAnalysisQuery = {
 export type GetUserAnalysisFieldsQueryVariables = {};
 export type GetUserAnalysisFieldsQuery = {
     getUserAnalysisFields: Array<{
-        __typename: "AnalysisField";
+        __typename: 'AnalysisField';
         inputName: string;
         inputValue: string;
     } | null>;
@@ -430,10 +430,10 @@ export type GetItemsQueryVariables = {
 };
 export type GetItemsQuery = {
     getItems: {
-        __typename: "PaginatedItems";
+        __typename: 'PaginatedItems';
         cursor?: string | null;
         items: Array<{
-            __typename: "Item";
+            __typename: 'Item';
             item_id: string;
             institution_id: string;
             institution_name: string;
@@ -448,13 +448,13 @@ export type GetAccountsQueryVariables = {
 };
 export type GetAccountsQuery = {
     getAccounts: Array<{
-        __typename: "Account";
+        __typename: 'Account';
         account_id: string;
         type?: string | null;
         name?: string | null;
         subtype?: string | null;
         balances?: {
-            __typename: "Balances";
+            __typename: 'Balances';
             current?: string | null;
             iso_currency_code?: string | null;
             available?: string | null;
@@ -467,17 +467,13 @@ export type GetTransactionsQueryVariables = {
     id: string;
     limit?: number | null;
     cursor?: string | null;
-    personalFinanceCategory?: Array<string | null> | null;
-    personalFinanceKey?: string | null;
-    minDate?: string | null;
-    maxDate?: string | null;
 };
 export type GetTransactionsQuery = {
     getTransactions: {
-        __typename: "PaginatedTransactions";
+        __typename: 'PaginatedTransactions';
         cursor?: string | null;
         transactions: Array<{
-            __typename: "Transaction";
+            __typename: 'Transaction';
             transaction_id: string;
             account_id?: string | null;
             amount?: string | null;
@@ -487,7 +483,7 @@ export type GetTransactionsQuery = {
             payment_channel?: string | null;
             transaction_type?: string | null;
             personal_finance_category?: {
-                __typename: "PersonalFinanceCategory";
+                __typename: 'PersonalFinanceCategory';
                 detailed?: string | null;
                 confidence_level?: string | null;
                 primary?: HighLevelTransactionCategory | null;
@@ -502,10 +498,10 @@ export type GetInvestmentsQueryVariables = {
 };
 export type GetInvestmentsQuery = {
     getInvestments: {
-        __typename: "PaginatedInvestments";
+        __typename: 'PaginatedInvestments';
         cursor?: string | null;
-        transactions: Array<({
-            __typename: "Holding";
+        transactions: Array<{
+            __typename: 'Holding';
             account_id?: string | null;
             cost_basis?: number | null;
             institution_price?: number | null;
@@ -518,7 +514,7 @@ export type GetInvestmentsQuery = {
             unofficial_currency_code?: string | null;
             plaid_type?: string | null;
         } | {
-            __typename: "Security";
+            __typename: 'Security';
             close_price?: number | null;
             account_id?: string | null;
             close_price_as_of?: string | null;
@@ -542,7 +538,7 @@ export type GetInvestmentsQuery = {
             industry?: string | null;
             option_contract?: string | null;
             plaid_type?: string | null;
-        })>;
+        }>;
     };
 };
 export type GetBudgetsQueryVariables = {
@@ -552,10 +548,10 @@ export type GetBudgetsQueryVariables = {
 };
 export type GetBudgetsQuery = {
     getBudgets: {
-        __typename: "PaginatedBudgets";
+        __typename: 'PaginatedBudgets';
         cursor?: string | null;
         budgets?: Array<{
-            __typename: "BudgetPlan";
+            __typename: 'BudgetPlan';
             pk?: string | null;
             sk?: string | null;
             highLevelCategory?: HighLevelTransactionCategory | null;
@@ -572,7 +568,7 @@ export type GetFinancialSimulationExpansionQueryVariables = {
 };
 export type GetFinancialSimulationExpansionQuery = {
     getFinancialSimulationExpansion: {
-        __typename: "FinancialSimulationExpansion";
+        __typename: 'FinancialSimulationExpansion';
         s3Key?: string | null;
         newInputs?: Array<string | null> | null;
         description?: string | null;
@@ -583,10 +579,10 @@ export type GetFinancialRecommendationsQueryVariables = {
 };
 export type GetFinancialRecommendationsQuery = {
     getFinancialRecommendations: Array<{
-        __typename: "Recommendation";
+        __typename: 'Recommendation';
         explanation?: string | null;
         action: ({
-            __typename: "RecommendationAction";
+            __typename: 'RecommendationAction';
             transfers?: Array<{
                 __typename: string;
                 fromAccountName?: string | null;
@@ -595,7 +591,7 @@ export type GetFinancialRecommendationsQuery = {
             } | null> | null;
             description?: string | null;
         } | {
-            __typename: "TransactionRecommendationAction";
+            __typename: 'TransactionRecommendationAction';
             budget?: Array<{
                 __typename: string;
                 pk?: string | null;
@@ -618,7 +614,7 @@ export type GetFinancialConversationResponseQueryVariables = {
 };
 export type GetFinancialConversationResponseQuery = {
     getFinancialConversationResponse: {
-        __typename: "ChatResponse";
+        __typename: 'ChatResponse';
         response?: string | null;
     };
 };
@@ -630,7 +626,7 @@ export type GetSpendingSummaryQueryVariables = {
 };
 export type GetSpendingSummaryQuery = {
     getSpendingSummary?: {
-        __typename: "SpendingSummary";
+        __typename: 'SpendingSummary';
         sk?: string | null;
         spending?: string | null;
     } | null;
@@ -643,7 +639,7 @@ export type GetNetWorthsQueryVariables = {
 };
 export type GetNetWorthsQuery = {
     getNetWorths?: Array<{
-        __typename: "NetWorth";
+        __typename: 'NetWorth';
         pk?: string | null;
         sk?: string | null;
         netWorth?: string | null;
@@ -659,7 +655,7 @@ export type OnCreateChatSubscriptionVariables = {
 };
 export type OnCreateChatSubscription = {
     onCreateChat?: {
-        __typename: "Chat";
+        __typename: 'Chat';
         pk?: string | null;
         sk?: string | null;
         message?: string | null;
