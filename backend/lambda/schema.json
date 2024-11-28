@@ -3341,26 +3341,6 @@
         "possibleTypes" : null
       }, {
         "kind" : "OBJECT",
-        "name" : "PremiumChatResponse",
-        "description" : null,
-        "fields" : [ {
-          "name" : "response",
-          "description" : null,
-          "args" : [ ],
-          "type" : {
-            "kind" : "SCALAR",
-            "name" : "String",
-            "ofType" : null
-          },
-          "isDeprecated" : false,
-          "deprecationReason" : null
-        } ],
-        "inputFields" : null,
-        "interfaces" : [ ],
-        "enumValues" : null,
-        "possibleTypes" : null
-      }, {
-        "kind" : "OBJECT",
         "name" : "GraphType",
         "description" : null,
         "fields" : [ {
@@ -3398,6 +3378,26 @@
           "deprecationReason" : null
         }, {
           "name" : "timePlot",
+          "description" : null,
+          "args" : [ ],
+          "type" : {
+            "kind" : "SCALAR",
+            "name" : "String",
+            "ofType" : null
+          },
+          "isDeprecated" : false,
+          "deprecationReason" : null
+        } ],
+        "inputFields" : null,
+        "interfaces" : [ ],
+        "enumValues" : null,
+        "possibleTypes" : null
+      }, {
+        "kind" : "OBJECT",
+        "name" : "PremiumChatResponse",
+        "description" : null,
+        "fields" : [ {
+          "name" : "response",
           "description" : null,
           "args" : [ ],
           "type" : {
