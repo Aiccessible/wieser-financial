@@ -1,7 +1,13 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { getFinancialConversationResponse } from '../graphql/queries'
-import { ChatFocus, GetFinancialConversationResponseQuery, HighLevelTransactionCategory, SpendingSummary } from '../API'
+import {
+    ChatFocus,
+    GetFinancialConversationResponseQuery,
+    HighLevelTransactionCategory,
+    Role,
+    SpendingSummary,
+} from '../API'
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
 import { financialProjectionToChatInput } from './analysis'
@@ -52,6 +58,14 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                 .getState()
                 .idsSlice.institutions?.map((account) => account.item_id)
                 .slice(0, 25) ?? []
+        const currentChats =
+            getThunkApi
+                .getState()
+                .chat.chats?.map((chat) => ({
+                    role: chat.role === 'user' ? Role.user : Role.assistant,
+                    message: chat.message ?? '',
+                }))
+                .slice(0, 5) ?? []
         try {
             if (input.focus === ChatFocus.All) {
                 input.newChat =
@@ -71,10 +85,10 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                         shouldRagFetch: !input.dontRagFetch,
                         currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
                         highLevelCategory: input.highLevelSpendingCategory,
-                    } as any,
+                        chatHistory: currentChats,
+                    },
                 },
             })
-            console.info(res)
             const errors = res.errors
             if (errors && errors.length > 0) {
                 return { errors, chatResponse: res, loading: false }

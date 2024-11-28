@@ -1,4 +1,5 @@
-import { HighLevelTransactionCategory, SpendingSummary } from '../../src/API'
+import { BudgetPlan, BudgetTimeframe, HighLevelTransactionCategory, SpendingSummary } from '../../src/API'
+import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
 
 export const incomeKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('INCOME_'))
 export const transferInKeys = Object.keys(HighLevelTransactionCategory).filter((key) => key.startsWith('TRANSFER_IN'))
@@ -26,7 +27,9 @@ export function calculateTotalSpendingInCategories(
 
 export function calculateTotalsInCategoriesAsTotal(
     summary: SpendingSummary,
-    categories: HighLevelTransactionCategory[]
+    categories: HighLevelTransactionCategory[] = Object.keys(
+        HighLevelTransactionCategory
+    ) as HighLevelTransactionCategory[]
 ) {
     let totals = 0
     Object.entries((summary.spending || {}) as Record<string, number>).forEach(([category, value]) => {
@@ -81,6 +84,44 @@ export function calculateAverageSpendingFromMonthlySummarys(
         })
         return totals
     }, {})
+}
+
+export const sumBudgetPlan = (budget: BudgetPlan[]) => {
+    let totals = 0
+    budget.forEach((b) => {
+        const annualizedSpendingThresholdMultiplier =
+            b.timeframe === BudgetTimeframe.DAILY
+                ? 30 * 1
+                : b.timeframe === BudgetTimeframe.MONTHLY
+                ? 1
+                : b.timeframe === BudgetTimeframe.WEEKLY
+                ? 4
+                : 0
+        totals += (b.spendingThreshold ?? 0) * annualizedSpendingThresholdMultiplier
+    })
+    return totals
+}
+
+export const adjustSpendingBasedOnBudget = (defaultProjections: FinancialProjection, budget: BudgetPlan) => {
+    const copyProjections = { ...defaultProjections }
+    // current spending in highlevel category - spending threshold
+    if (!budget.highLevelCategory || !budget.spendingThreshold) {
+        return defaultProjections
+    }
+    const annualizedSpendingThresholdMultiplier =
+        budget.timeframe === BudgetTimeframe.DAILY
+            ? 30 * 12
+            : budget.timeframe === BudgetTimeframe.MONTHLY
+            ? 12
+            : budget.timeframe === BudgetTimeframe.WEEKLY
+            ? 52
+            : 0
+    const initSpending = defaultProjections.annualizedSpendingPerCategory[budget.highLevelCategory ?? ''] ?? 0
+
+    copyProjections.initial_expenses =
+        copyProjections.initial_expenses -
+        (initSpending - budget.spendingThreshold * annualizedSpendingThresholdMultiplier)
+    return copyProjections
 }
 
 export const daysInMonth: Record<number, number> = {

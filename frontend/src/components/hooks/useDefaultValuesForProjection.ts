@@ -118,6 +118,8 @@ const useDefaultValuesForProjection = ({}: any) => {
             initial_fhsa_room: () => estimatedSavings?.estimatedFhsa ?? 0,
             initial_tfsa_room: () => estimatedSavings?.estimatedTfsa ?? 0,
             totalSpendingAnnualized: () => totalSpending,
+            annualizedSpendingPerCategory: () => annualizedSpendingPerCategory,
+            multipleier: () => multipleier,
         }
         const result = Object.fromEntries(
             Object.entries(fieldsMap).map(([key, fallback]) => {

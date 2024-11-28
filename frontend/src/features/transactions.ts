@@ -31,6 +31,7 @@ interface TransactionsState {
     monthlySummaries: SpendingSummary[] | undefined
     currentDateRange: number[] | undefined
     transactionRecommendations: Recommendation[] | undefined
+    budgetRecommendations: Recommendation[] | undefined
     activeTransactionCursor: string | undefined
 }
 
@@ -39,6 +40,9 @@ firstOfMonth.setDate(1)
 
 const oneWeekAgo = new Date()
 oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+
+const oneYearAgo = new Date()
+oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 7)
 // Define the initial state using that type
 const initialState: TransactionsState = {
     acccountRecommendation: '',
@@ -54,6 +58,7 @@ const initialState: TransactionsState = {
     monthlySummaries: undefined,
     currentDateRange: [firstOfMonth.getTime(), new Date().getTime()],
     transactionRecommendations: undefined,
+    budgetRecommendations: undefined,
     loadingRecommendations: false,
     loadingActive: false,
 }
@@ -149,6 +154,47 @@ export const getTransactionsAsync = createAsyncThunk(
         }
     }
 )
+
+export const getBudgetRecommendationsAsync = createAsyncThunk<
+    any, // Return type
+    GetTransactionRecommendations, // Input type
+    { state: RootState } // ThunkAPI type that includes the state
+>('transaction/get-budget-recommendations', async (input: GetTransactionRecommendations, getThunk) => {
+    const ids =
+        getThunk
+            .getState()
+            .idsSlice.institutions?.map((account) => account.item_id)
+            .slice(0, 25) ?? []
+    const res = await input.client.graphql({
+        query: getFinancialConversationResponse,
+        variables: {
+            chat: {
+                accountIds: ids,
+                prompt: 'Provide me recommendations on how I can save money on my spending',
+                chatFocus: ChatFocus.Transaction,
+                chatType: ChatType.RecommendBudget,
+                requiresLiveData: false,
+                currentDateRange: [oneYearAgo.getTime().toString(), new Date().getTime().toString()],
+                doNotUseAdvancedRag: true,
+                cacheIdentifiers: [
+                    {
+                        key: input.ids.slice(0, 25).join(',') + 'TRANSACTIONSUMMARIES23',
+                        cacheType: CacheType.BudgetRecommendation,
+                    },
+                ],
+            },
+        },
+    })
+    const errors = res.errors
+    if (errors && errors.length > 0) {
+        return { errors, recommendations: res.data.getFinancialConversationResponse }
+    }
+    return {
+        recommendations: res.data.getFinancialConversationResponse,
+        errors: null,
+        loading: false,
+    }
+})
 
 export const getTransactionsRecommendationsAsync = createAsyncThunk<
     any, // Return type
@@ -309,10 +355,10 @@ export const transactionSlice = createSlice({
             state.loadingDailySummary = true
         })
         builder.addCase(getMonthlySummariesAsyncThunk.fulfilled, (state, action) => {
-            console.log(action.payload)
             state.error = action.payload.errors ? action.payload.errors.toString() : undefined
             state.loadingMonthlySummary = false
             state.monthlySummaries = action.payload.summarys
+            state.monthlySummaries?.sort((el1, el2) => (el1 as any).date - (el2 as any).date)
         })
         builder.addCase(getMonthlySummariesAsyncThunk.rejected, (state, action) => {
             state.error = 'Failed to fetch accounts because ' + action.error.message
@@ -334,6 +380,19 @@ export const transactionSlice = createSlice({
             state.loadingRecommendations = false
         })
         builder.addCase(getTransactionsRecommendationsAsync.pending, (state, action) => {
+            state.error = undefined
+            state.loadingRecommendations = true
+        })
+        builder.addCase(getBudgetRecommendationsAsync.fulfilled, (state, action) => {
+            state.error = action.payload.errors ? action.payload.errors.toString() : undefined
+            state.loadingRecommendations = false
+            state.budgetRecommendations = JSON.parse(action.payload.recommendations?.response ?? '')?.recommendations
+        })
+        builder.addCase(getBudgetRecommendationsAsync.rejected, (state, action) => {
+            state.error = 'Failed to fetch accounts because ' + action.error.message
+            state.loadingRecommendations = false
+        })
+        builder.addCase(getBudgetRecommendationsAsync.pending, (state, action) => {
             state.error = undefined
             state.loadingRecommendations = true
         })

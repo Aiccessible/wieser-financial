@@ -55,7 +55,7 @@ const Header = (props: {
                         onSubmit={(e) => {
                             e.preventDefault()
                             console.info(activeSimulationName)
-                            postChat(e.currentTarget.value)
+                            postChat(newChat)
                         }}
                         method="POST"
                     >
@@ -104,7 +104,7 @@ const Header = (props: {
                     ].map((question, index) => (
                         <Button
                             key={index}
-                            className="bg-primary text-black px-4 py-2 rounded-full hover:bg-green-700 transition ease-in-out"
+                            className="bg-black text-white border border-1 px-4 py-2 rounded-full hover:bg-green-700 transition ease-in-out"
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
