@@ -92,6 +92,8 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
     const [inputValue, setInputValue] = useState<string>('') // For handling input state
 
     const sendChat = (input: string, focus: ChatFocus) => {
+        console.info(input, 'vjskkcsadsdajskc')
+
         dispatch(
             sendChatToLLM({
                 newChat: input,
@@ -110,7 +112,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
         setChunks([])
         e.preventDefault()
         if (!inputValue.trim()) return // Prevent sending empty messages
-
+        console.info(inputValue, 'vjskkcjskc')
         // Determine ChatFocus based on URL path
         const focus = window.location.pathname.includes('accounts')
             ? ChatFocus.Accounts
@@ -143,7 +145,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                         <>
                             <Dialog.Overlay className="bg-black/95 fixed inset-0 z-9999">
                                 <animated.div
-                                    className="relative dark:bg-gray-800 w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden"
+                                    className="relative dark:bg-gray-800 justify-center w-full max-w-3xl rounded-lg shadow-3xl overflow-hidden"
                                     style={{
                                         opacity: styles.opacity,
                                     }}
@@ -151,12 +153,12 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                             </Dialog.Overlay>
                             <Dialog.Content className="fixed inset-0 flex items-center justify-center p-4 z-9999">
                                 <animated.div
-                                    className={`relative dark:bg-gray-800 w-full  rounded-lg shadow-3xl overflow-hidden flex flex-row ${
+                                    className={`relative dark:bg-gray-800 w-full justify-center rounded-lg shadow-3xl overflow-hidden flex flex-row ${
                                         activeTransactions ? '' : 'max-w-3xl'
                                     }`}
                                     style={styles}
                                 >
-                                    {activeTransactions && (
+                                    {activeTransactions?.length && (
                                         <div
                                             style={{ minWidth: 400 }}
                                             className="flex flex-col hide-scrollbar overflow-auto h-[65vh] w-[20vw] p-4 bg-black rounded-lg text-white"

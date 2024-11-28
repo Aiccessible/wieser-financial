@@ -19,6 +19,7 @@ import * as Accordion from '@radix-ui/react-accordion'
 import { RefreshCwIcon } from 'lucide-react'
 import Protected from '../pages/Protected'
 import StockSummary from '../components/Stock/StockSummary'
+import Budgets from '../components/Budgets'
 
 const logger = new ConsoleLogger('Instituions')
 
@@ -97,6 +98,7 @@ export default function Institution() {
         loadProjection: true,
         loadNetworths: true,
         loadTopStockAnalysis: true,
+        loadBudgets: true,
     })
     const { initial_salary, initial_expenses } = useDefaultValuesForProjection({})
     if (!institutionsLoading && !institutions?.length) {
@@ -119,14 +121,15 @@ export default function Institution() {
                 <Divider />
             </div>
             <div className="flex flex-row justify-between">
-                <div className="flex flex-col max-w-2/3 flex-grow  p-3 relative">
+                <div className="flex flex-col w-2/3 flex-grow  p-3 relative">
                     {projectedBalances && (
                         <NetWorthChart title="Networth Projection" accountBalances={projectedBalances as any} />
                     )}
                     <div className="flex">
                         <Accounts updateAccounts={() => {}} />
-                        <StockSummary />
+                        <Budgets />
                     </div>
+                    <StockSummary />
                 </div>
                 <div className="flex w-1/3 flex-grow flex-col">
                     <Heading level={6} className="text-2xl mb-1">

@@ -18,6 +18,7 @@ import { getFinancialProjectionForBudget, setActiveBudgetPlan } from '../../../s
 import { generateClient } from 'aws-amplify/api'
 import { selectAverageSpendingPerCategory } from '../../../src/features/transactions'
 import { addBudget } from '../../../src/features/budgets'
+import { adjustSpendingBasedOnBudget } from '../../../src/libs/spendingUtils'
 
 const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Recommendation[]; id: string }) => {
     const loadingTransfer = useAppSelector((state) => state.auth.loadingTransfer)
@@ -60,23 +61,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
     const client = generateClient()
     const isCreatingBudget = useAppSelector((state) => state.budgetSlice.creatingBudget)
     const onAnalyze = (budget: BudgetPlan) => {
-        const copyProjections = { ...defaultProjections }
-        // current spending in highlevel category - spending threshold
-        if (!budget.highLevelCategory || !budget.spendingThreshold) {
-            return
-        }
-        const annualizedSpendingThresholdMultiplier =
-            (budget.timeframe === BudgetTimeframe.DAILY
-                ? 30
-                : budget.timeframe === BudgetTimeframe.MONTHLY
-                ? 1
-                : budget.timeframe === BudgetTimeframe.WEEKLY
-                ? 4
-                : 0) * defaultProjections.multipleier
-        const initSpending = defaultProjections.annualizedSpendingPerCategory[budget.highLevelCategory ?? '']
-        copyProjections.initial_expenses =
-            copyProjections.initial_expenses -
-            (initSpending - budget.spendingThreshold * annualizedSpendingThresholdMultiplier)
+        const copyProjections = adjustSpendingBasedOnBudget(defaultProjections, budget)
         dispatch(setActiveBudgetPlan(budget.recommendationTitle))
         dispatch(
             getFinancialProjectionForBudget({
@@ -111,7 +96,7 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                             </CustomTextBox>
                         </Heading>
                         <CustomTextBox className="font-normal text-left">
-                            {recommendation!.action!.description}
+                            {!(recommendation!.action as any)?.budget ? recommendation!.action!.description : ''}
                         </CustomTextBox>
                         <CustomTextBox className="font-normal text-left">{recommendation.explanation}</CustomTextBox>
                         {(recommendation!.action as any).transfers ? (
@@ -159,7 +144,9 @@ const RecommendationsAccordion = ({ recommendations, id }: { recommendations: Re
                                         >
                                             <div className="flex flex-col">
                                                 <CustomTextBox className="text-base font-semibold text-gray-800">
-                                                    Reduce {budget?.highLevelCategory} Spending
+                                                    Limit{' '}
+                                                    {budget?.highLevelCategory?.toLowerCase().replaceAll('_', ' ')}{' '}
+                                                    {budget?.timeframe?.toLowerCase()} Spending
                                                 </CustomTextBox>
                                                 <p className="text-xl font-bold text-green-600">
                                                     ${budget?.spendingThreshold}
