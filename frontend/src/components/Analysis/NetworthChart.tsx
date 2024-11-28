@@ -38,7 +38,7 @@ export interface AccountBalances {
     FHSA: number[]
     TFSA: number[]
     Brokerage: number[]
-    NetWorth: number[]
+    'Net Worth': number[]
 }
 
 export type TimeFrame = '1 Year' | '2 Weeks' | 'Now' | 'Future'
