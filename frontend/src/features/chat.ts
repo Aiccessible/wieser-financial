@@ -11,6 +11,7 @@ import {
 import { GraphQLMethod } from '@aws-amplify/api-graphql'
 import { FinancialProjection } from '../components/hooks/useDefaultValuesForProjection'
 import { financialProjectionToChatInput } from './analysis'
+import { useAPI } from '../hooks/useApi'
 
 // Define a type for the slice state
 interface ChatState {
@@ -53,6 +54,8 @@ export interface SendChatToLLMArgs {
 export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: RootState }>(
     'chat/chat-llm',
     async (input: SendChatToLLMArgs, getThunkApi) => {
+        const api = useAPI()
+
         const ids =
             getThunkApi
                 .getState()
@@ -75,29 +78,18 @@ export const sendChatToLLM = createAsyncThunk<any, SendChatToLLMArgs, { state: R
                     )}`
             }
             console.info('sending ', input)
-            const res = await input.client.graphql({
-                query: getFinancialConversationResponse,
-                variables: {
-                    chat: {
-                        prompt: input.newChat,
-                        chatFocus: input.focus,
-                        accountIds: ids,
-                        shouldRagFetch: !input.dontRagFetch,
-                        currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
-                        highLevelCategory: input.highLevelSpendingCategory,
-                        chatHistory: currentChats,
-                    },
-                },
+            const res = await api.apiFetch(process.env.LLM_API + '/finance/agents/message', {
+                body: JSON.stringify({
+                    accounts: ids,
+                    message: input.newChat,
+                    model: 'o3-mini',
+                    chatFocus: input.focus,
+                    currentDateRange: input.currentDateRange?.map((el) => (el ? el.toString() : null)),
+                    highLevelCategory: input.highLevelSpendingCategory,
+                }),
             })
-            const errors = res.errors
-            if (errors && errors.length > 0) {
-                return { errors, chatResponse: res, loading: false }
-            }
-            const data: GetFinancialConversationResponseQuery = res.data
-            return {
-                chatResponse: data.getFinancialConversationResponse.response,
-                loading: false,
-            }
+            const chatResponse = await res.json()
+            return { chatResponse: chatResponse, loading: false }
         } catch (e: any) {
             console.error(e)
             return { error: e?.message }

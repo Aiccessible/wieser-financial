@@ -5,16 +5,15 @@ import { generateClient } from 'aws-amplify/api'
 import { Chat, ChatFocus, HighLevelTransactionCategory } from '../../API'
 import { onCreateChat } from '../../graphql/subscriptions'
 import { fetchAuthSession } from 'aws-amplify/auth'
-import Markdown from '../../components/native/Markdown'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { useTransition, animated, config } from 'react-spring'
-import { Button } from '@aws-amplify/ui-react'
 import { useDefaultValuesForProjection } from '../hooks/useDefaultValuesForProjection'
 import { setActiveSimulationParams, setActiveSimulationS3Params } from '../../../src/features/analysis'
-import Transactions from '../Transactions/Transactions'
-import { CustomTextBox } from '../common/Custom/CustomTextBox'
 import Currency from '../common/Custom/Currency'
+import AgentConversation, { LoadingStates } from './ai-chat'
+import useConversationHook from '../../../src/hooks/useConversation'
+import { ModelOption } from '../ui/model-selector'
 
 export async function custom_headers() {
     const accessToken = (await fetchAuthSession()).tokens?.accessToken?.toString()
@@ -137,6 +136,7 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
         ...(getSortedChunks?.split('\n**')?.map((el: string) => ({ message: el, role: 'Assistant' })) ?? ([] as any)),
     ]
     const activeTransactions = useAppSelector((state) => state.transactions.activeTransactions)
+    const useConversation = useConversationHook({})
     return (
         <Dialog.Root open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
             <Dialog.Portal>
@@ -197,59 +197,17 @@ const Chatbar = ({ isSidebarOpen, setIsSidebarOpen, activeTab }: SidebarProps) =
                                             </Dialog.Close>
                                         </div>
 
-                                        <div className="p-4 space-y-3 hide-scrollbar h-[65vh] overflow-y-auto bg-gray-100 dark:bg-gray-900">
-                                            {messages
-                                                .filter((msg) => msg)
-                                                .map((msg, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className={`flex ${
-                                                            msg?.role === 'Assistant' ? 'justify-start' : 'justify-end'
-                                                        }`}
-                                                    >
-                                                        <div
-                                                            className={`${
-                                                                msg?.role === 'Assistant'
-                                                                    ? 'bg-primary text-gray-900'
-                                                                    : 'bg-whiten text-gray-900'
-                                                            } p-3 rounded-lg max-w-xs shadow-md `}
-                                                        >
-                                                            <Markdown>{msg?.message}</Markdown>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                        {/* Chat Input */}
-                                        {highLevelCategory && !stillGettingChats && (
-                                            <QuestionBubbles
-                                                handleChatSubmit={sendChat}
-                                                chatFocus={chatFocus ?? ChatFocus.All}
-                                                category={highLevelCategory}
-                                                disabled={stillGettingChats}
-                                            />
-                                        )}
-                                        <form
-                                            onSubmit={handleChatSubmit}
-                                            className="flex items-center p-4 border-t border-gray-600 bg-gray-800"
-                                        >
-                                            <input
-                                                type="text"
-                                                value={inputValue}
-                                                onChange={(e) => setInputValue(e.target.value)}
-                                                placeholder="Type your message..."
-                                                className="flex-1 bg-gray-700 text-black  p-2 rounded-lg outline-none dark:placeholder-whiten dark:bg-secondary text-whiten"
-                                            />
-                                            {/* Loading Indicator */}
-
-                                            <Button
-                                                type="submit"
-                                                disabled={stillGettingChats}
-                                                className="ml-2 p-2 bg-primary text-dark rounded-lg hover:bg-primary-700 transition duration-200"
-                                                isLoading={isChatLoading}
-                                            >
-                                                Send
-                                            </Button>
-                                        </form>
+                                        <AgentConversation
+                                            accounts={ids ?? []}
+                                            messages={useConversation.messages}
+                                            sendMessage={useConversation.sendMessage}
+                                            model={'sonnet'}
+                                            setModel={function (model: ModelOption): void {
+                                                throw new Error('Function not implemented.')
+                                            }}
+                                            loadingState={LoadingStates.NotLoading}
+                                            setLoadingState={useConversation.setLoadingState}
+                                        />
                                     </div>
                                 </animated.div>
                             </Dialog.Content>
