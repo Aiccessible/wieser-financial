@@ -15,14 +15,14 @@ const ChatBubble: React.FC<{ message: Message }> = ({ message }) => {
         <div className={cn('flex gap-3 mb-4', isUser ? 'justify-end' : 'justify-start')}>
             {!isUser && (
                 <Avatar>
-                    <AvatarImage alt="LLM Avatar" />
-                    <AvatarFallback>AI</AvatarFallback>
+                    <AvatarImage className='bg-white' alt="LLM Avatar" />
+                    <AvatarFallback><span className='text-white'>AI</span></AvatarFallback>
                 </Avatar>
             )}
             <div
                 className={cn(
                     'max-w-[70%] rounded-lg p-4 text-sm',
-                    isUser ? 'bg-blue-500 text-white self-end' : 'bg-gray-100 text-gray-900 self-start'
+                    isUser ? 'bg-blue-500 text-white self-end' : 'bg-gray-100 text-white self-start'
                 )}
             >
                 <p>{message.content}</p>
@@ -104,7 +104,7 @@ const AgentConversation: React.FC<AgentConversationProps> = ({
     }
 
     return (
-        <div className="relative flex justify-center items-center h-[90vh] w-[30%] rounded-xl border shadow inset-0 bg-card text-card-foreground m-4">
+        <div className="relative flex justify-center items-center h-[90vh] rounded-xl border shadow inset-0 bg-card text-card-foreground m-4">
             <div className="flex w-full h-[100%]">
                 <div className="flex flex-col h-full p-4 w-full">
                     {/* options hamburger */}
@@ -149,13 +149,13 @@ const AgentConversation: React.FC<AgentConversationProps> = ({
                         </span>
                     )}
                     <ModelSelector selectedModel={model} setSelectedModel={setModel} />
-                    <div className="flex-1 p-4 border rounded-lg bg-white dark:bg-card overflow-y-auto">
+                    <div className="flex-1 p-4 border rounded-lg bg-black dark:bg-card overflow-y-auto">
                         {messages.map((message) => (
                             <ChatBubble key={message.id} message={message} />
                         ))}
                         {messages.length === 0 && (
                             <div className="flex items-center justify-center h-full">
-                                <p className="text-gray-500">Ask anything about your situation</p>
+                                <p className="text-white">Ask anything about your situation</p>
                             </div>
                         )}
                     </div>
@@ -169,7 +169,7 @@ const AgentConversation: React.FC<AgentConversationProps> = ({
                             placeholder="Type your message..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            className="flex-grow"
+                            className="flex-grow text-white"
                         />
                         <Button onClick={handleSend}>Send</Button>
                     </form>

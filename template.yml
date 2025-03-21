@@ -1354,6 +1354,26 @@ Resources:
             RouteKey: '$default'
             Target: !Sub 'integrations/${HttpApiIntegration}'
 
+    ReadOnlyRouteIAM:
+        Type: 'AWS::ApiGatewayV2::Route'
+        Properties:
+            ApiId: !Ref HttpApi
+            #AuthorizationScopes:
+            #  - !Sub "${UserPoolResourceServer}/plaid.rw"
+            AuthorizationType: IAM
+            RouteKey: 'GET /iam/{proxy+}'
+            Target: !Sub 'integrations/${HttpApiIntegration}'
+
+    WriteOnlyRouteIAM:
+        Type: 'AWS::ApiGatewayV2::Route'
+        Properties:
+            ApiId: !Ref HttpApi
+            #AuthorizationScopes:
+            #  - !Sub "${UserPoolResourceServer}/plaid.rw"
+            AuthorizationType: IAM
+            RouteKey: 'POST /iam/{proxy+}'
+            Target: !Sub 'integrations/${HttpApiIntegration}'
+
     HttpApiStage:
         Type: 'AWS::ApiGatewayV2::Stage'
         Properties:

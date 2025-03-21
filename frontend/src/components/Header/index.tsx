@@ -78,7 +78,6 @@ const Header = (props: {
                                     }}
                                 />
                             </div>
-                            <ScoreIndicators />
                         </div>
                     </form>
                 </div>

@@ -80,7 +80,7 @@ export default function Transactions({}) {
                                     <DailySpending width={50} />
                                 </div>
                                 <TransferTimeline spending={monthlySpending ?? []} title={'Transfer Timeline'} />
-                                <ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />
+                                {/**<ScoreReview score={68} change={2} spendingChange={0} avgSpending={0} percentile={0} />*/}
                             </div>
                         </div>
                     </div>

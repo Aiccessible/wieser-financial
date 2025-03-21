@@ -31,11 +31,11 @@ const ModelSelector = ({
             <div className="relative mt-1">
                 <button
                     onClick={() => setOpen(!open)}
-                    className="w-full flex items-center justify-between px-4 py-2 text-lg font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all cursor-pointer"
+                    className="w-full flex items-center justify-between px-4 py-2 text-lg font-medium dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all cursor-pointer"
                 >
                     <div className="flex items-center gap-2">
                         {models[selectedModel]}
-                        <span className="capitalize">
+                        <span className="capitalize text-white">
                             {selectedModel === "sonnet"
                                 ? "haiku"
                                 : selectedModel}
